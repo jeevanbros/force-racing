@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Present</title>
+<!-- Galeport demo presenter (gale-presenter skill). Served only by the local demo server at /__present.html;
+     it lives in tools/, never in site/, so it can never be deployed.
+     Light / Dark / Auto force the site's own prefers-color-scheme rules and set data-theme on its <html>; the
+     theme buttons hide on a site with no dark mode. Phone puts the site in a 402×874 phone frame. Keys L D A P H
+     press the matching button, which shows the press, so the audience sees what the presenter did.
+     A client may keep its own tools/present.html; the installer never overwrites one. To tint the stage for a
+     client, change only the five colours in :root. -->
+<style>
+  :root { --stage:#121212; --bar:rgba(24,24,24,.86); --ink:#f2f2f2; --ink-2:#a8a8a8; --on:#f2f2f2; --on-ink:#161616; --ring:#8ab4f8; }
+  * { box-sizing:border-box; }
+  /* the stage is always dark: color-scheme dark makes the browser fill any area it has not painted yet
+     (while the window resizes) with dark, not white */
+  html { color-scheme:dark; background:var(--stage); }
+  html, body { margin:0; height:100%; background:var(--stage); color:var(--ink); font:500 13px/1 system-ui,-apple-system,sans-serif; }
+  .stage { position:fixed; inset:0; display:grid; place-items:center; transition:padding .5s cubic-bezier(.16,1,.3,1); }
+  .device { width:100%; height:100%; transition:width .6s cubic-bezier(.16,1,.3,1),height .6s cubic-bezier(.16,1,.3,1),border-radius .6s,padding .6s,box-shadow .6s; }
+  /* the frame's ground is the site's own background, read after each load and theme change, so a resize never flashes white */
+  .device iframe { display:block; width:100%; height:100%; border:0; background:var(--frame-ground,#fff); border-radius:inherit; }
+  body.phone .stage { padding:24px 24px 96px; }
+  body.phone .device { width:402px; height:min(874px,calc(100vh - 120px)); padding:12px; border-radius:56px; background:#0a0a0a;
+    box-shadow:0 0 0 1px #383838,0 0 0 7px #161616,0 40px 90px -20px rgba(0,0,0,.7); }
+  /* clip-path as well as border-radius: Chrome does not always clip an iframe's composited layers (a blurred or
+     fixed bar) to a radius, which leaves square corners peeking past the curve */
+  body.phone .device iframe { border-radius:44px; clip-path:inset(0 round 44px); }
+  .bar { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); z-index:10; display:flex; align-items:center; gap:6px; padding:6px;
+    background:var(--bar); -webkit-backdrop-filter:blur(16px) saturate(1.4); backdrop-filter:blur(16px) saturate(1.4);
+    border:1px solid rgba(255,255,255,.08); border-radius:100px; box-shadow:0 12px 40px -12px rgba(0,0,0,.6); transition:opacity .3s; }
+  .bar.is-hidden { opacity:0; pointer-events:none; }
+  .bar [hidden] { display:none; }
+  .seg { display:flex; gap:2px; padding:2px; border-radius:100px; background:rgba(255,255,255,.06); }
+  .bar button { display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 14px; border:0; border-radius:100px; background:transparent;
+    color:var(--ink-2); font:inherit; cursor:pointer; }
+  .bar button:hover { color:var(--ink); }
+  .bar button[aria-pressed="true"] { background:var(--on); color:var(--on-ink); }
+  .bar button:focus-visible, .show:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+  /* a key press gives the button the same pressed look a click does */
+  .bar button, .show { transition:background-color .2s,color .2s,opacity .2s,transform .16s cubic-bezier(.22,.7,.2,1),box-shadow .2s; }
+  .bar button.is-key, .show.is-key { transform:scale(.93); box-shadow:0 0 0 2px var(--ring); color:var(--ink); }
+  .bar button[aria-pressed="true"].is-key { color:var(--on-ink); }
+  .bar svg { width:16px; height:16px; flex:none; }
+  .sep { width:1px; height:22px; background:rgba(255,255,255,.12); margin:0 4px; }
+  .bar .hide { padding:0 10px; }
+  .show { position:fixed; right:16px; bottom:16px; z-index:10; width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.12);
+    background:var(--bar); color:var(--ink-2); cursor:pointer; display:none; place-items:center; opacity:.45; }
+  .show:hover { opacity:1; }
+  .bar.is-hidden + .show { display:grid; }
+  @media (prefers-reduced-motion:reduce) { .stage, .device, .bar button, .show { transition:none; } }
+  @media (max-width:520px) { .bar .label { display:none; } body.phone .device { width:100%; height:100%; padding:0; border-radius:0; box-shadow:none; } body.phone .device iframe { clip-path:none; border-radius:0; } body.phone .stage { padding:0; } }
+</style>
+</head>
+<body>
+<div class="stage"><div class="device"><iframe id="site" src="/" title="Website preview"></iframe></div></div>
+
+<div class="bar" id="bar" role="toolbar" aria-label="Presentation controls">
+  <div class="seg" role="group" aria-label="Appearance" id="themeSeg">
+    <button type="button" data-theme="light" aria-pressed="false" title="Light (L)" aria-label="Light (L)" aria-keyshortcuts="L">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span class="label">Light</span></button>
+    <button type="button" data-theme="dark" aria-pressed="false" title="Dark (D)" aria-label="Dark (D)" aria-keyshortcuts="D">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><span class="label">Dark</span></button>
+    <button type="button" data-theme="auto" aria-pressed="true" title="Auto: follow the device (A)" aria-label="Auto: follow the device (A)" aria-keyshortcuts="A">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"/></svg><span class="label">Auto</span></button>
+  </div>
+  <span class="sep" aria-hidden="true" id="themeSep"></span>
+  <div class="seg" role="group" aria-label="Device">
+    <button type="button" id="phoneBtn" aria-pressed="false" title="Phone frame (P)" aria-label="Phone frame (P)" aria-keyshortcuts="P">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg><span class="label">Phone</span></button>
+  </div>
+  <button type="button" class="hide" id="hideBtn" title="Hide controls (H)" aria-label="Hide controls (H)" aria-keyshortcuts="H">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+</div>
+<button type="button" class="show" id="showBtn" title="Show controls (H)" aria-label="Show controls (H)" aria-keyshortcuts="H">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/><circle cx="9" cy="8" r="2" fill="currentColor"/><circle cx="15" cy="16" r="2" fill="currentColor"/></svg></button>
+
+<script>
+(function () {
+  var frame = document.getElementById("site"), bar = document.getElementById("bar");
+  var theme = "auto", phone = false;
+  try { theme = localStorage.getItem("present-theme") || "auto"; phone = localStorage.getItem("present-phone") === "1"; } catch (e) {}
+  if (location.hash === "#phone") phone = true;   // a site's own link can open the preview straight in the phone frame
+
+  // The site's own @media (prefers-color-scheme) rules, found once per page load. Forcing a
+  // theme switches those media lists on or off, so any site with a real dark mode works.
+  var schemeRules = [], attrTheme = false;
+  function scan(d) {
+    schemeRules = []; attrTheme = false;
+    function walk(rules) {
+      for (var i = 0; i < rules.length; i++) {
+        var r = rules[i];
+        if (r.media && /prefers-color-scheme/.test(r.media.mediaText)) {
+          schemeRules.push({ rule: r, text: r.media.mediaText, dark: /dark/.test(r.media.mediaText) });
+        } else if (r.cssRules) walk(r.cssRules);
+        if (r.selectorText && /\[data-theme/.test(r.selectorText)) attrTheme = true;
+      }
+    }
+    for (var s = 0; s < d.styleSheets.length; s++) {
+      try { walk(d.styleSheets[s].cssRules); } catch (e) {}
+    }
+    var supported = schemeRules.length > 0 || attrTheme;
+    document.getElementById("themeSeg").hidden = !supported;
+    document.getElementById("themeSep").hidden = !supported;
+  }
+  function setMedia(entry, on) {
+    entry.rule.media.mediaText = on === null ? entry.text : on ? "all" : "not all";
+  }
+  // The frame's ground follows the site: the first opaque background of <html> or <body>.
+  function readGround() {
+    var d; try { d = frame.contentDocument; } catch (e) { return; }
+    if (!d || !d.body) return;
+    var win = d.defaultView, bg = "";
+    [d.documentElement, d.body].some(function (el) {
+      var c = win.getComputedStyle(el).backgroundColor;
+      if (c && !/rgba\(.*,\s*0\)$|transparent/.test(c)) { bg = c; return true; }
+    });
+    if (bg) document.documentElement.style.setProperty("--frame-ground", bg);
+  }
+  // Only a Light/Dark/Auto choice animates the site's theme: the frame's <html> gets .theme-animating for the
+  // length of the change, and the site's own CSS decides what glides (gale-design references/theme-transition.md).
+  // A page load never animates: the forced theme goes in with every transition off.
+  var motionTimer = 0;
+  function motion(d, animate, change) {
+    var root = d.documentElement, win = d.defaultView || window;
+    var still = win.matchMedia && win.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (animate && !still) {
+      root.classList.remove("theme-instant");
+      root.classList.add("theme-animating");
+      clearTimeout(motionTimer);
+      motionTimer = setTimeout(function () { root.classList.remove("theme-animating"); readGround(); }, 1400);
+      change();
+      return;
+    }
+    if (!d.getElementById("present-instant")) {
+      var st = d.createElement("style"); st.id = "present-instant";
+      st.textContent = ".theme-instant,.theme-instant *,.theme-instant *::before,.theme-instant *::after{transition:none!important}";
+      (d.head || root).appendChild(st);
+    }
+    root.classList.add("theme-instant");
+    change();
+    void root.offsetHeight;
+    readGround();
+    win.requestAnimationFrame(function () { win.requestAnimationFrame(function () { root.classList.remove("theme-instant"); }); });
+  }
+  function applyTheme(animate) {
+    var d; try { d = frame.contentDocument; } catch (e) {}
+    if (!d || !d.documentElement) { applyThemeNow(); return; }
+    motion(d, animate, applyThemeNow);
+  }
+  function applyThemeNow() {
+    document.querySelectorAll("[data-theme]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.theme === theme ? "true" : "false"); });
+    var d; try { d = frame.contentDocument; } catch (e) { return; }
+    if (!d || !d.documentElement) return;
+    var root = d.documentElement;
+    if (theme === "auto") { root.removeAttribute("data-theme"); root.style.colorScheme = ""; }
+    else { root.setAttribute("data-theme", theme); root.style.colorScheme = theme; }
+    schemeRules.forEach(function (e) {
+      try { setMedia(e, theme === "auto" ? null : (theme === "dark") === e.dark); } catch (err) {}
+    });
+    try { localStorage.setItem("present-theme", theme); } catch (e) {}
+  }
+
+  /* Corner awareness: a real phone gives the page safe areas so nothing sits in the rounded corners. The frame
+     cannot set env(safe-area-inset-*), so after every load, phone toggle, resize and tap it measures each button
+     and link inside a fixed or sticky bar against the screen's corner curve, and pads that bar (top or bottom)
+     by exactly what clears the curve. Content that scrolls is left alone: it can simply be scrolled. */
+  var R = 44, padded = [];
+  function clearCorners() {
+    var d; try { d = frame.contentDocument; } catch (e) { return; }
+    if (!d || !d.body) return;
+    padded.forEach(function (x) { x.el.style[x.prop] = x.was; }); padded = [];
+    d.documentElement.removeAttribute("data-corner-cuts");
+    if (!phone || window.innerWidth <= 520) return;
+    var win = frame.contentWindow, W = d.documentElement.clientWidth, H = win.innerHeight, cuts = 0;
+    function barOf(el) {
+      if (win.getComputedStyle(el).visibility === "hidden") return null;
+      for (var n = el; n && n !== d.body; n = n.parentElement) {
+        var cs = win.getComputedStyle(n), pos = cs.position;
+        if (pos === "fixed" || pos === "sticky" || n.matches("dialog:modal")) return n;
+        if (n !== el && /(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight) return null;
+      }
+      return null;
+    }
+    function need(rect, rr) {
+      rr = Math.min(rr, rect.height / 2, rect.width / 2);   // a pill's 999px radius is really half its height
+      var k = rr * (1 - Math.SQRT1_2), pts = [[rect.left + k, rect.top + k], [rect.right - k, rect.top + k], [rect.left + k, rect.bottom - k], [rect.right - k, rect.bottom - k]], top = 0, bottom = 0;
+      pts.forEach(function (pt) {
+        var dx = pt[0] < R ? R - pt[0] : pt[0] > W - R ? pt[0] - (W - R) : 0;
+        if (!dx) return;
+        var lim = Math.sqrt(Math.max(0, R * R - dx * dx));
+        if (pt[1] < R && R - pt[1] > lim) top = Math.max(top, R - pt[1] - lim + 2);
+        if (pt[1] > H - R && pt[1] - (H - R) > lim) bottom = Math.max(bottom, pt[1] - (H - R) - lim + 2);
+      });
+      return { top: Math.ceil(top), bottom: Math.ceil(bottom) };
+    }
+    var fix = new Map(), scope = null;
+    try { scope = d.querySelector(":modal"); } catch (e) {}   // an open modal is all that is on screen: clear its bars
+    [].forEach.call((scope || d).querySelectorAll("a, button, [role=button]"), function (el) {
+      var r = el.getBoundingClientRect();
+      if (!r.width || !r.height || r.bottom < 0 || r.top > H) return;
+      var n = need(r, parseFloat(win.getComputedStyle(el).borderTopLeftRadius) || 0);
+      if (!n.top && !n.bottom) return;
+      var bar = barOf(el); if (!bar) return;
+      cuts++;
+      var f = fix.get(bar) || { top: 0, bottom: 0 };
+      f.top = Math.max(f.top, n.top); f.bottom = Math.max(f.bottom, n.bottom); fix.set(bar, f);
+    });
+    fix.forEach(function (f, bar) {
+      var cs = win.getComputedStyle(bar);
+      [["paddingBottom", f.bottom], ["paddingTop", f.top]].forEach(function (x) {
+        if (!x[1]) return;
+        padded.push({ el: bar, prop: x[0], was: bar.style[x[0]] });
+        bar.style[x[0]] = (parseFloat(cs[x[0]]) + x[1]) + "px";
+      });
+    });
+    d.documentElement.setAttribute("data-corner-cuts", String(cuts));
+  }
+  function later(ms) { clearTimeout(frame._cc); frame._cc = setTimeout(clearCorners, ms); }
+
+  function applyPhone() {
+    document.body.classList.toggle("phone", phone);
+    later(650);   // after the frame has eased to its phone size
+    document.getElementById("phoneBtn").setAttribute("aria-pressed", phone ? "true" : "false");
+    try { localStorage.setItem("present-phone", phone ? "1" : "0"); } catch (e) {}
+  }
+  document.querySelectorAll("[data-theme]").forEach(function (b) { b.addEventListener("click", function () { theme = b.dataset.theme; applyTheme(true); }); });
+  document.getElementById("phoneBtn").addEventListener("click", function () { phone = !phone; applyPhone(); });
+  // optional page buttons: a client copy may add <button data-page="/menu/"> to the bar
+  function setPage(u) {
+    document.querySelectorAll("[data-page]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.page === u ? "true" : "false"); });
+    if (frame.getAttribute("src") !== u) frame.setAttribute("src", u);
+  }
+  document.querySelectorAll("[data-page]").forEach(function (b) { b.addEventListener("click", function () { setPage(b.dataset.page); }); });
+  document.getElementById("hideBtn").addEventListener("click", function () { bar.classList.add("is-hidden"); });
+  document.getElementById("showBtn").addEventListener("click", function () { bar.classList.remove("is-hidden"); });
+
+  // every shortcut drives the button in the bar itself (the same click), and that button shows the press
+  var KEYS = { l: '[data-theme="light"]', d: '[data-theme="dark"]', a: '[data-theme="auto"]', p: "#phoneBtn" };
+  function press(b) {
+    if (!b) return;
+    b.click();
+    b.classList.remove("is-key"); void b.offsetWidth; b.classList.add("is-key");
+    clearTimeout(b._key); b._key = setTimeout(function () { b.classList.remove("is-key"); }, 220);
+  }
+  function key(e) {
+    var t = (e.target && e.target.tagName) || "";
+    if (t === "INPUT" || t === "TEXTAREA" || t === "SELECT" || (e.target && e.target.isContentEditable)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;   // leave the browser's own shortcuts alone
+    var k = (e.key || "").toLowerCase();
+    if (k === "h") { var hidden = bar.classList.contains("is-hidden"); press(document.getElementById(hidden ? "showBtn" : "hideBtn")); return; }
+    if (KEYS[k] && !(k in { l: 1, d: 1, a: 1 } && document.getElementById("themeSeg").hidden)) press(document.querySelector(KEYS[k]));
+  }
+  document.addEventListener("keydown", key);
+  frame.addEventListener("load", function () {
+    try { scan(frame.contentDocument); } catch (e) {}
+    applyTheme();
+    try { frame.contentDocument.addEventListener("keydown", key); } catch (e) {}
+    padded = []; clearCorners();
+    try {
+      frame.contentWindow.addEventListener("resize", function () { later(120); });
+      frame.contentWindow.addEventListener("popstate", function () { later(480); });
+      frame.contentWindow.addEventListener("hashchange", function () { later(480); });
+      // a tap may open a sheet, a menu or a dialog with its own bars: clear again once it has risen
+      frame.contentDocument.addEventListener("click", function () { later(480); });
+    } catch (e) {}
+  });
+  applyPhone(); applyTheme();
+})();
+</script>
+</body>
+</html>
