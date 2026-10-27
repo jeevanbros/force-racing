@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gale Presenter"
+  short_description: "Demo kit, presenter and the pre-meeting check"
+  default_prompt: "Use $gale-presenter. Make this client's demo ready for tomorrow's meeting and prove it with check-demo."

@@ -17,4 +17,7 @@ Home, Cars, Team, Support, Contact, Campaign. Preserve original factual content 
 - Updated team roster, current sponsors and permission to republish existing photographs.
 - Final hosting/domain authority and release approval.
 
-Registration is a local preview until a real receiving service is configured and tested. Do not claim that a registration was submitted, confirmed, or reserved.
+## Expanded scope — same session
+User supplied campaign poster and requested a portable Cloudflare Workers + D1 backend, native submissions, Telegram alerts, approval of recipient friends, and a private owner dashboard on workers.dev. Build and test locally; another PC/agent will configure cloud accounts, secrets and deploy using the handoff. No cloud changes in this session.
+
+Native registration records a request, not confirmed payment or a reserved slot. Donation forms collect interest only. Google Form remains an alternative; its submissions require the separate signed Apps Script bridge to notify the same bot. Admin access is separate from Telegram alert-recipient approval.

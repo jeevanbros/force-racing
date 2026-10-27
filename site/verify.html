@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trackside Pilot Verification | Force Racing</title>
+  <link rel="icon" href="assets/original/favicon.png">
+  <link rel="preload" href="assets/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .verify-page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--gp-space-6) var(--gp-gutter) var(--gp-space-8);
+    }
+    .verify-card {
+      background: linear-gradient(145deg, #16171d, #1b1c24);
+      border: 2px solid var(--gp-line);
+      border-radius: var(--gp-radius-lg);
+      overflow: hidden;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+      margin-top: var(--gp-space-5);
+    }
+    .verify-header {
+      background: linear-gradient(135deg, #1b1d24 0%, #111216 100%);
+      padding: var(--gp-space-5);
+      border-bottom: 3px solid var(--gp-accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--gp-space-3);
+    }
+    .verify-header .team-badge {
+      font-family: var(--gp-font-head);
+      font-size: 1.5rem;
+      letter-spacing: .05em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: var(--gp-space-3);
+    }
+    .verify-header .status-pill {
+      font-size: .813rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: #252834;
+      color: #00f0ff;
+      border: 1px solid #3d4255;
+    }
+    .status-pill.valid {
+      background: rgba(30, 142, 62, 0.25);
+      color: #4ade80;
+      border-color: rgba(74, 222, 128, 0.4);
+    }
+    .verify-body {
+      padding: var(--gp-space-6);
+    }
+    .pass-tag {
+      font-size: .813rem;
+      color: var(--gp-accent);
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: var(--gp-space-2);
+    }
+    .pass-number {
+      font-family: monospace;
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 900;
+      letter-spacing: .08em;
+      color: #fff;
+      margin-bottom: var(--gp-space-5);
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gp-space-4);
+      margin-bottom: var(--gp-space-6);
+      background: var(--gp-bg-sunk);
+      padding: var(--gp-space-4);
+      border-radius: var(--gp-radius);
+      border: 1px solid var(--gp-line);
+    }
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .detail-label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--gp-ink-2);
+    }
+    .detail-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      overflow-wrap: anywhere;
+    }
+    .payment-section {
+      border-top: 1px solid var(--gp-line);
+      padding-top: var(--gp-space-5);
+      margin-top: var(--gp-space-5);
+    }
+    .payment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--gp-space-4);
+    }
+    .payment-badge {
+      font-size: .813rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 4px;
+    }
+    .payment-badge.uploaded {
+      background: rgba(30, 142, 62, 0.2);
+      color: #4ade80;
+      border: 1px solid #4ade80;
+    }
+    .payment-badge.pending {
+      background: rgba(234, 179, 8, 0.2);
+      color: #fbbf24;
+      border: 1px solid #fbbf24;
+    }
+    .screenshot-frame {
+      background: #000;
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: var(--gp-space-3);
+      text-align: center;
+      margin-top: var(--gp-space-3);
+    }
+    .screenshot-frame img {
+      max-height: 480px;
+      width: auto;
+      max-width: 100%;
+      margin: 0 auto;
+      border-radius: var(--gp-radius);
+      display: block;
+    }
+    .screenshot-actions {
+      display: flex;
+      gap: var(--gp-space-3);
+      margin-top: var(--gp-space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .upload-box {
+      background: var(--gp-bg-sunk);
+      border: 2px dashed var(--gp-line-2);
+      border-radius: var(--gp-radius);
+      padding: var(--gp-space-5);
+      text-align: center;
+      margin-top: var(--gp-space-3);
+    }
+    .file-input {
+      display: none;
+    }
+    .search-bar {
+      display: flex;
+      gap: var(--gp-space-3);
+      margin-top: var(--gp-space-5);
+    }
+    .search-input {
+      flex: 1;
+      min-height: 52px;
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line-2);
+      border-radius: var(--gp-radius);
+      color: #fff;
+      font-size: 1rem;
+      padding: 0 16px;
+      text-transform: uppercase;
+    }
+    @media(max-width: 600px) {
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+      .verify-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .search-bar {
+        flex-direction: column;
+      }
+      .search-bar .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html" aria-label="Force Racing home">
+        <img src="assets/original/favicon.png" alt="" width="48" height="48">
+        <span class="brand-name">FORCE RACING<small>KITS WARANGAL</small></span>
+      </a>
+      <a class="btn secondary" href="campaign.html" style="margin-left:auto;min-height:44px;font-size:.875rem;">Back to Sim Racing &rarr;</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="verify-page">
+      <span class="eyebrow">SUMSHODHINI ’26 · Race Control</span>
+      <h1>TRACKSIDE PILOT VERIFICATION</h1>
+      <p class="lead muted">Official paddock credential validation and payment inspection for the F1 Simulator Experience.</p>
+
+      <div class="search-bar" id="search-section">
+        <input type="text" id="pass-input" class="search-input" placeholder="ENTER PASS ID (e.g. FR26-SIM-12345)" aria-label="Pass ID">
+        <button class="btn" id="search-btn" type="button">Inspect Pass &rarr;</button>
+      </div>
+
+      <div id="loading" style="display:none; text-align:center; padding: 40px 0;">
+        <p class="muted" style="font-size: 1.2rem;">Checking telemetry and credential status...</p>
+      </div>
+
+      <div id="not-found" style="display:none;" class="verify-card">
+        <div class="verify-body" style="text-align: center; padding: 40px 20px;">
+          <h2 style="color: var(--gp-accent); margin-bottom: 12px;">PASS NOT FOUND</h2>
+          <p class="muted">No registration was found matching this Pass ID. Check the serial number and try again.</p>
+        </div>
+      </div>
+
+      <div id="result-card" style="display:none;" class="verify-card">
+        <div class="verify-header">
+          <div class="team-badge">
+            <img src="assets/original/favicon.png" width="32" height="32" alt="">
+            <span>FORCE RACING</span>
+          </div>
+          <span class="status-pill valid" id="cred-status">CREDENTIAL CONFIRMED</span>
+        </div>
+        <div class="verify-body">
+          <div class="pass-tag">OFFICIAL SIMULATOR PASS</div>
+          <div class="pass-number" id="v-pass">FR26-SIM-00000</div>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Pilot Name</span>
+              <span class="detail-value" id="v-name">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">College / Organization</span>
+              <span class="detail-value" id="v-org">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Mobile Number</span>
+              <span class="detail-value" id="v-phone">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Email Address</span>
+              <span class="detail-value" id="v-email">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Event Venue</span>
+              <span class="detail-value">Central Workshop, KITS Warangal</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Date &amp; Time</span>
+              <span class="detail-value">31 October 2026</span>
+            </div>
+          </div>
+
+          <div class="payment-section">
+            <div class="payment-header">
+              <h3 style="font-size: 1.3rem; margin: 0;">PAYMENT VERIFICATION (₹99)</h3>
+              <span class="payment-badge" id="v-payment-badge">PENDING</span>
+            </div>
+
+            <!-- Uploaded Screenshot View -->
+            <div id="screenshot-view" style="display:none;">
+              <p class="muted" style="font-size:.875rem;">Verified payment screenshot attached to participant record in Google Drive:</p>
+              <div class="screenshot-frame">
+                <img id="v-screenshot-img" src="" alt="Payment Screenshot">
+              </div>
+              <div class="screenshot-actions">
+                <a id="v-drive-link" href="#" target="_blank" class="btn secondary" style="min-height:44px;font-size:.875rem;">Open Full Resolution in Drive &rarr;</a>
+                <button type="button" class="btn secondary" id="reupload-btn" style="min-height:44px;font-size:.875rem;">Update Screenshot</button>
+              </div>
+            </div>
+
+            <!-- Upload Box (if not yet uploaded or re-uploading) -->
+            <div id="upload-view" style="display:none;">
+              <div class="upload-box">
+                <p style="font-weight:700; margin-bottom: 8px;">Upload Payment Screenshot</p>
+                <p class="muted" style="font-size:.875rem; margin-bottom: 16px;">Pay ₹99 using the pit lane QR code, then attach the screenshot here for immediate trackside sign-off.</p>
+                <input type="file" id="proof-file" accept="image/*" class="file-input">
+                <button type="button" class="btn" id="browse-btn">Select Screenshot / Photo &rarr;</button>
+                <p id="upload-status" class="muted" style="font-size:.813rem; margin-top: 12px;"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVxjDeHqt0u7xr-6PG0W64NIC8fY78wH9wPjdM9uEVInca7G3VKbMaRr2FLaGLUN6s/exec";
+      const params = new URLSearchParams(window.location.search);
+      const passParam = params.get('pass') || '';
+
+      const searchInput = document.getElementById('pass-input');
+      const searchBtn = document.getElementById('search-btn');
+      const loadingEl = document.getElementById('loading');
+      const notFoundEl = document.getElementById('not-found');
+      const resultCard = document.getElementById('result-card');
+
+      const vPass = document.getElementById('v-pass');
+      const vName = document.getElementById('v-name');
+      const vOrg = document.getElementById('v-org');
+      const vPhone = document.getElementById('v-phone');
+      const vEmail = document.getElementById('v-email');
+      const vPaymentBadge = document.getElementById('v-payment-badge');
+      const screenshotView = document.getElementById('screenshot-view');
+      const uploadView = document.getElementById('upload-view');
+      const screenshotImg = document.getElementById('v-screenshot-img');
+      const driveLink = document.getElementById('v-drive-link');
+      const browseBtn = document.getElementById('browse-btn');
+      const fileInput = document.getElementById('proof-file');
+      const uploadStatus = document.getElementById('upload-status');
+      const reuploadBtn = document.getElementById('reupload-btn');
+
+      let currentPass = '';
+
+      if (passParam) {
+        searchInput.value = passParam;
+        lookup(passParam);
+      }
+
+      searchBtn.addEventListener('click', () => {
+        const val = searchInput.value.trim();
+        if (val) lookup(val);
+      });
+
+      searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = searchInput.value.trim();
+          if (val) lookup(val);
+        }
+      });
+
+      browseBtn.addEventListener('click', () => fileInput.click());
+      reuploadBtn.addEventListener('click', () => {
+        screenshotView.style.display = 'none';
+        uploadView.style.display = 'block';
+      });
+
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        uploadStatus.textContent = 'Compressing and uploading image...';
+        browseBtn.disabled = true;
+
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const base64Data = reader.result;
+          try {
+            uploadStatus.textContent = 'Saving to Google Drive & updating Master Sheet...';
+            // Send to Google Apps Script
+            const res = await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({
+                action: 'upload_screenshot',
+                passId: currentPass,
+                screenshotBase64: base64Data
+              })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+              uploadStatus.textContent = 'Upload complete!';
+              browseBtn.disabled = false;
+              lookup(currentPass);
+            } else {
+              throw new Error(data.error || 'Upload failed');
+            }
+          } catch (err) {
+            uploadStatus.textContent = 'Error: ' + err.message + '. Please retry.';
+            browseBtn.disabled = false;
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+
+      async function lookup(pass) {
+        currentPass = pass;
+        loadingEl.style.display = 'block';
+        notFoundEl.style.display = 'none';
+        resultCard.style.display = 'none';
+
+        try {
+          // Attempt 1: Cloudflare worker API
+          let res = await fetch('/api/verify?pass=' + encodeURIComponent(pass)).catch(() => null);
+          let data = null;
+          if (res && res.ok) {
+            data = await res.json();
+          }
+
+          // Attempt 2: Fallback direct to Google Apps Script
+          if (!data || data.status === 'not_found' || !data.ok && data.status !== 'found') {
+            const scriptRes = await fetch(APPS_SCRIPT_URL + '?action=verify&pass=' + encodeURIComponent(pass));
+            if (scriptRes.ok) {
+              data = await scriptRes.json();
+            }
+          }
+
+          loadingEl.style.display = 'none';
+
+          if (data && (data.status === 'found' || data.ok)) {
+            const rec = data.record || data;
+            vPass.textContent = rec.passId || pass;
+            vName.textContent = rec.name || 'Formula Pilot';
+            vOrg.textContent = rec.organization || rec.rollNumber || 'KITS Warangal';
+            vPhone.textContent = rec.phone || 'N/A';
+            vEmail.textContent = rec.email || 'N/A';
+
+            const hasProof = !!(rec.driveUrl || rec.screenshotUrl);
+            if (hasProof) {
+              vPaymentBadge.textContent = 'PAYMENT VERIFIED';
+              vPaymentBadge.className = 'payment-badge uploaded';
+              screenshotImg.src = rec.driveUrl || rec.screenshotUrl;
+              driveLink.href = rec.driveUrl || rec.screenshotUrl;
+              screenshotView.style.display = 'block';
+              uploadView.style.display = 'none';
+            } else {
+              vPaymentBadge.textContent = 'PROOF PENDING';
+              vPaymentBadge.className = 'payment-badge pending';
+              screenshotView.style.display = 'none';
+              uploadView.style.display = 'block';
+            }
+
+            resultCard.style.display = 'block';
+          } else {
+            notFoundEl.style.display = 'block';
+          }
+        } catch (err) {
+          loadingEl.style.display = 'none';
+          notFoundEl.style.display = 'block';
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

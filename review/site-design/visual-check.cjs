@@ -1,0 +1,3 @@
+// Dev-only visual check. Playwright is NOT a project dependency; point PLAYWRIGHT_PATH at any existing install.
+const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
+(async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage();for(const width of [1440,390,320]){await page.setViewportSize({width,height:900});await page.goto('http://localhost:8791/');await page.waitForTimeout(600);await page.screenshot({path:`review/site-design/home-${width}.png`});}await page.setViewportSize({width:1440,height:1000});await page.goto('http://localhost:8791/campaign.html');await page.screenshot({path:'review/site-design/campaign-desktop.png'});await browser.close()})()

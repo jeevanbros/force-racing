@@ -1,0 +1,338 @@
+{
+  "vehicles": [
+    {
+      "name": "FR 26",
+      "details": [
+        "SUPRA SAE INDIA 2026"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/supra26-bic.jpeg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "FR 19",
+      "details": [
+        "FORMULA BHARAT 2020",
+        "SUPRA SAE INDIA 2019",
+        "FFS FMAE 2019"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/fr19.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "FR 18",
+      "details": [
+        "FFS FMAE 2018"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/ffs18.png"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "FR 17",
+      "details": [
+        "FORMULA BHARAT 2017",
+        "SAE SUPRA INDIA 2017",
+        "FFS FMAE 2017"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/fr17.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "FR 16",
+      "details": [
+        "SUPRA SAE INDIA 2016"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/fr16.jpeg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "LEGIONS' F1",
+      "details": [
+        "SAE SUPRA INDIA 2012"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/legions12.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "KART 3",
+      "details": [
+        "INDIAN KARTING RACE 2024"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/ikr.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "KART 2",
+      "details": [
+        "NEKC 2020"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/kart2.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "KART 1",
+      "details": [
+        "NEKC 2018",
+        "NEKC 2019"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/kart1.png"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "RATHAM",
+      "details": [
+        "EFFI-CARS 2015"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/ratham.jpeg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "EFFICYCLE",
+      "details": [
+        "SAE NIS EFFICYCLE 2017"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/efficycle.jpeg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "PHOENIX RACING",
+      "details": [
+        "SAE NIS EFFICYCLE 2015"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/phoenix.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "ASHWASENA",
+      "details": [
+        "SAE NIS EFFICYCLE 2013"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/ashwasena.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "TERRANAUT",
+      "details": [
+        "SAE BAJA INDIA 2011"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/baja11.jpg"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    },
+    {
+      "name": "MAIDEN MOB",
+      "details": [
+        "SAE BAJA INDIA 2010"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/baja10.png"
+      ],
+      "source": "https://www.forceracing.in/cars.html"
+    }
+  ],
+  "team": [
+    {
+      "name": "DHANUSH",
+      "details": [
+        "CAPTAIN",
+        "STEERING & WHEELS"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "ARUN",
+      "details": [
+        "VICE-CAPTAIN",
+        "POWER-TRAIN"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "SOHAIL",
+      "details": [
+        "TEAM MANAGER",
+        "CHASSIS"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "HANUMANTH",
+      "details": [
+        "CHASSIS"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "JEEVAN",
+      "details": [
+        "CHASSIS",
+        "LOGISTICS"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "NAVYA",
+      "details": [
+        "CHASSIS"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "J HARSHA",
+      "details": [
+        "SUSPENSION"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "PRASHANTH",
+      "details": [
+        "SUSPENSION"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "KARTHIK",
+      "details": [
+        "POWER-TRAIN"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "RAKESH",
+      "details": [
+        "POWER-TRAIN"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "DHANYA",
+      "details": [
+        "PUBLIC RELATIONS",
+        "POWER-TRAIN"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "MAHIDHAR",
+      "details": [
+        "BRAKES",
+        "FINANCE"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "P HARSHA",
+      "details": [
+        "BRAKES"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "RUTHVIK",
+      "details": [
+        "STEERING & WHEELS"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    },
+    {
+      "name": "ASHISH",
+      "details": [
+        "SOCIAL MEDIA"
+      ],
+      "images": [
+        "https://www.forceracing.in/images/user.jpg"
+      ],
+      "source": "https://www.forceracing.in/team.html"
+    }
+  ],
+  "partner_images": [
+    "https://www.forceracing.in/images/ANSYS.png",
+    "https://www.forceracing.in/images/solidworks.jpg",
+    "https://www.forceracing.in/images/lotus.jpg",
+    "https://www.forceracing.in/images/ktm.png",
+    "https://www.forceracing.in/images/Hoosier.png",
+    "https://www.forceracing.in/images/wilwood.png",
+    "https://www.forceracing.in/images/burnout.png",
+    "https://www.forceracing.in/images/ASAP.png",
+    "https://www.forceracing.in/images/fc.jpg",
+    "https://www.forceracing.in/images/sr.png",
+    "https://www.forceracing.in/images/rajput.jpg",
+    "https://www.forceracing.in/images/Composites.jpg",
+    "https://www.forceracing.in/images/3dfy.png"
+  ],
+  "external_links": [
+    "https://www.instagram.com/force.racing?igsh=MXI6cGRnYjA0cGE=",
+    "https://www.facebook.com/forceracingkitsw/",
+    "https://youtube.com/@forceracing8847?si=3Ki2roWmQvvdFWp-",
+    "https://www.linkedin.com/company/force-racing/"
+  ]
+}

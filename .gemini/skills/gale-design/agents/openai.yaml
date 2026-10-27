@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gale Design"
+  short_description: "Craft rules and the pre-show check for client sites"
+  default_prompt: "Use $gale-design. Review this client's site against the rules and run check-site before I show it."

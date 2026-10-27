@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "force-racing",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-27",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": { "directory": "./site", "binding": "ASSETS", "run_worker_first": true },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "force-racing",
+    // Local-only placeholder. Replace with the ID returned by your own D1 create command before deployment.
+    "database_id": "926d70b4-87fe-4214-981e-89c4109bc0fe",
+    "migrations_dir": "migrations"
+  }],
+  "vars": {
+    "LOCAL_DEV": "false",
+    "TELEGRAM_MOCK": "false",
+    "TURNSTILE_SITE_KEY": "",
+    "GOOGLE_SHEETS_WEBHOOK_URL": "https://script.google.com/macros/s/AKfycbxVxjDeHqt0u7xr-6PG0W64NIC8fY78wH9wPjdM9uEVInca7G3VKbMaRr2FLaGLUN6s/exec",
+    "TELEGRAM_BOT_TOKEN": "9124165997:AAF66CdAvJwOjC0L1WPX27Tz0hLP-rRBvwo",
+    "SESSION_SECRET": "e460a105693083b8c354778f2abf94f278393c0988d02084d8fc96b7ad43963b",
+    "ADMIN_PASSWORD": "Fr!3559e6e1b2d8a55f9f91c1cd84b9445164a50e8ccac08d435e805a4006a2b982",
+    "TELEGRAM_WEBHOOK_SECRET": "3c08e1a52f06687ef988e40d9e6e4bf0af3d02f1dfd515e431d3f40b86498e5b"
+  },
+  "triggers": { "crons": ["*/2 * * * *"] },
+  "observability": { "enabled": false },
+  "dev": { "port": 8787, "local_protocol": "http" }
+}

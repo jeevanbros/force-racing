@@ -1,0 +1,30 @@
+{
+  "verified_at": "2026-10-27T15:55:54.225081+00:00",
+  "original_hashes_checked": 71,
+  "missing_original_files": [],
+  "hash_mismatches": [],
+  "unvisited_eligible_references": [],
+  "missing_mirror_files": [],
+  "dangling_fragments": [],
+  "unavailable_resources": [
+    {
+      "url": "https://www.forceracing.in/robots.txt",
+      "status": 404,
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "local_references_checked": 219,
+  "broken_mirror_references": [],
+  "remaining_remote_rendering_assets": [],
+  "html_urls": [
+    "https://www.forceracing.in/",
+    "https://www.forceracing.in/index.html",
+    "https://www.forceracing.in/cars.html",
+    "https://www.forceracing.in/team.html",
+    "https://www.forceracing.in/support.html",
+    "https://www.forceracing.in/contact.html"
+  ],
+  "image_count": 36,
+  "graph_complete": true,
+  "archive_integrity_pass": true
+}

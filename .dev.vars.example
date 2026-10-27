@@ -1,0 +1,15 @@
+# Run npm run setup:local to generate ignored local-only credentials.
+# These placeholders are deliberately unusable. Never use LOCAL_DEV=true in production.
+LOCAL_DEV=true
+TELEGRAM_MOCK=true
+ADMIN_PASSWORD=REPLACE_WITH_A_RANDOM_24_CHARACTER_PASSWORD
+SESSION_SECRET=REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS
+GOOGLE_FORMS_SECRET=REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS
+TELEGRAM_WEBHOOK_SECRET=REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS
+# Local testing only: simulate a failing Telegram API to verify durable retries.
+# TELEGRAM_MOCK_FAIL=true
+# Production secrets, set with npx wrangler secret put NAME (not in public config):
+# TELEGRAM_BOT_TOKEN=
+# TURNSTILE_SECRET_KEY=
+# Public key only; configure the deployed workers.dev hostname in Turnstile.
+TURNSTILE_SITE_KEY=
