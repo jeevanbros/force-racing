@@ -85,7 +85,7 @@ try {
   const key = crypto.randomUUID();
   const reg = { type: 'registration', name: 'Smoke Tester', email: 'smoke@example.com', phone: '+91 90000 00000', organization: 'KITSW', message: '', consent: true, website: '', idempotencyKey: key };
   const submit1 = await post('/api/submissions', reg);
-  check('registration stored, 201 with FR- reference', submit1.status === 201 && /^FR-/.test(submit1.data.reference || ''), JSON.stringify(submit1.data));
+  check('registration stored, 201 with FR- reference', submit1.status === 201 && /^FR(?:26)?-/.test(submit1.data.reference || ''), JSON.stringify(submit1.data));
   const submit2 = await post('/api/submissions', reg);
   check('idempotent retry returns same reference', submit2.status === 201 && submit2.data.reference === submit1.data.reference);
   const conflict = await post('/api/submissions', { ...reg, name: 'Changed Name' });

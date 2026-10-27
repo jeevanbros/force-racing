@@ -50,41 +50,16 @@
     const hero = document.querySelector('[data-home-hero]');
     if (hero) {
       hero.dataset.campaignActive = String(on);
-      hero.querySelector('[data-home-eyebrow]').textContent = on ? `${campaign.programme || 'Campus event'} · KITS Warangal` : 'Formula Student · KITS Warangal';
-      hero.querySelector('[data-home-meta]').textContent = on ? `${readableDate(campaign.date)} · ${campaign.venue}` : 'Student built. Race driven.';
-      const title = hero.querySelector('[data-home-title]');
-      title.replaceChildren();
-      if (on) {
-        const words = String(campaign.title).toUpperCase().split(' ');
-        const emphasis = document.createElement('span'); emphasis.textContent = `${words.pop()}.`;
-        title.append(`${words.join(' ')} `, emphasis);
-      } else { title.innerHTML = 'DREAM. BUILD. <span>RACE.</span>'; }
-      const picture = hero.querySelector('[data-home-picture]');
-      const img = hero.querySelector('[data-home-artwork]');
-      img.src = on ? campaign.artwork : 'assets/images/hero-landscape.webp';
-      img.alt = on ? campaign.artworkAlt || 'Campaign concept artwork for sim racing.' : 'Force Racing FR 26 on the pit lane at Buddh International Circuit.';
-      const source = picture.querySelector('source');
-      source.srcset = on ? campaign.artworkMobile || campaign.artwork : 'assets/images/hero-landscape.webp';
-      const description = hero.querySelector('[data-home-description]');
-      description.textContent = on ? `Your turn at the wheel. ${campaign.fee}.` : 'From a workshop in Warangal. To a world of possibility.';
       const cta = hero.querySelector('[data-home-cta]');
-      cta.href = on ? 'campaign.html#register' : 'cars.html';
-      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      arrow.setAttribute('class', 'icon-arrow');
-      arrow.setAttribute('width', '15');
-      arrow.setAttribute('height', '15');
-      arrow.setAttribute('viewBox', '0 0 16 16');
-      arrow.setAttribute('fill', 'none');
-      arrow.setAttribute('stroke', 'currentColor');
-      arrow.setAttribute('stroke-width', '2.2');
-      arrow.setAttribute('stroke-linecap', 'round');
-      arrow.setAttribute('stroke-linejoin', 'round');
-      arrow.setAttribute('aria-hidden', 'true');
-      const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      arrowPath.setAttribute('d', 'M3.5 12.5L12.5 3.5M12.5 3.5H5.5M12.5 3.5V10.5');
-      arrow.appendChild(arrowPath);
-      cta.replaceChildren(on ? campaign.cta || 'Explore & register' : 'Meet the machines', arrow);
-      hero.querySelector('[data-home-artwork-label]').textContent = on ? campaign.artworkLabel || 'Campaign concept artwork' : 'FR 26 / SUPRA SAE INDIA 2026';
+      if (cta) {
+        if (on) {
+          cta.href = '#event';
+          cta.innerHTML = '<svg class="icon-bolt" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block;vertical-align:-2px;margin-right:6px;" aria-hidden="true"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.08-.14C8.56 10.9 11.5 5.5 13 2h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C14.86 13.9 12 19.5 11 21z"/></svg> F1 Sim Racing Event <span class="hero-btn-pill">' + (campaign.programme || 'SUMSHODHINI ’26') + '</span>';
+        } else {
+          cta.href = 'cars.html';
+          cta.innerHTML = 'Explore Fleet <svg class="icon-arrow" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12.5L12.5 3.5M12.5 3.5H5.5M12.5 3.5V10.5"/></svg>';
+        }
+      }
     }
     document.querySelectorAll('[data-campaign-cta]').forEach(el => { el.textContent = campaign.cta || 'Register for sim racing'; });
     document.querySelectorAll('[data-campaign-poster]').forEach(el => {

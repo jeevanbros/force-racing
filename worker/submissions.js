@@ -3,14 +3,14 @@ import { settings, readiness, campaignState } from './settings.js';
 import { deliverDue } from './telegram.js';
 
 export function validateSubmission(data) {
-  if (!['contact', 'sponsor', 'donate', 'registration'].includes(data.type)) throw new HttpError(400, 'Choose a valid submission type.');
+  if (!['contact', 'sponsor', 'donate', 'registration', 'recruitment'].includes(data.type)) throw new HttpError(400, 'Choose a valid submission type.');
   if (data.consent !== true) throw new HttpError(400, 'Consent is required to send this form.');
   if (data.website !== '' && data.website !== undefined) throw new HttpError(400, 'The form could not be accepted.');
   const name = string(data.name, 'Name', 100, true);
   const address = email(data.email);
-  const phone = string(data.phone, 'Phone', 40, data.type === 'registration');
+  const phone = string(data.phone, 'Phone', 40, ['registration', 'recruitment'].includes(data.type));
   if (phone && (!/^[+\d() .-]+$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 18)) throw new HttpError(400, 'Enter a valid phone number.');
-  const organization = string(data.organization, 'Organisation / college', 160, data.type === 'registration');
+  const organization = string(data.organization, 'Organisation / college', 160, ['registration', 'recruitment'].includes(data.type));
   const message = string(data.message, 'Message', 4000, data.type !== 'registration');
   const idempotencyKey = string(data.idempotencyKey, 'Request key', 128, true);
   if (!/^[A-Za-z0-9_-]{16,128}$/.test(idempotencyKey)) throw new HttpError(400, 'Use a valid request key.');
@@ -41,7 +41,9 @@ export async function existing(env, source, key, payloadHash) {
 }
 
 export async function store(env, record, payloadHash) {
-  const id = crypto.randomUUID(), reference = 'FR-' + random().slice(0, 12).toUpperCase(), time = now();
+  const id = crypto.randomUUID(), time = now();
+  const prefix = record.type === 'registration' ? 'FR26-SIM-' : record.type === 'recruitment' ? 'FR26-REC-' : record.type === 'sponsor' ? 'FR26-SPN-' : 'FR-';
+  const reference = prefix + random().slice(0, 8).toUpperCase();
   // D1 batch is transactional: either the submission and its outbox both persist, or neither does.
   await env.DB.batch([
     stmt(env, `INSERT INTO submissions(id,reference,source,type,name,email,phone,organization,message,answers_json,consent,external_id,idempotency_key,payload_hash,submitted_at,created_at,updated_at)
@@ -65,6 +67,7 @@ export async function forwardToGoogleSheets(env, record) {
     let eventSheet = 'General_Submissions';
     if (record.type === 'registration') eventSheet = 'F1_Simulator';
     else if (record.type === 'sponsor') eventSheet = 'Sponsorships';
+    else if (record.type === 'recruitment') eventSheet = 'Recruitments';
     else if (record.type === 'donate') eventSheet = 'Contributions';
     else if (record.type === 'contact') eventSheet = 'Inquiries';
 
