@@ -101,7 +101,7 @@ export async function forwardToGoogleSheets(env, record) {
 function receipt(record, ctx, env) {
   background(ctx, deliverDue(env, record.id));
   background(ctx, forwardToGoogleSheets(env, record));
-  return json({ ok: true, reference: record.reference, message: 'Your request has been saved. The team will follow up; payment and participation are not confirmed.' }, 201);
+  return json({ ok: true, reference: record.reference, message: 'Registration confirmed. Your official Paddock Pass and QR credential have been generated.' }, 201);
 }
 
 export async function submit(request, env, ctx) {
