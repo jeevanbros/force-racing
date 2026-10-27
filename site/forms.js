@@ -1,6 +1,6 @@
 /* Public forms: same-origin API with Google Apps Script fallback. No API secrets. */
 (() => {
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxVxjDeHqt0u7xr-6PG0W64NIC8fY78wH9wPjdM9uEVInca7G3VKbMaRr2FLaGLUN6s/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyD9CNFpiQo41pQn1KARMFg1G03iMlkfumR6hFYWBZpCDDAahlCFej90HHjMrojlwtw/exec';
   const forms = [...document.querySelectorAll('[data-form]')];
   const states = new Map(forms.map(form => [form, { enabled: true, busy: false, key: null, token: '', widget: null }]));
 

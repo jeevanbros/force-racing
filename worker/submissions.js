@@ -60,7 +60,7 @@ export async function store(env, record, payloadHash) {
 }
 
 export async function forwardToGoogleSheets(env, record) {
-  const url = env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxVxjDeHqt0u7xr-6PG0W64NIC8fY78wH9wPjdM9uEVInca7G3VKbMaRr2FLaGLUN6s/exec';
+  const url = env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbyD9CNFpiQo41pQn1KARMFg1G03iMlkfumR6hFYWBZpCDDAahlCFej90HHjMrojlwtw/exec';
   if (!url) return;
   try {
     const config = await settings(env);
