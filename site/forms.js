@@ -12,7 +12,7 @@
     if (focus) el.focus();
   };
 
-  const fields = form => ['name', 'email', 'phone', 'organization', 'message', 'consent'].map(name => form.elements.namedItem(name));
+  const fields = form => ['name', 'email', 'phone', 'organization', 'message', 'consent', 'screenshot'].map(name => form.elements.namedItem(name));
 
   function clearErrors(form) {
     fields(form).forEach(field => {
@@ -42,7 +42,7 @@
       field.setAttribute('aria-invalid', 'true');
       const hint = document.getElementById(`${field.id}-error`);
       if (hint) {
-        hint.textContent = `Error: ${message}`;
+        hint.textContent = message;
         hint.hidden = false;
       }
       errors.push({ field, message });
@@ -53,11 +53,13 @@
     };
 
     check('name', 'Enter your name.', !value('name'));
-    check('email', 'Enter a valid email address (mandatory).', !value('email') || (form.elements.email && form.elements.email.validity.typeMismatch) || value('email').length > 200);
-    check('phone', 'Enter your mobile number with 7 to 15 digits (mandatory).', !value('phone') || !/^\+?[\d\s().-]+$/.test(value('phone')) || value('phone').replace(/\D/g, '').length < 7 || value('phone').replace(/\D/g, '').length > 15);
-    check('organization', 'Enter your college, institution or organization (mandatory).', !value('organization'));
+    check('email', 'Enter a valid email address.', !value('email') || (form.elements.email && form.elements.email.validity.typeMismatch) || value('email').length > 200);
+    check('phone', 'Enter your mobile number with 10 digits.', !value('phone') || !/^\+?[\d\s().-]+$/.test(value('phone')) || value('phone').replace(/\D/g, '').length !== 10);
+    check('organization', registration || form.dataset.form === 'recruitment' ? 'Enter your college, institution or roll number.' : 'Enter your company or organization.', !value('organization'));
     check('message', 'Enter a message for the team.', !registration && !value('message'));
-    check('consent', 'Please agree to the privacy notice to send this request.', form.elements.consent && !form.elements.consent.checked);
+    const fileInput = form.querySelector('input[type=file]');
+    check('screenshot', 'Please upload your UPI payment screenshot to register.', registration && fileInput && (!fileInput.files || !fileInput.files.length));
+    check('consent', registration ? 'Please agree to the event registration terms.' : 'Please agree to the privacy notice to send this request.', form.elements.consent && !form.elements.consent.checked);
 
     if (!errors.length) return true;
     const summary = form.querySelector('.error-summary');
@@ -124,6 +126,7 @@
       status(form, 'Transmitting to race control…');
 
       let successData = null;
+      let endpointMissing = false;
 
       // Try worker API first
       try {
@@ -136,11 +139,15 @@
         clearTimeout(timer);
         if (response.ok) {
           successData = await response.json();
+        } else if ([404, 405, 501].includes(response.status)) {
+          // A static file server (tools/serve.py) has no /api/submissions. That is a preview,
+          // not a failure: never relay a demo submission to the live Apps Script.
+          endpointMissing = true;
         }
       } catch (err) {}
 
-      // Fallback directly to Google Apps Script if worker endpoint failed or local preview
-      if (!successData || !successData.ok) {
+      // Fallback directly to Google Apps Script only if the worker endpoint failed at runtime
+      if (!endpointMissing && (!successData || !successData.ok)) {
         try {
           const scriptRes = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -162,23 +169,32 @@
         form.reset(); clearErrors(form); state.key = null;
         if (form.dataset.form === 'registration') {
           const verifyLink = `verify.html?pass=${encodeURIComponent(ref)}`;
-          status(form, `<strong>🏁 REGISTRATION SUCCESSFUL!</strong><br>Your Official Pilot Pass: <span style="font-family:monospace;font-size:1.2rem;color:#00f0ff;font-weight:900;">${ref}</span><br>A confirmation email with your scannable QR Pass has been dispatched to your email address.<br><a href="${verifyLink}" style="display:inline-block;margin-top:8px;color:#fff;font-weight:bold;text-decoration:underline;">View Trackside Credential & Upload Payment Screenshot &rarr;</a>`, 'success', true);
+          status(form, `<strong>🏁 REGISTRATION SUCCESSFUL!</strong><br>Your Official Pilot Pass: <span style="font-family:monospace;font-size:1.2rem;color:var(--gp-accent-text);font-weight:900;">${ref}</span><br>A confirmation email with your scannable QR Pass has been dispatched to your email address.<br><a href="${verifyLink}" style="display:inline-block;margin-top:8px;color:var(--gp-ink);font-weight:bold;text-decoration:underline;">View Trackside Credential <svg class="icon-arrow" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12.5L12.5 3.5M12.5 3.5H5.5M12.5 3.5V10.5"/></svg></a>`, 'success', true);
         } else if (form.dataset.form === 'recruitment') {
-          status(form, `<strong>🏁 APPLICATION TRANSMITTED!</strong><br>Candidate Reference: <span style="font-family:monospace;font-size:1.2rem;color:#ff1801;font-weight:900;">${ref}</span><br>A welcoming email with your Interview Pass and preparation guidelines has been dispatched to your email. Subsystem leads will contact you shortly for your Central Workshop interview.`, 'success', true);
+          status(form, `<strong>🏁 APPLICATION TRANSMITTED!</strong><br>Candidate Reference: <span style="font-family:monospace;font-size:1.2rem;color:var(--gp-accent-text);font-weight:900;">${ref}</span><br>A welcoming email with your Interview Pass and preparation guidelines has been dispatched to your email. Subsystem leads will contact you shortly for your Central Workshop interview.`, 'success', true);
         } else {
           status(form, `Your enquiry has been received. Reference: <strong>${ref}</strong>. The Force Racing management team will follow up promptly.`, 'success', true);
         }
+      } else if (endpointMissing) {
+        status(form, '<strong>Static preview.</strong> This page is being served without the submissions API, so nothing was sent. Run <code>npm run dev</code> for the local Worker, or use the live site to submit for real.', 'error', true);
       } else {
         status(form, 'Submission failed. Please check your network connection or contact team organizers directly at <a href="mailto:team.force.racing.kitsw@gmail.com">team.force.racing.kitsw@gmail.com</a>.', 'error', true);
       }
     });
   }
 
-  window.selectSponsorshipTier = function(tier) {
-    const select = document.getElementById('sponsor-tier');
+  // A direct visit to #sponsor still opens the proposal form.
+  if (location.hash === '#sponsor') {
+    const direct = document.getElementById('sponsor');
+    if (direct) { direct.hidden = false; direct.style.display = ''; }
+  }
+
+  window.selectSponsorshipTier = function(tier) {    const select = document.getElementById('sponsor-tier');
     if (select) select.value = tier;
     const formSection = document.getElementById('sponsor');
     if (formSection) {
+      formSection.hidden = false;
+      formSection.style.display = '';
       const slug = tier.toLowerCase().includes('title') ? 'title' :
                    tier.toLowerCase().includes('gold') ? 'gold' :
                    tier.toLowerCase().includes('silver') ? 'silver' :
@@ -189,16 +205,16 @@
       if (heading && eyebrow) {
         if (slug === 'title') {
           eyebrow.textContent = '👑 VIP Executive Partnership // Exclusive Protocol';
-          heading.innerHTML = 'PARTNER WITH<br><span style="color:#ff1801;text-shadow:0 0 20px rgba(255,24,1,0.6)">TITLE VIP.</span>';
+          heading.innerHTML = 'PARTNER WITH<br><span class="tier-word">TITLE VIP.</span>';
         } else if (slug === 'gold') {
           eyebrow.textContent = '🏆 Championship Gold Partner // Aerodynamics Suite';
-          heading.innerHTML = 'PARTNER WITH<br><span style="color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.5)">GOLD TIER.</span>';
+          heading.innerHTML = 'PARTNER WITH<br><span class="tier-word">GOLD TIER.</span>';
         } else if (slug === 'silver') {
           eyebrow.textContent = '⚡ Championship Silver Partner // Chassis Suite';
-          heading.innerHTML = 'PARTNER WITH<br><span style="color:#e0e0e0;text-shadow:0 0 20px rgba(220,220,220,0.5)">SILVER TIER.</span>';
+          heading.innerHTML = 'PARTNER WITH<br><span class="tier-word">SILVER TIER.</span>';
         } else if (slug === 'bronze') {
           eyebrow.textContent = '🛡️ Grassroots Patron Partner // Team Foundation';
-          heading.innerHTML = 'PARTNER WITH<br><span style="color:#cd7f32;text-shadow:0 0 20px rgba(205,127,50,0.5)">BRONZE TIER.</span>';
+          heading.innerHTML = 'PARTNER WITH<br><span class="tier-word">BRONZE TIER.</span>';
         }
       }
       formSection.scrollIntoView({ behavior: 'smooth' });

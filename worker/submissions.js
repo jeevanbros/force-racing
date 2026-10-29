@@ -11,11 +11,16 @@ export function validateSubmission(data) {
   const phone = string(data.phone, 'Phone', 40, ['registration', 'recruitment'].includes(data.type));
   if (phone && (!/^[+\d() .-]+$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 18)) throw new HttpError(400, 'Enter a valid phone number.');
   const organization = string(data.organization, 'Organisation / college', 160, ['registration', 'recruitment'].includes(data.type));
+  const tier = string(data.tier, 'Tier / Subsystem', 100, false);
   const message = string(data.message, 'Message', 4000, data.type !== 'registration');
   const idempotencyKey = string(data.idempotencyKey, 'Request key', 128, true);
   if (!/^[A-Za-z0-9_-]{16,128}$/.test(idempotencyKey)) throw new HttpError(400, 'Use a valid request key.');
   const turnstileToken = string(data.turnstileToken, 'Security check', 2048);
-  return { type: data.type, name, email: address, phone, organization, message, consent: true, idempotencyKey, turnstileToken };
+  const out = { type: data.type, name, email: address, phone, organization, tier, message, consent: true, idempotencyKey, turnstileToken };
+  if (typeof data.screenshotBase64 === 'string' && data.screenshotBase64) {
+    out.screenshotBase64 = data.screenshotBase64;
+  }
+  return out;
 }
 
 async function turnstile(env, request, token) {
@@ -44,11 +49,21 @@ export async function store(env, record, payloadHash) {
   const id = crypto.randomUUID(), time = now();
   const prefix = record.type === 'registration' ? 'FR26-SIM-' : record.type === 'recruitment' ? 'FR26-REC-' : record.type === 'sponsor' ? 'FR26-SPN-' : 'FR-';
   const reference = prefix + random().slice(0, 8).toUpperCase();
+  const dbType = record.type === 'recruitment' ? 'contact' : record.type;
+
+  let answersJson = null;
+  if (record.screenshotBase64 || record.tier) {
+    const existingAnswers = (typeof record.answers === 'object' && record.answers !== null) ? record.answers : {};
+    answersJson = JSON.stringify({ ...existingAnswers, screenshotBase64: record.screenshotBase64 || '', tier: record.tier || '' });
+  } else if (record.answers) {
+    answersJson = JSON.stringify(record.answers);
+  }
+
   // D1 batch is transactional: either the submission and its outbox both persist, or neither does.
   await env.DB.batch([
     stmt(env, `INSERT INTO submissions(id,reference,source,type,name,email,phone,organization,message,answers_json,consent,external_id,idempotency_key,payload_hash,submitted_at,created_at,updated_at)
       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING`,
-    id, reference, record.source, record.type, record.name || '', record.email || '', record.phone || '', record.organization || '', record.message || '', record.answers ? JSON.stringify(record.answers) : null,
+    id, reference, record.source, dbType, record.name || '', record.email || '', record.phone || '', record.organization || '', record.message || '', answersJson,
     record.consent ? 1 : 0, record.externalId || null, record.key, payloadHash, record.submittedAt || new Date().toISOString(), time, time),
     stmt(env, `INSERT INTO notification_jobs(id,submission_id,recipient_id,next_attempt_at,created_at)
       SELECT lower(hex(randomblob(16))),s.id,r.chat_id,?,? FROM submissions s CROSS JOIN recipients r
@@ -82,7 +97,9 @@ export async function forwardToGoogleSheets(env, record) {
       rollNumber: record.organization,
       email: record.email,
       phone: record.phone,
+      tier: record.tier,
       message: record.message,
+      screenshotBase64: record.screenshotBase64 || '',
       timestamp: record.submitted_at || new Date().toISOString(),
       sendEmail: config.gmailEnabled !== false,
       recipientEmail: config.contact?.email || 'team.force.racing.kitsw@gmail.com'
@@ -107,7 +124,7 @@ function receipt(record, ctx, env) {
 export async function submit(request, env, ctx) {
   sameOrigin(request);
   await rate(env, request, 'submission', 5, 600);
-  const data = validateSubmission(parseJSON(await readBody(request)));
+  const data = validateSubmission(parseJSON(await readBody(request, 2000000)));
   const { turnstileToken, idempotencyKey, ...fields } = data;
   const hash = await sha(JSON.stringify(fields));
   const prior = await existing(env, 'website', idempotencyKey, hash);

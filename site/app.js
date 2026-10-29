@@ -61,7 +61,7 @@
         }
       }
     }
-    document.querySelectorAll('[data-campaign-cta]').forEach(el => { el.textContent = campaign.cta || 'Register for sim racing'; });
+    document.querySelectorAll('[data-campaign-cta]').forEach(el => { el.textContent = campaign.cta || 'On-Spot Registration'; });
     document.querySelectorAll('[data-campaign-poster]').forEach(el => {
       el.hidden = !on || !campaign.poster;
       if (campaign.poster) {
@@ -72,7 +72,15 @@
     document.querySelectorAll('[data-campaign-heading]').forEach(title => {
       const words = String(campaign.title).toUpperCase().split(' ');
       const last = document.createElement('span'); last.textContent = `${words.pop()}.`;
-      title.replaceChildren(`${words.join(' ')} `, last);
+      const lead = words.join(' ');
+      if (lead.startsWith('F1')) {
+        const f = document.createElement('span');
+        f.className = 'f-char';
+        f.textContent = 'F';
+        title.replaceChildren(f, `1${lead.slice(2)} `, last);
+      } else {
+        title.replaceChildren(`${lead} `, last);
+      }
     });
     const content = document.querySelector('[data-campaign-content]');
     const inactive = document.querySelector('.campaign-inactive');
@@ -112,4 +120,109 @@
     get config() { return { ...campaign }; }
   };
   renderCampaign();
+
+  // Theme Toggle: Dark and Light Mode, remembered, with a token glide.
+  const THEME_KEY = 'force_theme';
+  const LEGACY_THEME_KEY = 'fr-theme';
+  const rootEl = document.documentElement;
+  const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const isLightTheme = () => rootEl.getAttribute('data-theme') === 'light';
+
+  const savedTheme = () => {
+    try {
+      const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem(LEGACY_THEME_KEY);
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch (e) {}
+    return null;
+  };
+
+  const syncThemeUI = (theme) => {
+    const light = theme === 'light';
+    document.querySelectorAll('.theme-toggle').forEach((btn) => {
+      const icon = btn.querySelector('.theme-icon');
+      const text = btn.querySelector('.theme-text');
+      if (icon) icon.textContent = String.fromCharCode(light ? 0x2600 : 0x263e);
+      if (text) text.textContent = light ? 'LIGHT' : 'DARK';
+      btn.setAttribute('aria-pressed', String(light));
+      const label = light ? 'Switch to dark mode' : 'Switch to light mode';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    });
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+      if ((m.getAttribute('media') || '').indexOf('light') !== -1) m.setAttribute('content', light ? '#f8fafc' : '#090b10');
+    });
+  };
+
+  let glowTimer = null;
+  const paintTheme = (theme, animate) => {
+    if (animate && !reduced()) {
+      rootEl.classList.add('theme-animating');
+      clearTimeout(glowTimer);
+      glowTimer = setTimeout(() => rootEl.classList.remove('theme-animating'), 640);
+    } else {
+      rootEl.classList.remove('theme-animating');
+    }
+    rootEl.setAttribute('data-theme', theme);
+    syncThemeUI(theme);
+  };
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.theme-toggle');
+    if (!btn) return;
+    e.preventDefault();
+    const next = isLightTheme() ? 'dark' : 'light';
+    paintTheme(next, true);
+    try { localStorage.setItem(THEME_KEY, next); } catch (err) {}
+  });
+
+  if (window.matchMedia) {
+    try {
+      const mq = window.matchMedia('(prefers-color-scheme: light)');
+      const onChange = (e) => { if (!savedTheme()) paintTheme(e.matches ? 'light' : 'dark', false); };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    } catch (e) {}
+  }
+
+  // The inline head script already set the attribute, so this only paints the label.
+  syncThemeUI(isLightTheme() ? 'light' : 'dark');
+
+  // Seamless navigation: cross-page fade and in-page anchor glide.
+  if (!reduced()) {
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      if (!href) return;
+
+      // In-page anchor: smooth scroll, then a short glow on the target.
+      if (href.charAt(0) === '#' && href.length > 1) {
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          target.classList.remove('target-highlighted');
+          void target.offsetWidth;
+          target.classList.add('target-highlighted');
+          try { history.pushState(null, '', href); } catch (err) {}
+        }
+        return;
+      }
+
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (a.target || a.hasAttribute('download')) return;
+      let url;
+      try { url = new URL(href, location.href); } catch (err) { return; }
+      if (url.origin !== location.origin) return;
+      // Modern browsers cross-fade the documents themselves.
+      if ('startViewTransition' in document) return;
+      e.preventDefault();
+      document.body.classList.add('page-exit');
+      setTimeout(() => { location.href = url.href; }, 170);
+    });
+
+    window.addEventListener('pageshow', () => {
+      document.body.classList.remove('page-exit');
+    });
+  }
 })();

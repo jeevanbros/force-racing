@@ -84,15 +84,15 @@ export function background(ctx, promise) {
 export function secure(response, request, { admin = false } = {}) {
   const copy = new Response(response.body, response);
   const csp = admin
-    ? "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: https:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
-    : "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com; frame-src https://www.google.com https://challenges.cloudflare.com; base-uri 'self'; form-action 'self' https://docs.google.com; frame-ancestors 'none'; object-src 'none'";
+    ? "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; img-src 'self' data: https:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+    : "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com https://script.google.com https://script.googleusercontent.com; frame-src https://www.google.com https://challenges.cloudflare.com; base-uri 'self'; form-action 'self' https://docs.google.com; frame-ancestors 'none'; object-src 'none'";
   copy.headers.set('Content-Security-Policy', csp);
   copy.headers.set('X-Content-Type-Options', 'nosniff');
   copy.headers.set('X-Frame-Options', 'DENY');
   copy.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  copy.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  copy.headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
   if (new URL(request.url).protocol === 'https:') copy.headers.set('Strict-Transport-Security', 'max-age=31536000');
-  if (admin || new URL(request.url).pathname.startsWith('/api/')) copy.headers.set('Cache-Control', 'no-store');
+  if (admin || new URL(request.url).pathname.startsWith('/api/') || new URL(request.url).pathname.startsWith('/verify') || new URL(request.url).pathname.endsWith('.css') || new URL(request.url).pathname.endsWith('.html')) copy.headers.set('Cache-Control', 'no-cache, must-revalidate');
   if (admin) copy.headers.set('X-Robots-Tag', 'noindex, nofollow');
   return copy;
 }

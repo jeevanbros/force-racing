@@ -1,0 +1,800 @@
+/* ==========================================================================
+   FORCE RACING // MODULAR SPONSORSHIP TIER MATRIX (SpaceX Engineering Standard)
+   Modular, hardware-accelerated, zero global token overrides, equal prestige.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Container & Grid Scoping
+   -------------------------------------------------------------------------- */
+#tiers .tier-grid,
+.sponsorship-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gp-space-5, 1.5rem);
+  margin-top: var(--gp-space-6, 2rem);
+  perspective: 1000px;
+}
+
+@media (max-width: 1080px) {
+  #tiers .tier-grid,
+  .sponsorship-tier-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--gp-space-4, 1.25rem);
+  }
+}
+
+@media (max-width: 640px) {
+  #tiers .tier-grid,
+  .sponsorship-tier-grid {
+    grid-template-columns: 1fr;
+    gap: var(--gp-space-4, 1.25rem);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Telemetry HUD Bar (Live Tier Status Strip)
+   -------------------------------------------------------------------------- */
+.fr-tier-hud-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gp-bg-sunk, #0e0f0f);
+  border: 1px solid var(--gp-line, #2c2e2e);
+  border-radius: var(--gp-radius-md, 6px);
+  padding: 10px 16px;
+  margin-bottom: var(--gp-space-4, 1.25rem);
+  font-family: var(--gp-font-mono, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace);
+  font-size: 0.813rem;
+  letter-spacing: 0.06em;
+  color: var(--gp-ink-2, #a4a7a7);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.fr-tier-hud-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gp-ink, #f4f1e9);
+}
+
+.fr-tier-hud-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d9231d;
+  box-shadow: 0 0 8px #d9231d;
+  animation: fr-hud-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fr-hud-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.fr-tier-hud-val {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 200ms ease;
+}
+
+/* --------------------------------------------------------------------------
+   Base Tier Card Architecture (Equal First-Class Experience)
+   -------------------------------------------------------------------------- */
+#tiers .tier-card,
+.fr-tier-card {
+  position: relative;
+  background: var(--gp-surface, #181919);
+  border: 1px solid var(--gp-line, #2c2e2e);
+  border-radius: var(--gp-radius-lg, 8px);
+  padding: var(--gp-space-6, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  overflow: hidden;
+  outline: none;
+  isolation: isolate;
+
+  /* Hardware accelerated transforms only */
+  transform: translateY(0) translateZ(0);
+  will-change: transform, box-shadow;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Card Header Elements */
+#tiers .tier-card .tier-badge,
+.fr-tier-card .tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--gp-font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: var(--gp-space-2, 0.5rem);
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: fit-content;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+#tiers .tier-card h3,
+.fr-tier-card h3 {
+  font-family: var(--gp-font-head, "Barlow Condensed", Impact, sans-serif);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin-top: 0;
+  margin-bottom: var(--gp-space-3, 0.75rem);
+  color: var(--gp-ink, #f4f1e9);
+  transition: color 200ms ease;
+}
+
+#tiers .tier-card .tier-desc,
+.fr-tier-card .tier-desc {
+  font-size: 0.938rem;
+  color: var(--gp-ink-2, #a4a7a7);
+  margin-bottom: var(--gp-space-4, 1rem);
+  line-height: 1.45;
+  min-height: 2.8em;
+}
+
+/* SVG Telemetry Gauges */
+#tiers .tier-gauge-wrap,
+.fr-tier-gauge-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-3, 0.75rem);
+  margin-bottom: var(--gp-space-5, 1.25rem);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--gp-line, #2c2e2e);
+  border-radius: var(--gp-radius-md, 6px);
+  transition: transform 220ms ease, border-color 220ms ease, background 220ms ease;
+}
+
+#tiers .tier-gauge-svg,
+.fr-tier-gauge-svg {
+  width: 74px;
+  height: 74px;
+  flex-shrink: 0;
+  transform: rotate(-90deg) translateZ(0);
+}
+
+#tiers .tier-gauge-svg circle,
+.fr-tier-gauge-svg circle {
+  fill: none;
+  stroke-width: 9;
+}
+
+#tiers .gauge-track,
+.fr-gauge-track {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+#tiers .gauge-seg,
+.fr-gauge-seg {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 800ms cubic-bezier(0.16, 1, 0.3, 1), stroke 250ms ease;
+}
+
+#tiers .gauge-center-text,
+.fr-gauge-center-text {
+  font-family: var(--gp-font-head, "Barlow Condensed", sans-serif);
+  font-size: 1.6rem;
+  font-weight: 800;
+  fill: var(--gp-ink, #f4f1e9);
+  text-anchor: middle;
+  dominant-baseline: central;
+  transform: rotate(90deg);
+  transform-origin: 60px 60px;
+}
+
+#tiers .gauge-sub-text,
+.fr-gauge-sub-text {
+  font-family: var(--gp-font-mono, monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  fill: var(--gp-ink-2, #a4a7a7);
+  text-anchor: middle;
+  dominant-baseline: central;
+  transform: rotate(90deg);
+  transform-origin: 60px 60px;
+}
+
+#tiers .tier-breakdown,
+.fr-tier-breakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#tiers .breakdown-row,
+.fr-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.77rem;
+  color: var(--gp-ink-2, #a4a7a7);
+}
+
+#tiers .breakdown-row strong,
+.fr-breakdown-row strong {
+  font-family: var(--gp-font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--gp-ink, #f4f1e9);
+}
+
+/* Perk Lists */
+#tiers .tier-perks,
+.fr-tier-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--gp-space-5, 1.25rem) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex-grow: 1;
+}
+
+#tiers .tier-perks li,
+.fr-tier-perks li {
+  font-size: 0.875rem;
+  color: var(--gp-ink-2, #c5c8c8);
+  padding-left: 22px;
+  position: relative;
+  line-height: 1.4;
+  transition: color 200ms ease;
+}
+
+#tiers .tier-perks li::before,
+.fr-tier-perks li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tier-accent, #cd7f32);
+  box-shadow: 0 0 6px var(--tier-accent, #cd7f32);
+  transition: transform 200ms ease;
+}
+
+/* --------------------------------------------------------------------------
+   Tactile Action Button (Inside Every Tier)
+   -------------------------------------------------------------------------- */
+#tiers .tier-btn,
+.fr-tier-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 12px 20px;
+  font-family: var(--gp-font-head, "Barlow Condensed", sans-serif);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--gp-radius-md, 4px);
+  cursor: pointer;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 160ms ease,
+              border-color 160ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#tiers .tier-btn .icon-arrow,
+.fr-tier-btn .icon-arrow {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#tiers .tier-card:hover .tier-btn .icon-arrow,
+.fr-tier-card:hover .fr-tier-btn .icon-arrow {
+  transform: translateX(4px);
+}
+
+/* --------------------------------------------------------------------------
+   Hardware-Accelerated Metallic Shimmer Sheen Layer
+   -------------------------------------------------------------------------- */
+.fr-tier-sheen {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transform: translateX(-100%) rotate(25deg) translateZ(0);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 40%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.03) 60%,
+    transparent 100%
+  );
+  transition: transform 650ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
+}
+
+#tiers .tier-card:hover .fr-tier-sheen,
+.fr-tier-card:hover .fr-tier-sheen {
+  opacity: 1;
+  transform: translateX(100%) rotate(25deg) translateZ(0);
+}
+
+/* --------------------------------------------------------------------------
+   Hover & Active Tactile Physics (Transform & Opacity Only)
+   -------------------------------------------------------------------------- */
+#tiers .tier-card:hover,
+.fr-tier-card:hover {
+  transform: translateY(-6px) translateZ(0);
+}
+
+#tiers .tier-card:active,
+.fr-tier-card:active {
+  transform: scale(0.98) translateZ(0);
+  transition-duration: 80ms;
+}
+
+/* Focus Visibility for Accessible Keyboard Navigation */
+#tiers .tier-card:focus-visible,
+.fr-tier-card:focus-visible {
+  outline: 2px solid var(--tier-accent, #cd7f32);
+  outline-offset: 4px;
+}
+
+/* Active Selected State Across All Tiers */
+#tiers .tier-card.is-selected,
+.fr-tier-card.is-selected {
+  transform: translateY(-4px) translateZ(0);
+  border-color: var(--tier-accent, #ffd700);
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.7),
+              0 0 24px var(--tier-glow, rgba(255, 215, 0, 0.25)),
+              inset 0 0 0 1px var(--tier-accent, #ffd700);
+}
+
+#tiers .tier-card.is-selected .tier-btn,
+.fr-tier-card.is-selected .fr-tier-btn {
+  box-shadow: 0 0 16px var(--tier-glow, rgba(255, 215, 0, 0.35));
+}
+
+#tiers .tier-card.is-selected .fr-tier-sheen,
+.fr-tier-card.is-selected .fr-tier-sheen {
+  opacity: 0.35;
+}
+
+/* Active Status Pill */
+.fr-tier-active-pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-family: var(--gp-font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--tier-accent, #cd7f32);
+  box-shadow: 0 0 10px var(--tier-glow, rgba(205, 127, 50, 0.5));
+  opacity: 0;
+  transform: translateY(-4px) scale(0.9) translateZ(0);
+  transition: opacity 200ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 3;
+}
+
+#tiers .tier-card.is-selected .fr-tier-active-pill,
+.fr-tier-card.is-selected .fr-tier-active-pill {
+  opacity: 1;
+  transform: translateY(0) scale(1) translateZ(0);
+}
+
+
+/* ==========================================================================
+   DISTINCT VISUAL IDENTITIES (Equally First-Class & Prestigious)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BRONZE PARTNER (Warm Burnished Bronze & Subtle Combustion Glow)
+   Never inferior: Rich burnished metallic patina, ember telemetry accents
+   -------------------------------------------------------------------------- */
+#tiers .tier-card[data-tier="bronze"],
+.fr-tier-card[data-tier="bronze"] {
+  --tier-accent: #cd7f32;
+  --tier-accent-light: #e59a5a;
+  --tier-glow: rgba(205, 127, 50, 0.35);
+  --tier-surface-gradient: linear-gradient(180deg, rgba(205, 127, 50, 0.08) 0%, rgba(24, 25, 25, 0.98) 45%);
+  background: var(--tier-surface-gradient);
+  border-color: rgba(205, 127, 50, 0.3);
+}
+
+#tiers .tier-card[data-tier="bronze"] .tier-badge {
+  color: #e59a5a;
+  border-color: rgba(205, 127, 50, 0.4);
+  background: rgba(205, 127, 50, 0.12);
+}
+
+#tiers .tier-card[data-tier="bronze"] .gauge-seg {
+  stroke: #cd7f32;
+  filter: drop-shadow(0 0 4px rgba(205, 127, 50, 0.5));
+}
+
+#tiers .tier-card[data-tier="bronze"] .gauge-center-text {
+  fill: #e59a5a;
+}
+
+#tiers .tier-card[data-tier="bronze"] .tier-btn {
+  background: linear-gradient(135deg, #cd7f32 0%, #a45a16 100%);
+  color: #ffffff;
+  border-color: #e59a5a;
+  box-shadow: 0 4px 14px rgba(205, 127, 50, 0.25);
+}
+
+#tiers .tier-card[data-tier="bronze"]:hover {
+  border-color: #cd7f32;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.65),
+              0 0 20px rgba(205, 127, 50, 0.28);
+}
+
+#tiers .tier-card[data-tier="bronze"]:hover .tier-btn {
+  background: linear-gradient(135deg, #df8c3c 0%, #b8651a 100%);
+  box-shadow: 0 6px 20px rgba(205, 127, 50, 0.45);
+}
+
+/* --------------------------------------------------------------------------
+   2. SILVER PARTNER (Precision-Milled Chrome & Aerospace Aluminum Glint)
+   Supersonic aerospace precision, cool specular glint, billet aluminum
+   -------------------------------------------------------------------------- */
+#tiers .tier-card[data-tier="silver"],
+.fr-tier-card[data-tier="silver"] {
+  --tier-accent: #e0e0e0;
+  --tier-accent-light: #f5f7fa;
+  --tier-glow: rgba(224, 224, 224, 0.35);
+  --tier-surface-gradient: linear-gradient(180deg, rgba(224, 224, 224, 0.08) 0%, rgba(24, 25, 25, 0.98) 45%);
+  background: var(--tier-surface-gradient);
+  border-color: rgba(224, 224, 224, 0.3);
+}
+
+#tiers .tier-card[data-tier="silver"] .tier-badge {
+  color: #f5f7fa;
+  border-color: rgba(224, 224, 224, 0.4);
+  background: rgba(224, 224, 224, 0.12);
+}
+
+#tiers .tier-card[data-tier="silver"] .gauge-seg {
+  stroke: #e0e0e0;
+  filter: drop-shadow(0 0 5px rgba(224, 224, 224, 0.6));
+}
+
+#tiers .tier-card[data-tier="silver"] .gauge-center-text {
+  fill: #f5f7fa;
+}
+
+#tiers .tier-card[data-tier="silver"] .tier-btn {
+  background: linear-gradient(135deg, #e0e0e0 0%, #9aa2ad 100%);
+  color: #111212;
+  border-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(224, 224, 224, 0.22);
+}
+
+#tiers .tier-card[data-tier="silver"]:hover {
+  border-color: #e0e0e0;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.65),
+              0 0 20px rgba(224, 224, 224, 0.3);
+}
+
+#tiers .tier-card[data-tier="silver"]:hover .tier-btn {
+  background: linear-gradient(135deg, #ffffff 0%, #b2b9c3 100%);
+  box-shadow: 0 6px 20px rgba(224, 224, 224, 0.42);
+}
+
+/* --------------------------------------------------------------------------
+   3. GOLD PARTNER (High-Carat Championship Gold Flare)
+   Championship podium radiance, warm amber gold flare
+   -------------------------------------------------------------------------- */
+#tiers .tier-card[data-tier="gold"],
+.fr-tier-card[data-tier="gold"],
+#tiers .tier-card.featured-tier {
+  --tier-accent: #ffd700;
+  --tier-accent-light: #ffeb7a;
+  --tier-glow: rgba(255, 215, 0, 0.38);
+  --tier-surface-gradient: linear-gradient(180deg, rgba(255, 215, 0, 0.1) 0%, rgba(24, 25, 25, 0.98) 45%);
+  background: var(--tier-surface-gradient);
+  border-color: rgba(255, 215, 0, 0.4);
+}
+
+#tiers .tier-card[data-tier="gold"] .tier-badge,
+#tiers .tier-card.featured-tier .tier-badge {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.45);
+  background: rgba(255, 215, 0, 0.12);
+}
+
+#tiers .tier-card[data-tier="gold"] .gauge-seg,
+#tiers .tier-card.featured-tier .gauge-seg {
+  stroke: #ffd700;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.65));
+}
+
+#tiers .tier-card[data-tier="gold"] .gauge-center-text,
+#tiers .tier-card.featured-tier .gauge-center-text {
+  fill: #ffd700;
+}
+
+#tiers .tier-card[data-tier="gold"] .tier-btn,
+#tiers .tier-card.featured-tier .tier-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #b8860b 100%);
+  color: #111212;
+  border-color: #ffeb7a;
+  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.28);
+}
+
+#tiers .tier-card[data-tier="gold"]:hover,
+#tiers .tier-card.featured-tier:hover {
+  border-color: #ffd700;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.65),
+              0 0 24px rgba(255, 215, 0, 0.35);
+}
+
+#tiers .tier-card[data-tier="gold"]:hover .tier-btn,
+#tiers .tier-card.featured-tier:hover .tier-btn {
+  background: linear-gradient(135deg, #ffe033 0%, #e5bd3b 50%, #c9930f 100%);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   4. VIP / TITLE PARTNER (Obsidian Carbon Weave & Racing Crimson Telemetry)
+   True aerospace carbon fiber weave pattern, high-octane crimson laser glow
+   -------------------------------------------------------------------------- */
+#tiers .tier-card[data-tier="title"],
+.fr-tier-card[data-tier="title"],
+#tiers .tier-card.title-tier {
+  --tier-accent: #d9231d;
+  --tier-accent-light: #ff4742;
+  --tier-glow: rgba(217, 35, 29, 0.42);
+  --tier-surface-gradient:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, rgba(217, 35, 29, 0.12) 0%, rgba(18, 19, 19, 0.98) 45%);
+  background: var(--tier-surface-gradient);
+  border-color: rgba(217, 35, 29, 0.45);
+}
+
+#tiers .tier-card[data-tier="title"] .tier-badge,
+#tiers .tier-card.title-tier .tier-badge {
+  color: #ff4742;
+  border-color: rgba(217, 35, 29, 0.5);
+  background: rgba(217, 35, 29, 0.15);
+}
+
+#tiers .tier-card[data-tier="title"] .gauge-seg,
+#tiers .tier-card.title-tier .gauge-seg {
+  stroke: #d9231d;
+  filter: drop-shadow(0 0 6px rgba(217, 35, 29, 0.75));
+}
+
+#tiers .tier-card[data-tier="title"] .gauge-center-text,
+#tiers .tier-card.title-tier .gauge-center-text {
+  fill: #ff4742;
+}
+
+#tiers .tier-card[data-tier="title"] .tier-btn,
+#tiers .tier-card.title-tier .tier-btn {
+  background: linear-gradient(135deg, #d9231d 0%, #a01712 100%);
+  color: #ffffff;
+  border-color: #ff5e59;
+  box-shadow: 0 4px 14px rgba(217, 35, 29, 0.35);
+}
+
+#tiers .tier-card[data-tier="title"]:hover,
+#tiers .tier-card.title-tier:hover {
+  border-color: #ff3833;
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.7),
+              0 0 26px rgba(217, 35, 29, 0.45);
+}
+
+#tiers .tier-card[data-tier="title"]:hover .tier-btn,
+#tiers .tier-card.title-tier:hover .tier-btn {
+  background: linear-gradient(135deg, #f02b24 0%, #be1b16 100%);
+  box-shadow: 0 6px 20px rgba(217, 35, 29, 0.6);
+}
+
+
+/* ==========================================================================
+   LIGHT MODE COMPATIBILITY (High-Contrast Titanium Architecture)
+   ========================================================================== */
+:root[data-theme="light"] #tiers .tier-card,
+:root:not([data-theme="dark"]) #tiers .tier-card {
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme="light"] #tiers .fr-tier-hud-bar,
+:root:not([data-theme="dark"]) #tiers .fr-tier-hud-bar {
+  background: #f0ede6;
+  border-color: #d8d4cb;
+  color: #4b4f50;
+}
+
+:root[data-theme="light"] #tiers .tier-gauge-wrap,
+:root:not([data-theme="dark"]) #tiers .tier-gauge-wrap {
+  background: #f6f4ee;
+  border-color: #e2ded5;
+}
+
+:root[data-theme="light"] #tiers .gauge-track,
+:root:not([data-theme="dark"]) #tiers .gauge-track {
+  stroke: rgba(0, 0, 0, 0.1);
+}
+
+/* Light Mode Bronze */
+:root[data-theme="light"] #tiers .tier-card[data-tier="bronze"],
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="bronze"] {
+  border-color: rgba(184, 98, 26, 0.35);
+  background: linear-gradient(180deg, rgba(205, 127, 50, 0.08) 0%, #ffffff 40%);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="bronze"] .tier-badge,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="bronze"] .tier-badge {
+  color: #8c470e;
+  background: rgba(205, 127, 50, 0.12);
+  border-color: rgba(205, 127, 50, 0.35);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="bronze"] .gauge-center-text,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="bronze"] .gauge-center-text {
+  fill: #8c470e;
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="bronze"] .tier-btn,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="bronze"] .tier-btn {
+  background: linear-gradient(135deg, #a85816 0%, #7d3d09 100%);
+  color: #ffffff;
+  border-color: #c97127;
+}
+
+/* Light Mode Silver */
+:root[data-theme="light"] #tiers .tier-card[data-tier="silver"],
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="silver"] {
+  border-color: rgba(98, 103, 110, 0.35);
+  background: linear-gradient(180deg, rgba(160, 168, 179, 0.1) 0%, #ffffff 40%);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="silver"] .tier-badge,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="silver"] .tier-badge {
+  color: #3b4047;
+  background: rgba(120, 130, 142, 0.12);
+  border-color: rgba(120, 130, 142, 0.35);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="silver"] .gauge-center-text,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="silver"] .gauge-center-text {
+  fill: #3b4047;
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="silver"] .tier-btn,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="silver"] .tier-btn {
+  background: linear-gradient(135deg, #4f555e 0%, #2b3036 100%);
+  color: #ffffff;
+  border-color: #6b737e;
+}
+
+/* Light Mode Gold */
+:root[data-theme="light"] #tiers .tier-card[data-tier="gold"],
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="gold"],
+:root[data-theme="light"] #tiers .tier-card.featured-tier,
+:root:not([data-theme="dark"]) #tiers .tier-card.featured-tier {
+  border-color: rgba(184, 134, 11, 0.4);
+  background: linear-gradient(180deg, rgba(255, 215, 0, 0.12) 0%, #ffffff 40%);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="gold"] .tier-badge,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="gold"] .tier-badge,
+:root[data-theme="light"] #tiers .tier-card.featured-tier .tier-badge,
+:root:not([data-theme="dark"]) #tiers .tier-card.featured-tier .tier-badge {
+  color: #8a6500;
+  background: rgba(255, 215, 0, 0.16);
+  border-color: rgba(184, 134, 11, 0.4);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="gold"] .gauge-center-text,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="gold"] .gauge-center-text,
+:root[data-theme="light"] #tiers .tier-card.featured-tier .gauge-center-text,
+:root:not([data-theme="dark"]) #tiers .tier-card.featured-tier .gauge-center-text {
+  fill: #8a6500;
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="gold"] .tier-btn,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="gold"] .tier-btn,
+:root[data-theme="light"] #tiers .tier-card.featured-tier .tier-btn,
+:root:not([data-theme="dark"]) #tiers .tier-card.featured-tier .tier-btn {
+  background: linear-gradient(135deg, #c79600 0%, #997000 100%);
+  color: #ffffff;
+  border-color: #e5b31a;
+}
+
+/* Light Mode Title / VIP */
+:root[data-theme="light"] #tiers .tier-card[data-tier="title"],
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="title"],
+:root[data-theme="light"] #tiers .tier-card.title-tier,
+:root:not([data-theme="dark"]) #tiers .tier-card.title-tier {
+  border-color: rgba(217, 35, 29, 0.45);
+  background: linear-gradient(180deg, rgba(217, 35, 29, 0.08) 0%, #ffffff 40%);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="title"] .tier-badge,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="title"] .tier-badge,
+:root[data-theme="light"] #tiers .tier-card.title-tier .tier-badge,
+:root:not([data-theme="dark"]) #tiers .tier-card.title-tier .tier-badge {
+  color: #b81a14;
+  background: rgba(217, 35, 29, 0.12);
+  border-color: rgba(217, 35, 29, 0.35);
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="title"] .gauge-center-text,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="title"] .gauge-center-text,
+:root[data-theme="light"] #tiers .tier-card.title-tier .gauge-center-text,
+:root:not([data-theme="dark"]) #tiers .tier-card.title-tier .gauge-center-text {
+  fill: #b81a14;
+}
+:root[data-theme="light"] #tiers .tier-card[data-tier="title"] .tier-btn,
+:root:not([data-theme="dark"]) #tiers .tier-card[data-tier="title"] .tier-btn,
+:root[data-theme="light"] #tiers .tier-card.title-tier .tier-btn,
+:root:not([data-theme="dark"]) #tiers .tier-card.title-tier .tier-btn {
+  background: linear-gradient(135deg, #b81a14 0%, #870f0a 100%);
+  color: #ffffff;
+  border-color: #e02821;
+}
+
+
+/* ==========================================================================
+   FORM SYNC FEEDBACK HIGHLIGHT
+   ========================================================================== */
+#sponsor.fr-sync-highlight {
+  animation: fr-form-glow 1000ms cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+
+@keyframes fr-form-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 35, 29, 0);
+  }
+  30% {
+    box-shadow: 0 0 35px 4px var(--tier-glow, rgba(217, 35, 29, 0.45));
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 35, 29, 0);
+  }
+}
+
+
+/* ==========================================================================
+   REDUCED MOTION (A11y Standard)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  #tiers .tier-card,
+  .fr-tier-card,
+  #tiers .tier-btn,
+  .fr-tier-btn,
+  .fr-tier-sheen,
+  .fr-tier-active-pill,
+  .fr-tier-hud-dot,
+  #sponsor.fr-sync-highlight {
+    animation: none !important;
+    transition: opacity 120ms ease, border-color 120ms ease, background 120ms ease !important;
+    transform: none !important;
+  }
+}

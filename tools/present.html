@@ -104,19 +104,53 @@
         var r = rules[i];
         if (r.media && /prefers-color-scheme/.test(r.media.mediaText)) {
           schemeRules.push({ rule: r, text: r.media.mediaText, dark: /dark/.test(r.media.mediaText) });
-        } else if (r.cssRules) walk(r.cssRules);
+        }
+        // walk @media/@supports/@layer too: a theme selector nested in one (or a media rule nested in another) still counts
+        if (r.cssRules) { try { if (r.cssRules.length) walk(r.cssRules); } catch (e) {} }
         if (r.selectorText && /\[data-theme/.test(r.selectorText)) attrTheme = true;
       }
     }
     for (var s = 0; s < d.styleSheets.length; s++) {
       try { walk(d.styleSheets[s].cssRules); } catch (e) {}
     }
-    var supported = schemeRules.length > 0 || attrTheme;
+    // cssRules is unreadable for a sheet the page may not inspect (cross-origin, and every file:// sheet in Chrome),
+    // so when the scan saw nothing, ask the page itself rather than hiding the buttons on a site that has a theme.
+    var supported = schemeRules.length > 0 || attrTheme || probeTheme(d);
     document.getElementById("themeSeg").hidden = !supported;
     document.getElementById("themeSep").hidden = !supported;
   }
+  // Sets each theme on <html>, reads the computed ground and text colour, and puts back what it found. If they
+  // differ the site really has a theme; if the page is one flat colour it has none. Runs with transitions off, in
+  // the same task as the load, so it cannot be seen.
+  function probeTheme(d) {
+    var root = d && d.documentElement, body = d && d.body, win = d && d.defaultView;
+    if (!root || !body || !win || !win.getComputedStyle) return false;
+    function look() {
+      var h = win.getComputedStyle(root), b = win.getComputedStyle(body);
+      return [h.backgroundColor, b.backgroundColor, b.color].join("|");
+    }
+    var had = root.getAttribute("data-theme"), scheme = root.style.colorScheme;
+    root.classList.add("theme-instant");
+    var base = look();
+    // mirror exactly what applyThemeNow writes, so a theme driven by color-scheme or light-dark() is seen too
+    root.setAttribute("data-theme", "light"); root.style.colorScheme = "light"; var light = look();
+    root.setAttribute("data-theme", "dark"); root.style.colorScheme = "dark"; var dark = look();
+    if (had === null) root.removeAttribute("data-theme"); else root.setAttribute("data-theme", had);
+    root.style.colorScheme = scheme;
+    void root.offsetHeight;   // commit the restored look while transitions are off, then let them back on
+    win.requestAnimationFrame(function () { win.requestAnimationFrame(function () { root.classList.remove("theme-instant"); }); });
+    return light !== dark || light !== base;
+  }
+  // Forcing a theme switches only the scheme part of a media list. "all" would also drop a breakpoint or a
+  // (prefers-reduced-motion) in the same query, so the scheme feature is cut out and the rest is kept.
   function setMedia(entry, on) {
-    entry.rule.media.mediaText = on === null ? entry.text : on ? "all" : "not all";
+    if (on === null) { entry.rule.media.mediaText = entry.text; return; }
+    if (!on) { entry.rule.media.mediaText = "not all"; return; }
+    var t = entry.text
+      .replace(/\(\s*prefers-color-scheme\s*:\s*(?:dark|light)\s*\)\s*and\s*/gi, "")
+      .replace(/\s*and\s*\(\s*prefers-color-scheme\s*:\s*(?:dark|light)\s*\)/gi, "")
+      .replace(/\(\s*prefers-color-scheme\s*:\s*(?:dark|light)\s*\)/gi, "");
+    entry.rule.media.mediaText = t.trim() || "all";
   }
   // The frame's ground follows the site: the first opaque background of <html> or <body>.
   function readGround() {
@@ -132,18 +166,42 @@
   // Only a Light/Dark/Auto choice animates the site's theme: the frame's <html> gets .theme-animating for the
   // length of the change, and the site's own CSS decides what glides (gale-design references/theme-transition.md).
   // A page load never animates: the forced theme goes in with every transition off.
-  var motionTimer = 0;
+  var motionTimer = 0, motionGen = 0;
+  // One glide at a time. A newer choice kills the older one's ways of ending it (timer and listener), so a quick
+  // L then D can neither cut the second glide short nor leave .theme-animating stuck on the site.
+  function endMotion(root) {
+    clearTimeout(motionTimer);
+    motionGen++;
+    root.classList.remove("theme-animating");
+    readGround();   // the ground colour is settled now: a resize uses the new one
+  }
   function motion(d, animate, change) {
     var root = d.documentElement, win = d.defaultView || window;
     var still = win.matchMedia && win.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (animate && !still) {
-      root.classList.remove("theme-instant");
+      root.classList.remove("theme-instant");   // instant first: it must never overlap the animating class
       root.classList.add("theme-animating");
+      var gen = ++motionGen;
+      root._themeStart = Date.now();
       clearTimeout(motionTimer);
-      motionTimer = setTimeout(function () { root.classList.remove("theme-animating"); readGround(); }, 1400);
+      // ends when the ground token has finished gliding, or at 1400 ms, whichever comes first
+      if (!root._themeEnd) {
+        root._themeEnd = true;
+        root.addEventListener("transitionend", function (e) {
+          if (!root.classList.contains("theme-animating")) return;
+          if (e.target !== root && e.target !== d.body) return;                        // not a hover on a link
+          if (!/^(background(-color)?|--)/.test(e.propertyName)) return;                // the ground, or a registered token
+          if (Date.now() - root._themeStart < 80) return;   // a glide it replaced finishing, not this one
+          endMotion(root);
+        });
+      }
+      motionTimer = setTimeout(function () { if (gen === motionGen) endMotion(root); }, 1400);
       change();
       return;
     }
+    clearTimeout(motionTimer);                        // reduced motion or a load: stop any glide in flight
+    motionGen++;
+    root.classList.remove("theme-animating");
     if (!d.getElementById("present-instant")) {
       var st = d.createElement("style"); st.id = "present-instant";
       st.textContent = ".theme-instant,.theme-instant *,.theme-instant *::before,.theme-instant *::after{transition:none!important}";
@@ -270,7 +328,9 @@
     try { frame.contentDocument.addEventListener("keydown", key); } catch (e) {}
     padded = []; clearCorners();
     try {
-      frame.contentWindow.addEventListener("resize", function () { later(120); });
+      // the frame is about to be repainted in its new size: re-read the ground first, so a resize never shows the
+      // previous theme's colour (also correct mid-glide, where the site's own background is interpolating)
+      frame.contentWindow.addEventListener("resize", function () { readGround(); later(120); });
       frame.contentWindow.addEventListener("popstate", function () { later(480); });
       frame.contentWindow.addEventListener("hashchange", function () { later(480); });
       // a tap may open a sheet, a menu or a dialog with its own bars: clear again once it has risen

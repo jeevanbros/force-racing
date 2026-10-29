@@ -144,3 +144,16 @@ test('notificationText includes reference, fields, answers and honest disclaimer
   assert.match(text, /team confirmation/i);
   assert.ok(!text.includes('Message:'), 'empty fields are omitted');
 });
+
+test('notificationText handles object answers_json with screenshot and tier without crashing', () => {
+  const text = notificationText({
+    reference: 'FR26-SIM-EB9B067C', type: 'registration', source: 'website', submitted_at: '2026-10-28T16:45:00Z',
+    name: 'Tejaswi', email: 'tejaswi@kitsw.ac.in', phone: '8247708356', organization: 'KITSW', message: '',
+    answers_json: JSON.stringify({ screenshotBase64: 'data:image/jpeg;base64,...', tier: 'Solo Time Attack' })
+  });
+  assert.match(text, /FR26-SIM-EB9B067C/);
+  assert.match(text, /Name: Tejaswi/);
+  assert.match(text, /Tier \/ Event: Solo Time Attack/);
+  assert.match(text, /Payment Screenshot: Attached/);
+  assert.ok(!text.includes('data:image/jpeg'), 'raw base64 is excluded from telegram text');
+});

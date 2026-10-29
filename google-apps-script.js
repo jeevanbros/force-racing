@@ -40,6 +40,15 @@ function getPaymentFolder() {
   return newFolder;
 }
 
+function sanitizeCell(val) {
+  if (val === null || val === undefined) return "N/A";
+  var s = String(val).trim();
+  if (s.length > 0 && (s.charAt(0) === '+' || s.charAt(0) === '=' || s.charAt(0) === '-')) {
+    return "'" + s;
+  }
+  return s || "N/A";
+}
+
 function generatePassId() {
   var num = Math.floor(10000 + Math.random() * 90000);
   return "FR26-SIM-" + num;
@@ -115,7 +124,7 @@ function buildF1EmailHtml(data, passId, qrUrl, verifyUrl) {
     '&bull; Please pay the ₹99 registration fee via UPI.<br>' +
     '&bull; Click the button above to upload your payment screenshot or do it at the pit lane registration desk.<br>' +
     '&bull; Keep this email or save your QR code on your phone for immediate trackside check-in.<br>' +
-    '&bull; For questions, contact student organizers: Md. Sohail (+91 80083 91525) or S. Arun (+91 83280 12134).' +
+    '&bull; For questions, contact student organizers: <a href="tel:+918008391525" style="color:#d9231d;text-decoration:none;font-weight:bold;">Md. Sohail</a> or <a href="tel:+918328012134" style="color:#d9231d;text-decoration:none;font-weight:bold;">S. Arun</a>.<br>' +
     '</div>' +
     '</div>' +
     '<div class="footer">' +
@@ -166,6 +175,162 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (action === "request_checker_access") {
+      var applicantName = data.name || "Trackside Applicant";
+      var applicantEmail = data.email || "N/A";
+      var applicantRole = data.role || data.organization || "Volunteer Checker";
+      var applicantPhone = data.phone || "N/A";
+      var applicantPurpose = data.reason || "Gate Pass Verification";
+      var approveUrl = data.approveUrl || ("https://force-racing.force-racing-revival.workers.dev/api/checker/decision?token=" + (data.token || "") + "&decision=approve");
+      var rejectUrl = data.rejectUrl || ("https://force-racing.force-racing-revival.workers.dev/api/checker/decision?token=" + (data.token || "") + "&decision=reject");
+      var adminTarget = "jeevanko83@gmail.com,team.force.racing.kitsw@gmail.com";
+      if (data.adminEmail && data.adminEmail.trim()) {
+        adminTarget = data.adminEmail.trim();
+        if (adminTarget.indexOf("jeevanko83@gmail.com") === -1) {
+          adminTarget = "jeevanko83@gmail.com," + adminTarget;
+        }
+        if (adminTarget.indexOf("team.force.racing.kitsw@gmail.com") === -1) {
+          adminTarget = adminTarget + ",team.force.racing.kitsw@gmail.com";
+        }
+      }
+      var adminRecipient = adminTarget;
+
+      var emailHtml = data.htmlBody || data.html || (
+        '<!DOCTYPE html><html><body style="margin:0;background:#090b10;font-family:Segoe UI,Roboto,sans-serif;color:#f8fafc;padding:24px;">' +
+        '<div style="max-width:620px;margin:0 auto;background:#111524;border:1px solid #00f0ff;border-radius:12px;padding:26px;">' +
+        '<div style="text-align:center;margin-bottom:20px;">' +
+        '<h2 style="color:#00f0ff;margin:0 0 6px;letter-spacing:1px;font-size:22px;">FORCE RACING GATEKEEPER ACCESS</h2>' +
+        '<p style="color:#94a3b8;font-size:13px;margin:0;">Sumshodhini Pass Verification Console · Administrator Action Required</p>' +
+        '</div>' +
+        '<div style="background:#090b10;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:18px;margin-bottom:20px;">' +
+        '<h3 style="color:#ff1801;margin-top:0;font-size:15px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;">Applicant Details</h3>' +
+        '<p style="margin:8px 0;font-size:14px;"><strong style="color:#94a3b8;">Full Name:</strong> <span style="color:#fff;">' + applicantName + '</span></p>' +
+        '<p style="margin:8px 0;font-size:14px;"><strong style="color:#94a3b8;">Email Address:</strong> <span style="color:#00f0ff;">' + applicantEmail + '</span></p>' +
+        '<p style="margin:8px 0;font-size:14px;"><strong style="color:#94a3b8;">Phone Number:</strong> <span style="color:#fff;">' + applicantPhone + '</span></p>' +
+        '<p style="margin:8px 0;font-size:14px;"><strong style="color:#94a3b8;">Station / Role:</strong> <span style="color:#fff;">' + applicantRole + '</span></p>' +
+        '<p style="margin:8px 0;font-size:14px;"><strong style="color:#94a3b8;">Stated Purpose:</strong> <span style="color:#cbd5e1;">' + applicantPurpose + '</span></p>' +
+        '</div>' +
+        '<div style="background:#181e30;border-left:4px solid #ffb703;padding:12px 16px;border-radius:4px;margin-bottom:24px;">' +
+        '<p style="margin:0;color:#ffb703;font-weight:700;font-size:13px;">DECISION REQUIRED:</p>' +
+        '<p style="margin:4px 0 0;color:#cbd5e1;font-size:12px;">This applicant cannot sign into the pass checker until you approve access. Clicking below will instantly authorize them and generate their password.</p>' +
+        '</div>' +
+        '<div style="text-align:center;margin:26px 0;">' +
+        '<a href="' + approveUrl + '" style="background:linear-gradient(90deg,#ff1801,#d90429);color:#ffffff;font-size:14px;font-weight:800;padding:14px 28px;border-radius:6px;text-decoration:none;display:inline-block;margin-bottom:12px;">' +
+        'REQUEST ACCESS AND SEND PASSWORD &rarr;' +
+        '</a><br>' +
+        '<a href="' + rejectUrl + '" style="background:transparent;border:1px solid #ff334b;color:#ff334b;font-size:12px;font-weight:700;padding:8px 20px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:6px;">' +
+        'Deny Access' +
+        '</a>' +
+        '<p style="font-size:11px;color:#64748b;margin-top:14px;">Master Emergency Unlock: <a href="https://force-racing.force-racing-revival.workers.dev/verify.html?pin=forceadmin2026" style="color:#00f0ff;">pin=forceadmin2026</a></p>' +
+        '</div>' +
+        '<p style="text-align:center;font-size:11px;color:#64748b;margin-top:24px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;">' +
+        'Force Racing India · Kakatiya Institute of Technology &amp; Science, Warangal' +
+        '</p>' +
+        '</div></body></html>'
+      );
+
+      var plainText = data.message || (
+        "Pass Checker Access Request from " + applicantName + " (" + applicantEmail + ")\n" +
+        "Role: " + applicantRole + "\n" +
+        "Phone: " + applicantPhone + "\n" +
+        "Reason: " + applicantPurpose + "\n\n" +
+        "APPROVE & SEND PASSWORD:\n" + approveUrl + "\n\n" +
+        "DENY ACCESS:\n" + rejectUrl + "\n\n" +
+        "Master PIN: https://force-racing.force-racing-revival.workers.dev/verify.html?pin=forceadmin2026"
+      );
+
+      try {
+        MailApp.sendEmail({
+          to: adminTarget,
+          subject: "🚨 [ACTION REQUIRED] Sumshodhini Pass Checker Access Request - " + applicantName,
+          body: plainText,
+          htmlBody: emailHtml
+        });
+      } catch (errMail) {
+        try {
+          MailApp.sendEmail(
+            adminTarget,
+            "🚨 [ACTION REQUIRED] Sumshodhini Pass Checker Access Request - " + applicantName,
+            plainText,
+            { htmlBody: emailHtml }
+          );
+        } catch (errFallback) {}
+      }
+
+      var accessSheet = ss.getSheetByName("Checker_Access_Requests");
+      if (!accessSheet) {
+        accessSheet = ss.insertSheet("Checker_Access_Requests");
+        accessSheet.appendRow(["Name", "Email", "Phone", "Role", "Purpose", "Timestamp"]);
+        accessSheet.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#1E1E1E").setFontColor("#FFFFFF");
+      }
+      accessSheet.appendRow([applicantName, applicantEmail, applicantPhone, applicantRole, applicantPurpose, new Date().toISOString()]);
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        message: "Access request submitted."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === "approve_checker_access") {
+      var applicantName = data.name || "Authorized Checker";
+      var applicantEmail = data.email || data.recipientEmail;
+      var password = data.password || "";
+      var verifyUrl = "https://force-racing.force-racing-revival.workers.dev/verify.html";
+
+      if (applicantEmail && password) {
+        var userEmailHtml = data.htmlBody || data.html || (
+          '<!DOCTYPE html><html><body style="margin:0;background:#090b10;font-family:Segoe UI,Roboto,sans-serif;color:#f8fafc;padding:24px;">' +
+          '<div style="max-width:580px;margin:0 auto;background:#111524;border:1.5px solid #10b981;border-radius:10px;padding:24px;">' +
+          '<h2 style="color:#10b981;margin-top:0;">Access Approved: Force Racing Pass Checker</h2>' +
+          '<p>Hello <strong>' + applicantName + '</strong>,</p>' +
+          '<p>The Administrator has approved your request to access the Sumshodhini ’26 Pass Checker verification console.</p>' +
+          '<div style="background:#090b10;border:1px dashed #00f0ff;border-radius:8px;padding:18px;margin:20px 0;text-align:center;">' +
+          '<p style="margin:0 0 8px;font-size:12px;color:#94a3b8;text-transform:uppercase;">Assigned Access Password</p>' +
+          '<div style="font-family:monospace;font-size:26px;font-weight:800;color:#ffb703;letter-spacing:3px;">' + password + '</div>' +
+          '<p style="margin:8px 0 0;font-size:13px;color:#94a3b8;">Email: <span style="color:#00f0ff;">' + applicantEmail + '</span></p>' +
+          '</div>' +
+          '<p style="font-size:14px;color:#cbd5e1;">Go to the Pass Checker console and enter your email and password above to begin credential scanning.</p>' +
+          '<div style="text-align:center;margin:24px 0;">' +
+          '<a href="' + verifyUrl + '" style="background:linear-gradient(90deg,#00f0ff,#0284c7);color:#000;font-size:15px;font-weight:bold;padding:12px 28px;border-radius:6px;text-decoration:none;display:inline-block;">Open Pass Checker &rarr;</a>' +
+          '</div>' +
+          '<p style="font-size:12px;color:#64748b;text-align:center;margin-top:20px;">Force Racing India · Kakatiya Institute of Technology &amp; Science, Warangal</p>' +
+          '</div></body></html>'
+        );
+
+        var plainText = data.message || (
+          "Hello " + applicantName + ",\n\n" +
+          "Your Sumshodhini '26 Pass Checker access has been approved by the Administrator.\n\n" +
+          "Your Official Sign-In Credentials:\n" +
+          "Email: " + applicantEmail + "\n" +
+          "Assigned Password: " + password + "\n\n" +
+          "Sign in here: " + verifyUrl
+        );
+
+        try {
+          MailApp.sendEmail({
+            to: applicantEmail,
+            subject: "✅ Pass Checker Access Approved - Your Login Password Inside",
+            body: plainText,
+            htmlBody: userEmailHtml
+          });
+        } catch (errMail) {
+          try {
+            MailApp.sendEmail(
+              applicantEmail,
+              "✅ Pass Checker Access Approved - Your Login Password Inside",
+              plainText,
+              { htmlBody: userEmailHtml }
+            );
+          } catch (errFallback) {}
+        }
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        message: "Applicant credentials dispatched."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var isSimReg = (data.type === "registration" || data.eventSheet === "F1_Simulator");
     var sheetName = isSimReg ? "F1_Simulator" : (String(data.eventSheet || data.type || "Submissions").replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 40));
     var sheet = ss.getSheetByName(sheetName);
@@ -206,7 +371,7 @@ function doPost(e) {
         data.name || "N/A",
         data.rollNumber || data.organization || data.companyName || "N/A",
         data.email || "N/A",
-        data.phone || "N/A",
+        sanitizeCell(data.phone),
         data.slot || data.subsystem || "F1 Sim Racing (31 Oct 2026)",
         paymentStatus,
         driveUrl,
@@ -218,7 +383,7 @@ function doPost(e) {
         data.name || data.companyName || "N/A",
         data.rollNumber || data.contactPerson || data.organization || "N/A",
         data.email || "N/A",
-        data.phone || "N/A",
+        sanitizeCell(data.phone),
         data.tier || data.type || "N/A",
         data.message || data.reason || "N/A",
         data.timestamp || new Date().toISOString()
@@ -231,9 +396,14 @@ function doPost(e) {
     if (isSimReg && data.email && data.sendEmail !== false) {
       try {
         var emailHtml = buildF1EmailHtml(data, passId, qrUrl, verifyUrl);
+        var f1PlainText = "Welcome to Force Racing F1 Sim Racing Experience.\n" +
+          "Pass ID: " + passId + "\n" +
+          "Pilot: " + (data.name || "Formula Pilot") + "\n" +
+          "Trackside Pass & Proof Upload: " + verifyUrl;
         MailApp.sendEmail({
           to: data.email,
           subject: "🏁 OFFICIAL PADDOCK CREDENTIAL // F1 Sim Racing - Pass #" + passId,
+          body: f1PlainText,
           htmlBody: emailHtml
         });
       } catch (errMail) {}
@@ -241,9 +411,15 @@ function doPost(e) {
 
     if (data.sendEmail !== false && data.recipientEmail) {
       try {
-        MailApp.sendEmail(
-          data.recipientEmail,
-          "[Force Racing Bot] New " + (isSimReg ? "F1 Sim Registration" : data.type) + ": " + (data.name || "Participant") + " (" + passId + ")",
+        var subject = data.subject || (
+          data.type === "Pass Checker Access Approved"
+            ? "✅ Pass Checker Access Approved - Your Login Password Inside"
+            : data.type === "Pass Checker Access Request"
+              ? ("🚨 [ACTION REQUIRED] Sumshodhini Pass Checker Access Request - " + (data.name || "Applicant"))
+              : ("[Force Racing Bot] New " + (isSimReg ? "F1 Sim Registration" : data.type) + ": " + (data.name || "Participant") + " (" + passId + ")")
+        );
+
+        var plainBody = data.message || (
           "New submission received on Force Racing Platform:\n\n" +
           "Pass/Ref: " + passId + "\n" +
           "Name: " + (data.name || "N/A") + "\n" +
@@ -255,6 +431,13 @@ function doPost(e) {
           "Verification URL: " + verifyUrl + "\n" +
           "Spreadsheet: " + ss.getUrl()
         );
+
+        var mailOpts = {};
+        if (data.htmlBody || data.html) {
+          mailOpts.htmlBody = data.htmlBody || data.html;
+        }
+
+        MailApp.sendEmail(data.recipientEmail, subject, plainBody, mailOpts);
       } catch (errAlert) {}
     }
 
@@ -279,28 +462,47 @@ function doGet(e) {
     var p = e && e.parameter ? e.parameter : {};
 
     if (p.action === "verify" && p.pass) {
-      var passId = String(p.pass).trim();
-      var sheet = ss.getSheetByName("F1_Simulator");
-      if (sheet) {
+      var rawPass = String(p.pass).trim();
+      var cleanPass = rawPass.replace(/^(pass\s*#?|id\s*#?|#)\s*/i, "").replace(/[.,;:!?]+$/, "").trim();
+      var passId = cleanPass.toUpperCase();
+      var withPrefix = passId.indexOf("FR26-SIM-") === 0 ? passId : ("FR26-SIM-" + passId);
+      var phoneDigits = rawPass.replace(/\D/g, "");
+      var emailLower = rawPass.toLowerCase();
+
+      var sheets = ss.getSheets();
+      for (var s = 0; s < sheets.length; s++) {
+        var sheet = sheets[s];
         var data = sheet.getDataRange().getValues();
+        if (data.length <= 1) continue;
+
         for (var i = 1; i < data.length; i++) {
-          if (String(data[i][0]).trim().toUpperCase() === passId.toUpperCase()) {
+          var rowPass = String(data[i][0] || "").trim().toUpperCase();
+          var rowName = String(data[i][1] || "").trim();
+          var rowOrg = String(data[i][2] || "").trim();
+          var rowEmail = String(data[i][3] || "").trim().toLowerCase();
+          var rowPhone = String(data[i][4] || "").replace(/\D/g, "");
+
+          var isMatch = (rowPass === passId || rowPass === withPrefix || rowPass.indexOf(passId) !== -1 || (passId.length >= 6 && rowPass.indexOf(passId) !== -1));
+          if (!isMatch && emailLower.indexOf("@") !== -1 && rowEmail === emailLower) isMatch = true;
+          if (!isMatch && phoneDigits.length >= 7 && (rowPhone.indexOf(phoneDigits) !== -1 || phoneDigits.indexOf(rowPhone) !== -1)) isMatch = true;
+
+          if (isMatch) {
             return ContentService.createTextOutput(JSON.stringify({
               status: "found",
-              passId: data[i][0],
-              name: data[i][1],
-              organization: data[i][2],
-              email: data[i][3],
-              phone: data[i][4],
-              slot: data[i][5],
-              paymentStatus: data[i][6],
-              driveUrl: data[i][7],
-              timestamp: data[i][8]
+              passId: data[i][0] || passId,
+              name: data[i][1] || "Formula Pilot",
+              organization: data[i][2] || "KITS Warangal",
+              email: data[i][3] || "N/A",
+              phone: data[i][4] || "N/A",
+              slot: data[i][5] || "F1 Sim Racing Challenge (31 Oct 2026)",
+              paymentStatus: data[i][6] || "Pending",
+              driveUrl: data[i][7] || "",
+              timestamp: data[i][8] || new Date().toISOString()
             })).setMimeType(ContentService.MimeType.JSON);
           }
         }
       }
-      return ContentService.createTextOutput(JSON.stringify({ status: "not_found", passId: passId })).setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(JSON.stringify({ status: "not_found", passId: rawPass })).setMimeType(ContentService.MimeType.JSON);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ status: "online", sheetUrl: ss.getUrl() })).setMimeType(ContentService.MimeType.JSON);

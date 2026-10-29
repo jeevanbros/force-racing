@@ -3,26 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Trackside Pilot Verification | Force Racing</title>
+  <meta name="theme-color" content="#090b10">
+  <title>Sumshodhini Pass Checker | Force Racing</title>
   <link rel="icon" href="assets/original/favicon.png">
   <link rel="preload" href="assets/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2.5">
+  <script>try{const t=localStorage.getItem("force_theme")||(window.matchMedia("(prefers-color-scheme:light)").matches?"light":"dark");document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <script src="app.js?v=2.5" defer></script>
+  <script src="jsqr.min.js" defer></script>
+  <script src="verify.js?v=2.5" defer></script>
   <style>
     .verify-page {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       padding: var(--gp-space-6) var(--gp-gutter) var(--gp-space-8);
     }
-    .verify-card {
-      background: linear-gradient(145deg, #16171d, #1b1c24);
-      border: 2px solid var(--gp-line);
+    .auth-card, .verify-card {
+      background: linear-gradient(145deg, #111524 0%, #0a0d17 100%);
+      border: 1.5px solid rgba(0, 240, 255, 0.35);
       border-radius: var(--gp-radius-lg);
       overflow: hidden;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.7), 0 0 30px rgba(0, 240, 255, 0.12);
       margin-top: var(--gp-space-5);
     }
-    .verify-header {
-      background: linear-gradient(135deg, #1b1d24 0%, #111216 100%);
+    .auth-header, .verify-header {
+      background: linear-gradient(135deg, #14192b 0%, #0c0f18 100%);
       padding: var(--gp-space-5);
       border-bottom: 3px solid var(--gp-accent);
       display: flex;
@@ -31,7 +36,7 @@
       flex-wrap: wrap;
       gap: var(--gp-space-3);
     }
-    .verify-header .team-badge {
+    .auth-header .team-badge, .verify-header .team-badge {
       font-family: var(--gp-font-head);
       font-size: 1.5rem;
       letter-spacing: .05em;
@@ -40,50 +45,147 @@
       align-items: center;
       gap: var(--gp-space-3);
     }
-    .verify-header .status-pill {
-      font-size: .813rem;
-      font-weight: 700;
+    .status-pill {
+      font-size: 0.75rem;
       letter-spacing: .08em;
-      text-transform: uppercase;
-      padding: 6px 14px;
+      font-weight: 800;
+      padding: 4px 12px;
       border-radius: 99px;
-      background: #252834;
-      color: #00f0ff;
-      border: 1px solid #3d4255;
+      text-transform: uppercase;
     }
     .status-pill.valid {
-      background: rgba(30, 142, 62, 0.25);
-      color: #4ade80;
-      border-color: rgba(74, 222, 128, 0.4);
+      background: rgba(0, 240, 255, 0.15);
+      color: #00f0ff;
+      border: 1px solid #00f0ff;
     }
-    .verify-body {
+    .auth-body, .verify-body {
       padding: var(--gp-space-6);
     }
+    
+    /* Sliding Segmented Control */
+    .auth-slider-bar {
+      display: flex;
+      position: relative;
+      background: #06080e;
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 99px;
+      padding: 4px;
+      margin-bottom: var(--gp-space-6);
+      user-select: none;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.7);
+    }
+    .auth-slider-glider {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      background: linear-gradient(90deg, #ff1801, #d90429);
+      border-radius: 99px;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      z-index: 1;
+      box-shadow: 0 2px 14px rgba(255, 24, 1, 0.6);
+    }
+    .auth-slider-opt {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      background: transparent;
+      border: none;
+      color: #c8cedb;
+      font-family: var(--gp-font-body);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 12px 16px;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 99px;
+      transition: color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .auth-slider-opt.active {
+      color: #ffffff;
+    }
+    
+    .auth-form-group {
+      margin-bottom: var(--gp-space-4);
+    }
+    .auth-form-group label {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      font-size: 0.813rem;
+      color: var(--gp-ink-2);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 2px;
+      font-weight: 600;
+    }
+    .auth-form-group input {
+      width: 100%;
+      min-height: 52px;
+      background: #06080e;
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      border-radius: 6px;
+      color: #fff;
+      padding: 0 16px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .auth-form-group input:focus {
+      border-color: #ff1801;
+      box-shadow: 0 0 16px rgba(255, 24, 1, 0.4);
+      outline: none;
+    }
+    #link-to-request,
+    #link-to-login {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding-block: 4px;
+    }
+    
+    .checker-session-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: var(--gp-radius);
+      padding: 12px 18px;
+      margin-top: var(--gp-space-4);
+      font-size: 0.938rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     .pass-tag {
-      font-size: .813rem;
+      font-size: 0.813rem;
+      letter-spacing: .1em;
       color: var(--gp-accent);
       font-weight: 800;
-      letter-spacing: .15em;
       text-transform: uppercase;
-      margin-bottom: var(--gp-space-2);
     }
     .pass-number {
       font-family: monospace;
-      font-size: clamp(2rem, 6vw, 3rem);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
       font-weight: 900;
-      letter-spacing: .08em;
       color: #fff;
-      margin-bottom: var(--gp-space-5);
+      letter-spacing: .05em;
+      margin: 4px 0 var(--gp-space-5);
     }
     .details-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--gp-space-4);
-      margin-bottom: var(--gp-space-6);
-      background: var(--gp-bg-sunk);
-      padding: var(--gp-space-4);
-      border-radius: var(--gp-radius);
-      border: 1px solid var(--gp-line);
+      background: #07090e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--gp-radius-lg);
+      padding: var(--gp-space-5);
     }
     .detail-item {
       display: flex;
@@ -91,45 +193,49 @@
       gap: 4px;
     }
     .detail-label {
-      font-size: .75rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: .08em;
-      color: var(--gp-ink-2);
+      color: var(--gp-ink-3);
     }
     .detail-value {
       font-size: 1rem;
-      font-weight: 600;
       color: #fff;
+      font-weight: 600;
       overflow-wrap: anywhere;
     }
     .payment-section {
+      margin-top: var(--gp-space-6);
       border-top: 1px solid var(--gp-line);
       padding-top: var(--gp-space-5);
-      margin-top: var(--gp-space-5);
     }
     .payment-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: var(--gp-space-4);
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .payment-badge {
-      font-size: .813rem;
-      font-weight: 700;
+      font-size: 0.813rem;
+      font-weight: 800;
       letter-spacing: .06em;
       text-transform: uppercase;
       padding: 4px 12px;
       border-radius: 4px;
     }
     .payment-badge.uploaded {
-      background: rgba(30, 142, 62, 0.2);
-      color: #4ade80;
-      border: 1px solid #4ade80;
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid #10b981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
     }
     .payment-badge.pending {
-      background: rgba(234, 179, 8, 0.2);
-      color: #fbbf24;
-      border: 1px solid #fbbf24;
+      background: rgba(255, 183, 3, 0.15);
+      color: #ffb703;
+      border: 1px solid rgba(255, 183, 3, 0.45);
+      box-shadow: 0 0 12px rgba(255, 183, 3, 0.2);
     }
     .screenshot-frame {
       background: #000;
@@ -181,6 +287,91 @@
       padding: 0 16px;
       text-transform: uppercase;
     }
+    /* QR Scanner Toolbar & Modal Styles */
+    .scanner-actions-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: var(--gp-space-5);
+      flex-wrap: wrap;
+    }
+    .scanner-actions-bar .btn {
+      flex: 1;
+      min-height: 48px;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .btn-camera-scan {
+      background: linear-gradient(90deg, #ff1801, #d90429);
+      border-color: #ff1801;
+      box-shadow: 0 0 16px rgba(255, 24, 1, 0.35);
+    }
+    .btn-camera-scan:hover {
+      box-shadow: 0 0 24px rgba(255, 24, 1, 0.6);
+    }
+    .btn-upload-scan {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: rgba(0, 240, 255, 0.35);
+      color: #00f0ff;
+    }
+    .btn-upload-scan:hover {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: #00f0ff;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+    }
+    .scanner-toast {
+      padding: 12px 16px;
+      border-radius: var(--gp-radius);
+      font-size: 0.938rem;
+      font-weight: 600;
+      text-align: center;
+      margin-top: var(--gp-space-3);
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+    .scanner-toast.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #10b981;
+    }
+    .scanner-toast.error {
+      background: rgba(255, 51, 75, 0.15);
+      border: 1px solid #ff334b;
+      color: #ff334b;
+    }
+    .scanner-toast.info {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+    }
+    @keyframes scannerLaser {
+      0% { top: 8%; opacity: 0.8; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 8%; opacity: 0.8; }
+    }
+    .scanner-laser {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00f0ff, #fff, #00f0ff, transparent);
+      box-shadow: 0 0 12px #00f0ff, 0 0 4px #fff;
+      animation: scannerLaser 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .scanner-corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-color: #00f0ff;
+      border-style: solid;
+      pointer-events: none;
+    }
+    .corner-tl { top: 15px; left: 15px; border-width: 3px 0 0 3px; border-top-left-radius: 6px; }
+    .corner-tr { top: 15px; right: 15px; border-width: 3px 3px 0 0; border-top-right-radius: 6px; }
+    .corner-bl { bottom: 15px; left: 15px; border-width: 0 0 3px 3px; border-bottom-left-radius: 6px; }
+    .corner-br { bottom: 15px; right: 15px; border-width: 0 3px 3px 0; border-bottom-right-radius: 6px; }
     @media(max-width: 600px) {
       .details-grid {
         grid-template-columns: 1fr;
@@ -197,6 +388,141 @@
         justify-content: center;
       }
     }
+
+    /* Light Theme Contrast Enhancements */
+    [data-theme="light"] .pass-number,
+    html[data-theme="light"] .pass-number {
+      color: #0b0f19 !important;
+    }
+    [data-theme="light"] .details-grid,
+    html[data-theme="light"] .details-grid {
+      background: #f8fafc !important;
+      border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    }
+    [data-theme="light"] .auth-form-group input,
+    html[data-theme="light"] .auth-form-group input {
+      background: #ffffff !important;
+      color: #0b0f19 !important;
+      border: 1.5px solid rgba(15, 23, 42, 0.22) !important;
+    }
+    [data-theme="light"] .auth-form-group input::placeholder,
+    html[data-theme="light"] .auth-form-group input::placeholder {
+      color: #94a3b8 !important;
+    }
+    [data-theme="light"] .auth-form-group label,
+    html[data-theme="light"] .auth-form-group label {
+      color: #0b0f19 !important;
+    }
+    [data-theme="light"] .auth-links,
+    [data-theme="light"] .auth-links a,
+    html[data-theme="light"] .auth-links,
+    html[data-theme="light"] .auth-links a,
+    [data-theme="light"] .link-cyan,
+    html[data-theme="light"] .link-cyan {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] .status-pill.valid,
+    html[data-theme="light"] .status-pill.valid {
+      background: rgba(2, 132, 199, 0.12) !important;
+      color: #0284c7 !important;
+      border-color: #0284c7 !important;
+    }
+    [data-theme="light"] .payment-badge.pending,
+    html[data-theme="light"] .payment-badge.pending {
+      background: rgba(217, 119, 6, 0.12) !important;
+      color: #b45309 !important;
+      border-color: rgba(217, 119, 6, 0.45) !important;
+    }
+    [data-theme="light"] .btn-upload-scan,
+    html[data-theme="light"] .btn-upload-scan {
+      background: rgba(2, 132, 199, 0.1) !important;
+      border-color: rgba(2, 132, 199, 0.35) !important;
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] .scanner-toast.info,
+    html[data-theme="light"] .scanner-toast.info {
+      color: #0284c7 !important;
+      background: rgba(2, 132, 199, 0.12) !important;
+    }
+    [data-theme="light"] .checker-session-bar,
+    html[data-theme="light"] .checker-session-bar {
+      background: #f1f5f9 !important;
+      border-color: rgba(15, 23, 42, 0.15) !important;
+      color: #0b0f19 !important;
+    }
+    [data-theme="light"] #v-email-link,
+    html[data-theme="light"] #v-email-link {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] #active-checker-name,
+    html[data-theme="light"] #active-checker-name {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] #v-name,
+    html[data-theme="light"] #v-name {
+      color: #0b0f19 !important;
+    }
+    [data-theme="light"] #v-phone-call,
+    html[data-theme="light"] #v-phone-call {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] #link-to-request,
+    [data-theme="light"] #link-to-login,
+    html[data-theme="light"] #link-to-request,
+    html[data-theme="light"] #link-to-login {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] #v-gate-status,
+    html[data-theme="light"] #v-gate-status {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] .trackside-action-bar,
+    html[data-theme="light"] .trackside-action-bar {
+      background: #f8fafc !important;
+      border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    }
+    [data-theme="light"] #v-zoom-hint,
+    html[data-theme="light"] #v-zoom-hint {
+      color: #0284c7 !important;
+    }
+    [data-theme="light"] .file-input,
+    html[data-theme="light"] .file-input {
+      color: #0b0f19 !important;
+      background: #ffffff !important;
+      border-color: rgba(15, 23, 42, 0.22) !important;
+    }
+    [data-theme="light"] .search-input::placeholder,
+    html[data-theme="light"] .search-input::placeholder {
+      color: #64748b !important;
+    }
+    @keyframes statusPulse {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.7; }
+    }
+    .status-pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00f0ff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00f0ff;
+      animation: statusPulse 1.8s ease-in-out infinite;
+    }
+    .approved-reflection-box {
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid #10b981;
+      border-radius: var(--gp-radius-lg);
+      padding: var(--gp-space-5);
+      text-align: center;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+      animation: fadeIn 0.3s ease;
+    }
+    [data-theme="light"] .approved-reflection-box,
+    html[data-theme="light"] .approved-reflection-box {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: #059669 !important;
+    }
   </style>
 </head>
 <body>
@@ -206,253 +532,314 @@
         <img src="assets/original/favicon.png" alt="" width="48" height="48">
         <span class="brand-name">FORCE RACING<small>KITS WARANGAL</small></span>
       </a>
-      <a class="btn secondary" href="campaign.html" style="margin-left:auto;min-height:44px;font-size:.875rem;">Back to Sim Racing &rarr;</a>
+      <nav class="main-nav" id="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="cars.html">Cars</a>
+        <a href="team.html">Team</a>
+        <a href="recruitment.html">Recruitment</a>
+        <a href="support.html">Support</a>
+        <a href="contact.html">Contact</a>
+        <a href="verify.html" aria-current="page">Pass Checker</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle Dark / Light Theme" title="Switch Theme (Dark / Light)"><span class="theme-icon">🌙</span><span class="theme-text">DARK</span></button>
+        <a class="btn secondary" href="campaign.html" style="min-height:38px;padding:6px 14px;font-size:.875rem;">Sim Racing</a>
+        <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false">Menu +</button>
+      </div>
     </div>
   </header>
 
   <main id="main">
-    <div class="verify-page">
+    <div class="verify-page" id="verify-portal-container">
       <span class="eyebrow">SUMSHODHINI ’26 · Race Control</span>
-      <h1>TRACKSIDE PILOT VERIFICATION</h1>
-      <p class="lead muted">Official paddock credential validation and payment inspection for the F1 Simulator Experience.</p>
+      <h1>SUMSHODHINI PASS CHECKER</h1>
+      <p class="lead muted">Official paddock credential validation, pilot check-in, and payment verification console.</p>
 
-      <div class="search-bar" id="search-section">
-        <input type="text" id="pass-input" class="search-input" placeholder="ENTER PASS ID (e.g. FR26-SIM-12345)" aria-label="Pass ID">
-        <button class="btn" id="search-btn" type="button">Inspect Pass &rarr;</button>
-      </div>
-
-      <div id="loading" style="display:none; text-align:center; padding: 40px 0;">
-        <p class="muted" style="font-size: 1.2rem;">Checking telemetry and credential status...</p>
-      </div>
-
-      <div id="not-found" style="display:none;" class="verify-card">
-        <div class="verify-body" style="text-align: center; padding: 40px 20px;">
-          <h2 style="color: var(--gp-accent); margin-bottom: 12px;">PASS NOT FOUND</h2>
-          <p class="muted">No registration was found matching this Pass ID. Check the serial number and try again.</p>
-        </div>
-      </div>
-
-      <div id="result-card" style="display:none;" class="verify-card">
-        <div class="verify-header">
+      <!-- AUTH GATE SECTION (Visible if not authenticated) -->
+      <div id="auth-barrier-card">
+        <div id="checker-auth-gate" class="auth-card">
+        <div class="auth-header">
           <div class="team-badge">
-            <img src="assets/original/favicon.png" width="32" height="32" alt="">
-            <span>FORCE RACING</span>
+            <img src="assets/original/favicon.png" width="30" height="30" alt="">
+            <span>GATEKEEPER CONTROL</span>
           </div>
-          <span class="status-pill valid" id="cred-status">CREDENTIAL CONFIRMED</span>
+          <span class="status-pill" style="border:1px solid #ffb703;color:#ffb703;background:rgba(255,183,3,0.12);box-shadow:0 0 10px rgba(255,183,3,0.2);">RESTRICTED ACCESS</span>
         </div>
-        <div class="verify-body">
-          <div class="pass-tag">OFFICIAL SIMULATOR PASS</div>
-          <div class="pass-number" id="v-pass">FR26-SIM-00000</div>
-
-          <div class="details-grid">
-            <div class="detail-item">
-              <span class="detail-label">Pilot Name</span>
-              <span class="detail-value" id="v-name">—</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">College / Organization</span>
-              <span class="detail-value" id="v-org">—</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Mobile Number</span>
-              <span class="detail-value" id="v-phone">—</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Email Address</span>
-              <span class="detail-value" id="v-email">—</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Event Venue</span>
-              <span class="detail-value">Central Workshop, KITS Warangal</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Date &amp; Time</span>
-              <span class="detail-value">31 October 2026</span>
-            </div>
+        <div class="auth-body">
+          
+          <!-- Sliding Segmented Toggle Control -->
+          <div class="auth-slider-bar" id="auth-slider-container">
+            <div class="auth-slider-glider" id="slider-glider"></div>
+            <button type="button" class="auth-slider-opt active" id="tab-login-btn" onclick="window.showTab('login')">
+              🔐 Checker Sign In
+            </button>
+            <button type="button" class="auth-slider-opt" id="tab-request-btn" onclick="window.showTab('request')">
+              📝 Request Access (Sign Up)
+            </button>
           </div>
 
-          <div class="payment-section">
-            <div class="payment-header">
-              <h3 style="font-size: 1.3rem; margin: 0;">PAYMENT VERIFICATION (₹99)</h3>
-              <span class="payment-badge" id="v-payment-badge">PENDING</span>
+          <!-- Section 1: Login Form -->
+          <div id="panel-login-view">
+            <form id="checker-login-form">
+              <p class="muted" style="font-size:0.875rem;margin-bottom:16px;">
+                Authorized student coordinators and gate checkers can inspect participant credentials. Enter your coordinator email and password.
+              </p>
+              <div class="auth-form-group">
+                <label for="checker-email">Checker Email</label>
+                <input type="text" id="checker-email" placeholder="Enter coordinator email" required autocomplete="username">
+              </div>
+              <div class="auth-form-group">
+                <label for="checker-password">Access Password</label>
+                <input type="password" id="checker-password" placeholder="Enter assigned password" required autocomplete="current-password">
+              </div>
+              <p id="login-error" style="color:var(--gp-danger);font-size:0.875rem;margin-bottom:12px;display:none;"></p>
+              <button type="submit" class="btn" style="width:100%;justify-content:center;">Sign In to Pass Checker</button>
+            </form>
+
+            <p style="text-align:center;margin-top:24px;font-size:0.875rem;">
+              <a href="javascript:void(0)" id="link-to-request" class="link-cyan" onclick="window.showTab('request')" style="color:#00f0ff;text-decoration:underline;font-weight:bold;">
+                Need access? Slide or tap here to Request Access (Sign Up) <svg class="icon-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12.5L12.5 3.5M12.5 3.5H5.5M12.5 3.5V10.5"/></svg>
+              </a>
+            </p>
+          </div>
+
+          <!-- Section 2: Request Access Form -->
+          <div id="panel-request-view" style="display:none;">
+            <form id="checker-request-form">
+              <p class="muted" style="font-size:0.875rem;margin-bottom:18px;">Want to verify passes at the Central Workshop? Enter your application details below. Your request will be reviewed and access credentials will be sent upon approval.</p>
+              <div class="auth-form-group">
+                <label for="req-name">Your Full Name</label>
+                <input type="text" id="req-name" placeholder="Full Name (e.g. John Doe)" required>
+              </div>
+              <div class="auth-form-group">
+                <label for="req-email">Your Email Address (where password will be sent)</label>
+                <input type="email" id="req-email" placeholder="name@example.com" required>
+              </div>
+              <div class="auth-form-group">
+                <label for="req-phone">Your Mobile Number</label>
+                <input type="tel" id="req-phone" placeholder="e.g. 9876543210" required>
+              </div>
+              <div class="auth-form-group">
+                <label for="req-role">Department / Workshop Station</label>
+                <input type="text" id="req-role" placeholder="e.g. Mechanical Dept / Gate 1" required>
+              </div>
+              <div class="auth-form-group">
+                <label for="req-reason">Assignment / Purpose</label>
+                <input type="text" id="req-reason" placeholder="e.g. Sumshodhini Paddock Pass Verification Volunteer">
+              </div>
+              <div id="req-status-box" style="display:none;padding:12px;border-radius:4px;margin-bottom:14px;"></div>
+              <button type="submit" class="btn" id="req-submit-btn" style="width:100%;justify-content:center;">
+                Submit Access Request
+              </button>
+            </form>
+
+            <p style="text-align:center;margin-top:18px;font-size:0.875rem;">
+              <a href="javascript:void(0)" id="link-to-login" class="link-cyan" onclick="window.showTab('login')" style="color:#00f0ff;text-decoration:underline;font-weight:bold;">
+                Already authorized? Slide or tap here to Sign In <svg class="icon-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12.5L12.5 3.5M12.5 3.5H5.5M12.5 3.5V10.5"/></svg>
+              </a>
+            </p>
+          </div>
+
+        </div>
+      </div>
+      </div>
+
+      <!-- MAIN CHECKER CONTROL PANEL (Visible when authenticated) -->
+      <div id="checker-control-panel" style="display:none;">
+        <div class="checker-session-bar">
+          <span>🟢 Checker Active: <strong id="active-checker-name" style="color:#00f0ff;">Authorized Coordinator</strong></span>
+          <button type="button" class="btn secondary" id="checker-logout-btn" style="min-height:44px;padding:6px 14px;font-size:0.813rem;">Sign Out</button>
+        </div>
+
+        <!-- QR Code Scanner & Pass Search Actions -->
+        <div class="scanner-actions-bar" style="margin-top:var(--gp-space-4);">
+          <button type="button" class="btn btn-camera-scan" id="btn-camera-scan" title="Open camera to scan participant pass QR code" style="width:100%;margin-bottom:12px;">
+            📷 Scan QR Code (Camera)
+          </button>
+        </div>
+
+        <div class="search-bar" id="search-section" style="margin-top:0;">
+          <input type="text" id="pass-input" name="pass-query" data-id="pass-query" class="search-input" placeholder="ENTER PASS ID, MOBILE NO, OR ROLL NO (e.g. FR26-SIM-83733F88)" aria-label="Pass ID">
+          <button class="btn" id="search-btn" type="button">Inspect Pass</button>
+        </div>
+
+        <!-- Scan Status Toast -->
+        <div id="scanner-status-toast" class="scanner-toast"></div>
+
+        <div id="loading" style="display:none; text-align:center; padding: 40px 0;">
+          <p class="muted" style="font-size: 1.2rem;">Checking telemetry and credential status...</p>
+        </div>
+
+        <div id="not-found" style="display:none;" class="verify-card">
+          <div class="verify-body" style="text-align: center; padding: 40px 20px;">
+            <h2 style="color: var(--gp-accent); margin-bottom: 12px;">PASS NOT FOUND</h2>
+            <p class="muted">No registration was found matching this Pass ID. Check the serial number or verify in the Master Google Sheet.</p>
+          </div>
+        </div>
+
+        <div id="result-card" style="display:none;" class="verify-card">
+          <div class="verify-header">
+            <div class="team-badge">
+              <img src="assets/original/favicon.png" width="32" height="32" alt="">
+              <span>FORCE RACING</span>
+            </div>
+            <span class="status-pill valid" id="cred-status">CREDENTIAL CONFIRMED</span>
+          </div>
+          <div class="verify-body">
+            <div class="pass-tag">OFFICIAL SIMULATOR PILOT PASS</div>
+            <div class="pass-number" id="v-pass">FR26-SIM-00000</div>
+
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">Pilot Name</span>
+                <span class="detail-value" id="v-name" style="font-size:1.15rem;color:#00f0ff;font-weight:700;">—</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">College / Organization / Roll No</span>
+                <span class="detail-value" id="v-org">—</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Mobile Number</span>
+                <span class="detail-value" id="v-phone">
+                  <span id="v-phone-text">—</span>
+                  <a id="v-phone-call" href="#" style="margin-left:8px;color:#00f0ff;font-size:0.813rem;text-decoration:underline;">Call</a>
+                  <a id="v-phone-wa" href="#" target="_blank" style="margin-left:8px;color:#25d366;font-size:0.813rem;text-decoration:underline;">WhatsApp</a>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Email Address</span>
+                <span class="detail-value">
+                  <a id="v-email-link" href="#" style="color:#fff;text-decoration:underline;"><span id="v-email">—</span></a>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Event Category / Slot</span>
+                <span class="detail-value" id="v-slot">F1 Sim Racing Challenge (31 Oct 2026)</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Registration Time</span>
+                <span class="detail-value" id="v-timestamp">—</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Event Venue</span>
+                <span class="detail-value">Central Workshop, KITS Warangal</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Entry Fee</span>
+                <span class="detail-value">₹99 per participant</span>
+              </div>
             </div>
 
-            <!-- Uploaded Screenshot View -->
-            <div id="screenshot-view" style="display:none;">
-              <p class="muted" style="font-size:.875rem;">Verified payment screenshot attached to participant record in Google Drive:</p>
-              <div class="screenshot-frame">
-                <img id="v-screenshot-img" src="" alt="Payment Screenshot">
+            <!-- Trackside Check-In Action Bar -->
+            <div class="trackside-action-bar" style="margin-top:var(--gp-space-4);padding:14px;background:#111524;border:1px solid rgba(255,255,255,0.12);border-radius:var(--gp-radius);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+              <div>
+                <span style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gp-ink-3);display:block;">Paddock Gate Status</span>
+                <strong id="v-gate-status" style="color:#00f0ff;font-size:0.95rem;">READY FOR INSPECTION</strong>
               </div>
-              <div class="screenshot-actions">
-                <a id="v-drive-link" href="#" target="_blank" class="btn secondary" style="min-height:44px;font-size:.875rem;">Open Full Resolution in Drive &rarr;</a>
-                <button type="button" class="btn secondary" id="reupload-btn" style="min-height:44px;font-size:.875rem;">Update Screenshot</button>
-              </div>
+              <button type="button" class="btn" id="btn-mark-checkin" style="min-height:44px;padding:6px 16px;font-size:0.875rem;background:#10b981;border-color:#10b981;box-shadow:0 0 14px rgba(16,185,129,0.35);">
+                ✅ Mark Check-In Complete
+              </button>
             </div>
 
-            <!-- Upload Box (if not yet uploaded or re-uploading) -->
-            <div id="upload-view" style="display:none;">
-              <div class="upload-box">
-                <p style="font-weight:700; margin-bottom: 8px;">Upload Payment Screenshot</p>
-                <p class="muted" style="font-size:.875rem; margin-bottom: 16px;">Pay ₹99 using the pit lane QR code, then attach the screenshot here for immediate trackside sign-off.</p>
-                <input type="file" id="proof-file" accept="image/*" class="file-input">
-                <button type="button" class="btn" id="browse-btn">Select Screenshot / Photo &rarr;</button>
-                <p id="upload-status" class="muted" style="font-size:.813rem; margin-top: 12px;"></p>
+            <div class="payment-section">
+              <div class="payment-header">
+                <h3 style="font-size: 1.3rem; margin: 0;">PAYMENT VERIFICATION (₹99)</h3>
+                <span class="payment-badge" id="v-payment-badge">PENDING</span>
+              </div>
+
+              <!-- Uploaded Screenshot View -->
+              <div id="screenshot-view" style="display:none;">
+                <p class="muted" style="font-size:.875rem;">Verified payment screenshot attached to participant record:</p>
+                <div class="screenshot-frame" id="screenshot-frame-box" style="cursor:zoom-in;" title="Click to zoom and inspect proof">
+                  <img id="v-screenshot-img" src="" alt="Payment Screenshot" width="1200" height="1600" style="cursor:zoom-in;">
+                  <p class="muted" id="v-zoom-hint" style="font-size:0.75rem;margin-top:8px;color:#00f0ff;">🔍 Click image to enlarge / zoom in</p>
+                </div>
+                <div class="screenshot-actions">
+                  <button type="button" class="btn" id="btn-enlarge-screenshot" style="min-height:44px;font-size:.875rem;background:#00f0ff;color:#000;font-weight:700;">🔍 Zoom &amp; Inspect Proof</button>
+                  <a id="v-drive-link" href="#" target="_blank" class="btn secondary" style="min-height:44px;font-size:.875rem;">Open Full Resolution in Drive</a>
+                  <button type="button" class="btn secondary" id="reupload-btn" style="min-height:44px;font-size:.875rem;">Update Screenshot</button>
+                </div>
+              </div>
+
+              <!-- Upload Box -->
+              <div id="upload-view" style="display:none;">
+                <div class="upload-box">
+                  <p style="font-weight:700; margin-bottom: 8px;">Upload Payment Screenshot</p>
+                  <p class="muted" style="font-size:.875rem; margin-bottom: 16px;">Pay ₹99 using the pit lane QR code, then attach the screenshot here for immediate trackside sign-off.</p>
+                  <input type="file" id="proof-file" accept="image/*" class="file-input">
+                  <button type="button" class="btn" id="browse-btn">Select Screenshot / Photo</button>
+                  <p id="upload-status" class="muted" style="font-size:.813rem; margin-top: 12px;"></p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </main>
 
-  <script>
-    (function() {
-      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD9CNFpiQo41pQn1KARMFg1G03iMlkfumR6hFYWBZpCDDAahlCFej90HHjMrojlwtw/exec";
-      const params = new URLSearchParams(window.location.search);
-      const passParam = params.get('pass') || '';
+  <!-- LIVE CAMERA QR SCANNER MODAL -->
+  <div id="qr-camera-modal" style="display:none;position:fixed;inset:0;background:rgba(4,6,12,0.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99999;align-items:center;justify-content:center;padding:16px;">
+    <div style="position:relative;width:100%;max-width:520px;background:#0d111c;border:2px solid #00f0ff;border-radius:12px;overflow:hidden;box-shadow:0 0 35px rgba(0,240,255,0.25);">
+      <!-- Header -->
+      <div style="background:#14192b;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,240,255,0.3);">
+        <div style="display:flex;align-items:center;gap:10px;font-weight:700;color:#00f0ff;font-size:0.95rem;letter-spacing:.04em;">
+          <span style="font-size:1.2rem;">📷</span> LIVE QR CODE SCANNER
+        </div>
+        <button type="button" id="btn-close-scanner" style="background:transparent;border:none;color:#fff;font-size:1.5rem;line-height:1;cursor:pointer;padding:4px 8px;" aria-label="Close scanner">✕</button>
+      </div>
 
-      const searchInput = document.getElementById('pass-input');
-      const searchBtn = document.getElementById('search-btn');
-      const loadingEl = document.getElementById('loading');
-      const notFoundEl = document.getElementById('not-found');
-      const resultCard = document.getElementById('result-card');
+      <!-- Video Viewport with Targeting Overlay -->
+      <div class="camera-viewport" style="position:relative;width:100%;height:350px;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <video id="qr-video" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover;"></video>
+        <canvas id="qr-canvas" style="display:none;"></canvas>
 
-      const vPass = document.getElementById('v-pass');
-      const vName = document.getElementById('v-name');
-      const vOrg = document.getElementById('v-org');
-      const vPhone = document.getElementById('v-phone');
-      const vEmail = document.getElementById('v-email');
-      const vPaymentBadge = document.getElementById('v-payment-badge');
-      const screenshotView = document.getElementById('screenshot-view');
-      const uploadView = document.getElementById('upload-view');
-      const screenshotImg = document.getElementById('v-screenshot-img');
-      const driveLink = document.getElementById('v-drive-link');
-      const browseBtn = document.getElementById('browse-btn');
-      const fileInput = document.getElementById('proof-file');
-      const uploadStatus = document.getElementById('upload-status');
-      const reuploadBtn = document.getElementById('reupload-btn');
+        <!-- Targeting Reticle -->
+        <div style="position:absolute;width:230px;height:230px;pointer-events:none;">
+          <div class="scanner-corner corner-tl"></div>
+          <div class="scanner-corner corner-tr"></div>
+          <div class="scanner-corner corner-bl"></div>
+          <div class="scanner-corner corner-br"></div>
+          <div class="scanner-laser"></div>
+        </div>
 
-      let currentPass = '';
+        <!-- Viewport Hint -->
+        <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;pointer-events:none;padding:0 12px;">
+          <span id="qr-modal-status" style="background:rgba(0,0,0,0.8);color:#00f0ff;font-size:0.813rem;font-weight:600;padding:5px 14px;border-radius:99px;border:1px solid rgba(0,240,255,0.4);display:inline-block;">
+            Align QR Code inside the crosshairs
+          </span>
+        </div>
+      </div>
 
-      if (passParam) {
-        searchInput.value = passParam;
-        lookup(passParam);
-      }
-
-      searchBtn.addEventListener('click', () => {
-        const val = searchInput.value.trim();
-        if (val) lookup(val);
-      });
-
-      searchInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const val = searchInput.value.trim();
-          if (val) lookup(val);
-        }
-      });
-
-      browseBtn.addEventListener('click', () => fileInput.click());
-      reuploadBtn.addEventListener('click', () => {
-        screenshotView.style.display = 'none';
-        uploadView.style.display = 'block';
-      });
-
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        uploadStatus.textContent = 'Compressing and uploading image...';
-        browseBtn.disabled = true;
-
-        const reader = new FileReader();
-        reader.onload = async function() {
-          const base64Data = reader.result;
-          try {
-            uploadStatus.textContent = 'Saving to Google Drive & updating Master Sheet...';
-            // Send to Google Apps Script
-            const res = await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({
-                action: 'upload_screenshot',
-                passId: currentPass,
-                screenshotBase64: base64Data
-              })
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-              uploadStatus.textContent = 'Upload complete!';
-              browseBtn.disabled = false;
-              lookup(currentPass);
-            } else {
-              throw new Error(data.error || 'Upload failed');
-            }
-          } catch (err) {
-            uploadStatus.textContent = 'Error: ' + err.message + '. Please retry.';
-            browseBtn.disabled = false;
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-
-      async function lookup(pass) {
-        currentPass = pass;
-        loadingEl.style.display = 'block';
-        notFoundEl.style.display = 'none';
-        resultCard.style.display = 'none';
-
-        try {
-          // Attempt 1: Cloudflare worker API
-          let res = await fetch('/api/verify?pass=' + encodeURIComponent(pass)).catch(() => null);
-          let data = null;
-          if (res && res.ok) {
-            data = await res.json();
-          }
-
-          // Attempt 2: Fallback direct to Google Apps Script
-          if (!data || data.status === 'not_found' || !data.ok && data.status !== 'found') {
-            const scriptRes = await fetch(APPS_SCRIPT_URL + '?action=verify&pass=' + encodeURIComponent(pass));
-            if (scriptRes.ok) {
-              data = await scriptRes.json();
-            }
-          }
-
-          loadingEl.style.display = 'none';
-
-          if (data && (data.status === 'found' || data.ok)) {
-            const rec = data.record || data;
-            vPass.textContent = rec.passId || pass;
-            vName.textContent = rec.name || 'Formula Pilot';
-            vOrg.textContent = rec.organization || rec.rollNumber || 'KITS Warangal';
-            vPhone.textContent = rec.phone || 'N/A';
-            vEmail.textContent = rec.email || 'N/A';
-
-            const hasProof = !!(rec.driveUrl || rec.screenshotUrl);
-            if (hasProof) {
-              vPaymentBadge.textContent = 'PAYMENT VERIFIED';
-              vPaymentBadge.className = 'payment-badge uploaded';
-              screenshotImg.src = rec.driveUrl || rec.screenshotUrl;
-              driveLink.href = rec.driveUrl || rec.screenshotUrl;
-              screenshotView.style.display = 'block';
-              uploadView.style.display = 'none';
-            } else {
-              vPaymentBadge.textContent = 'PROOF PENDING';
-              vPaymentBadge.className = 'payment-badge pending';
-              screenshotView.style.display = 'none';
-              uploadView.style.display = 'block';
-            }
-
-            resultCard.style.display = 'block';
-          } else {
-            notFoundEl.style.display = 'block';
-          }
-        } catch (err) {
-          loadingEl.style.display = 'none';
-          notFoundEl.style.display = 'block';
-        }
-      }
-    })();
-  </script>
+      <!-- Controls Footer -->
+      <div style="padding:14px 18px;background:#0d111c;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,0.1);">
+        <button type="button" class="btn secondary" id="btn-flip-camera" style="min-height:44px;padding:6px 14px;font-size:0.813rem;">
+          🔄 Switch Camera
+        </button>
+        <button type="button" class="btn secondary" id="btn-toggle-torch" style="min-height:44px;padding:6px 14px;font-size:0.813rem;">
+          💡 Flashlight
+        </button>
+        <button type="button" class="btn secondary" id="btn-cancel-scan" style="min-height:44px;padding:6px 14px;font-size:0.813rem;border-color:rgba(255,51,75,0.5);color:#ff334b;">
+          Close Scanner
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- PAYMENT SCREENSHOT LIGHTBOX / ENLARGE MODAL -->
+  <div id="photo-lightbox-modal" style="display:none;position:fixed;inset:0;background:rgba(4,6,14,0.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:999999;align-items:center;justify-content:center;padding:16px;">
+    <div style="position:relative;max-width:94vw;max-height:92vh;display:flex;flex-direction:column;align-items:center;">
+      <div style="width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="color:#00f0ff;font-size:0.95rem;font-weight:800;letter-spacing:.05em;">🔍 PAYMENT PROOF INSPECTION</span>
+        <button type="button" id="btn-close-lightbox" style="background:#ff1801;border:none;color:#fff;font-size:1rem;line-height:1;cursor:pointer;padding:6px 14px;border-radius:4px;font-weight:bold;" aria-label="Close lightbox">✕ Close</button>
+      </div>
+      <div style="background:#000;border:2px solid #00f0ff;border-radius:8px;padding:6px;box-shadow:0 0 35px rgba(0,240,255,0.35);overflow:auto;max-height:82vh;display:flex;justify-content:center;align-items:center;">
+        <img id="lightbox-img" src="" alt="Payment Proof Full View" width="1200" height="1600" style="max-width:100%;max-height:80vh;object-fit:contain;cursor:zoom-out;display:block;">
+      </div>
+      <div style="margin-top:10px;text-align:center;color:var(--gp-ink-2);font-size:0.813rem;">
+        Click image or press ESC to close · Verify transaction reference, ₹99 amount &amp; timestamp
+      </div>
+    </div>
+  </div>
 </body>
 </html>

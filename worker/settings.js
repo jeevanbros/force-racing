@@ -6,7 +6,7 @@ export const DEFAULT_SETTINGS = {
   campaign: {
     title: 'F1 Sim Racing', subtitle: 'Sumshodhini ’26',
     description: 'Department of Mechanical Engineering, KITS Warangal.',
-    cta: 'Register your interest', date: '2026-10-31', venue: 'Central Workshop', fee: 'INR 99 per student',
+    cta: 'On-Spot Registration', date: '2026-10-31', venue: 'Central Workshop', fee: 'INR 99 per student',
     registrationUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSdojQE57Sd9rPsMwwrRuy-RQVNfyL4LaRf8h7srZAYWspcVcw/viewform?usp=dialog',
     artwork: '', enabled: false, expiresAt: null
   },

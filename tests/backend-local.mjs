@@ -3,6 +3,9 @@
    Requires .dev.vars (npm run setup:local) and migrations applied (npm run db:migrate:local). */
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
+import { resolve } from 'node:path';
 import { createHmac } from 'node:crypto';
 
 const BASE = 'http://127.0.0.1:8787';
@@ -150,6 +153,68 @@ try {
   await post('/api/admin/logout', {}, auth);
   const afterLogout = await fetch(BASE + '/api/admin/submissions', { headers: { Cookie: cookie } });
   check('logout invalidates session', afterLogout.status === 401);
+
+  // 13. Pass Checker request access workflow (pending status, Telegram/email dispatch)
+  function getLocalD1() {
+    try {
+      const dir = resolve('.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
+      for (const f of readdirSync(dir)) {
+        if (f.endsWith('.sqlite') && f !== 'metadata.sqlite') {
+          try {
+            const db = new DatabaseSync(resolve(dir, f));
+            const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='checker_accounts'").all();
+            if (tables.length > 0) return db;
+          } catch {}
+        }
+      }
+    } catch {}
+    return null;
+  }
+
+  const reqEmail = 'smoke-checker-' + Date.now() + '@kitsw.ac.in';
+  const reqRes = await post('/api/checker/request-access', {
+    name: 'Smoke Gatekeeper',
+    email: reqEmail,
+    phone: '+91 98888 77777',
+    role: 'Central Paddock',
+    reason: 'Credential Verification'
+  });
+  check('checker access request responds 200', reqRes.status === 200 && reqRes.data.ok === true);
+
+  const localDb = getLocalD1();
+  const pendingAcc = localDb ? localDb.prepare('SELECT * FROM checker_accounts WHERE email = ?').get(reqEmail) : null;
+  check('request-access sets status to pending with decision token in D1', pendingAcc && pendingAcc.status === 'pending' && Boolean(pendingAcc.token));
+
+  // 14. Unauthorized login rejected and logged to checker_auth_logs with IP
+  const unauthLogin = await post('/api/checker/login', { email: reqEmail, password: 'WRONG-PASSWORD' });
+  check('pending/unapproved checker login rejected with 401', unauthLogin.status === 401);
+
+  // 15. Admin decision: approve generates strong password and updates status in D1
+  const decisionRes = await fetch(BASE + '/api/checker/decision?token=' + (pendingAcc ? pendingAcc.token : '') + '&action=approve');
+  const decisionHtml = await decisionRes.text();
+  check('checker decision approve responds 200', decisionRes.status === 200 && decisionHtml.includes('Pass Checker Credentials Generated'));
+
+  const approvedAcc = localDb ? localDb.prepare('SELECT * FROM checker_accounts WHERE email = ?').get(reqEmail) : null;
+  check('decision approve updates status to approved and generates FR- password', approvedAcc && approvedAcc.status === 'approved' && approvedAcc.password.startsWith('FR-'));
+
+  // 16. Approved login succeeds with generated password and logs to checker_auth_logs
+  const authLogin = await post('/api/checker/login', { email: reqEmail, password: approvedAcc ? approvedAcc.password : '' });
+  check('approved checker login succeeds with valid credentials', authLogin.status === 200 && authLogin.data.ok === true && Boolean(authLogin.data.token));
+
+  const authLogs = localDb ? localDb.prepare("SELECT * FROM checker_auth_logs WHERE email = ? ORDER BY timestamp ASC").all(reqEmail) : [];
+  check('login attempts (failed_login and login) logged with IP to checker_auth_logs', authLogs.some(l => l.action === 'failed_login') && authLogs.some(l => l.action === 'login'));
+
+  // 17. Checker logout logs event to checker_auth_logs
+  const logoutRes = await post('/api/checker/logout', { email: reqEmail });
+  check('checker logout responds 200', logoutRes.status === 200 && logoutRes.data.ok === true);
+  const logoutLogs = localDb ? localDb.prepare("SELECT * FROM checker_auth_logs WHERE email = ? AND action = 'logout'").all(reqEmail) : [];
+  check('checker logout logged to checker_auth_logs', logoutLogs.length > 0);
+
+  // 18. Real-time site analytics track records visitor data
+  const trackRes = await post('/api/analytics/track', { path: '/campaign.html', durationSeconds: 60, maxScrollPercent: 75 });
+  check('analytics track responds 200', trackRes.status === 200 && trackRes.data.ok === true);
+  const analyticsRows = localDb ? localDb.prepare("SELECT * FROM site_analytics WHERE path = '/campaign.html' ORDER BY timestamp DESC LIMIT 1").all() : [];
+  check('site_analytics records path, duration, and scroll percent', analyticsRows.length > 0 && analyticsRows[0].duration_seconds === 60 && analyticsRows[0].max_scroll_percent === 75);
 } catch (error) {
   failed++; console.log('FAIL  smoke run aborted — ' + error.message);
 } finally {

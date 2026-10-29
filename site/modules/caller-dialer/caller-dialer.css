@@ -1,0 +1,325 @@
+/**
+ * Force Racing — Caller Dialer Component Module
+ * Standard: SpaceX Motorsport Telemetry Engineering Standards
+ * Plug-and-play module for seamless direct-dial integration.
+ * Replaces bracketed/raw phone numbers with exact-typography names and tactile caller icon buttons.
+ */
+
+/* ==========================================================================
+   1. BASE CALLER LINK & INLINE WRAPPER
+   ========================================================================== */
+.fr-caller-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+  vertical-align: middle;
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--gp-dur-quick, 150ms) var(--gp-ease-out, ease-out);
+}
+
+.fr-caller-link:focus-visible {
+  outline: 2px solid var(--gp-focus, #00f0ff);
+  outline-offset: 4px;
+  border-radius: var(--gp-radius, 2px);
+}
+
+.fr-caller-name {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: inherit;
+  color: inherit;
+  transition: color var(--gp-dur-quick, 150ms) var(--gp-ease-out, ease-out);
+  white-space: nowrap;
+}
+
+.fr-caller-link:hover .fr-caller-name {
+  color: var(--gp-ink, #f4f1e9);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   2. CRISP CALLER ICON BADGE (Tactile Micro-interactions)
+   ========================================================================== */
+.fr-caller-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 50%;
+  background: var(--gp-surface, #1b1c1c);
+  border: 1px solid var(--gp-line, #363737);
+  color: var(--gp-accent, #e10600);
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  transition: 
+    transform var(--gp-dur-quick, 150ms) var(--gp-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    background var(--gp-dur-quick, 150ms) var(--gp-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color var(--gp-dur-quick, 150ms) var(--gp-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow var(--gp-dur-quick, 150ms) var(--gp-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    color var(--gp-dur-quick, 150ms) var(--gp-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* Touch area expansion to meet ergonomic precision (min 48px - 52px target) */
+.fr-caller-icon-badge::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 48px;
+  min-height: 48px;
+  width: 100%;
+  height: 100%;
+}
+
+.fr-caller-icon-badge svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+  fill: currentColor;
+  transition: transform var(--gp-dur-quick, 150ms) var(--gp-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* Hover state: Racing red pulse & handset tilt */
+@media (hover: hover) {
+  .fr-caller-link:hover .fr-caller-icon-badge,
+  .fr-caller-icon-badge:hover {
+    background: rgba(225, 6, 0, 0.16);
+    border-color: var(--gp-accent, #e10600);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(225, 6, 0, 0.45);
+    transform: translateY(-1px) scale(1.08);
+  }
+
+  .fr-caller-link:hover .fr-caller-icon-badge svg,
+  .fr-caller-icon-badge:hover svg {
+    transform: rotate(-10deg) scale(1.1);
+  }
+}
+
+/* Active / Pressed state: Instant 60fps tactile feedback */
+.fr-caller-link:active .fr-caller-icon-badge,
+.fr-caller-icon-badge:active,
+.fr-caller-btn:active {
+  transform: scale(0.92) !important;
+  background: var(--gp-accent, #e10600) !important;
+  color: #ffffff !important;
+  border-color: var(--gp-accent, #e10600) !important;
+  box-shadow: 0 0 16px rgba(225, 6, 0, 0.75) !important;
+}
+
+/* ==========================================================================
+   3. CARD & BLOCK CALLER VARIANTS (e.g. Need Help / Recruitment / Contact)
+   ========================================================================== */
+.fr-caller-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gp-space-4, 1rem);
+  padding: var(--gp-space-3, 0.75rem) var(--gp-space-4, 1rem);
+  background: var(--gp-surface, #1b1c1c);
+  border: 1px solid var(--gp-line, #363737);
+  border-left: 3px solid var(--gp-accent, #e10600);
+  border-radius: var(--gp-radius, 2px);
+  margin-top: var(--gp-space-3, 0.75rem);
+  transition: border-color var(--gp-dur-quick, 150ms) var(--gp-ease-out, ease-out);
+}
+
+.fr-caller-card:hover {
+  border-color: rgba(225, 6, 0, 0.5);
+}
+
+.fr-caller-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fr-caller-card-info .fr-caller-name {
+  font-family: var(--gp-font-head, Barlow, sans-serif);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--gp-ink, #f4f1e9);
+  text-transform: uppercase;
+}
+
+.fr-caller-card-info .fr-caller-role {
+  font-size: 0.813rem;
+  color: var(--gp-ink-2, #c4c3bd);
+  margin: 0;
+}
+
+/* Standalone Caller Action Button */
+.fr-caller-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(90deg, #b80500, #e10600);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-family: var(--gp-font-body, Arial, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--gp-radius, 2px);
+  border: 1px solid var(--gp-accent, #e10600);
+  box-shadow: 0 4px 14px rgba(184, 5, 0, 0.35);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: 
+    transform var(--gp-dur-quick, 150ms) var(--gp-ease-out, ease-out),
+    box-shadow var(--gp-dur-quick, 150ms) var(--gp-ease-out, ease-out),
+    background var(--gp-dur-quick, 150ms) var(--gp-ease-out, ease-out);
+}
+
+.fr-caller-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+@media (hover: hover) {
+  .fr-caller-btn:hover {
+    background: linear-gradient(90deg, #e10600, #d90429);
+    box-shadow: 0 6px 20px rgba(225, 6, 0, 0.55);
+    transform: translateY(-1px);
+  }
+}
+
+/* ==========================================================================
+   4. ORGANIZER STRIP & ROSTER INTEGRATION
+   ========================================================================== */
+.organizer-strip .fr-caller-link {
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: var(--gp-ink, #f4f1e9);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-inline: 2px;
+}
+
+.organizer-strip .fr-caller-icon-badge {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+}
+
+.organizer-strip .fr-caller-icon-badge svg {
+  width: 11px;
+  height: 11px;
+}
+
+.organizer-grid .fr-caller-link {
+  font-size: 0.938rem;
+  color: var(--gp-ink, #f4f1e9);
+}
+
+/* Team Roster integration */
+.roster-row .fr-caller-link {
+  font-family: var(--gp-font-head, Barlow, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--gp-ink, #f4f1e9);
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.roster-row .fr-caller-icon-badge {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.roster-row .fr-caller-icon-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Separator dot */
+.fr-caller-sep {
+  color: var(--gp-ink-3, #b5b6b0);
+  margin-inline: 4px;
+  user-select: none;
+}
+
+/* ==========================================================================
+   5. MOBILE & TOUCH ERGONOMICS (48px - 52px Touch Target)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .fr-caller-link {
+    min-height: 48px;
+    padding-block: 4px;
+  }
+
+  .fr-caller-icon-badge::after {
+    min-width: 52px;
+    min-height: 52px;
+  }
+
+  .organizer-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.8;
+  }
+
+  .organizer-strip .fr-caller-link {
+    min-height: 36px;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--gp-radius, 2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .fr-caller-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gp-space-3, 0.75rem);
+    padding: var(--gp-space-4, 1rem);
+  }
+
+  .fr-caller-card .fr-caller-btn {
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   6. REDUCED MOTION PREFERENCE
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .fr-caller-link,
+  .fr-caller-icon-badge,
+  .fr-caller-btn,
+  .fr-caller-icon-badge svg {
+    transition: none !important;
+    transform: none !important;
+  }
+}
