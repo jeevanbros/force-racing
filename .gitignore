@@ -16,4 +16,6 @@ usb-package/
 *.zip
 .edge-temp/
 .edge-temp-*/
+.edge-test-live-verify/
+.edge-*/
 review/
