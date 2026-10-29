@@ -41,6 +41,7 @@
     });
     for (const key of ['title', 'programme', 'date', 'venue', 'fee']) {
       document.querySelectorAll(`[data-campaign="${key}"], [data-campaign="${key === 'title' ? 'name' : key}"]`).forEach(el => {
+        if (el.hasAttribute('data-home-title')) return; // Never overwrite home hero brand title
         if (typeof campaign[key] === 'string') el.textContent = key === 'date' ? readableDate(campaign[key]) : campaign[key];
       });
     }
@@ -50,6 +51,11 @@
     const hero = document.querySelector('[data-home-hero]');
     if (hero) {
       hero.dataset.campaignActive = String(on);
+      // Ensure data-home-title is NOT overwritten by campaign render so DREAM. BUILD. RACE. stays permanent
+      const homeTitle = hero.querySelector('[data-home-title]');
+      if (homeTitle && !homeTitle.innerHTML.includes('DREAM.')) {
+        homeTitle.innerHTML = 'DREAM. <span class="text-accent">BUILD.</span> <span class="text-outline">RACE.</span>';
+      }
       const cta = hero.querySelector('[data-home-cta]');
       if (cta) {
         if (on) {
