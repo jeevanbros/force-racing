@@ -147,7 +147,7 @@
     document.querySelectorAll('.theme-toggle').forEach((btn) => {
       const icon = btn.querySelector('.theme-icon');
       const text = btn.querySelector('.theme-text');
-      if (icon) icon.textContent = String.fromCharCode(light ? 0x2600 : 0x263e);
+      if (icon) icon.textContent = light ? '☀️' : '🌙';
       if (text) text.textContent = light ? 'LIGHT' : 'DARK';
       btn.setAttribute('aria-pressed', String(light));
       const label = light ? 'Switch to dark mode' : 'Switch to light mode';
@@ -155,7 +155,7 @@
       btn.setAttribute('title', label);
     });
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
-      if ((m.getAttribute('media') || '').indexOf('light') !== -1) m.setAttribute('content', light ? '#f8fafc' : '#090b10');
+      m.setAttribute('content', light ? '#f8fafc' : '#090b10');
     });
   };
 
