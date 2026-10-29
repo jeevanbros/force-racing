@@ -9,7 +9,7 @@ window.FORCE_CAMPAIGN = Object.freeze({
   "date": "31 October 2026",
   "venue": "Central Workshop",
   "fee": "₹99 per student",
-  "registrationUrl": "",
+  "registrationUrl": "https://docs.google.com/forms/d/e/1FAIpQLSdojQE57Sd9rPsMwwrRuy-RQVNfyL4LaRf8h7srZAYWspcVcw/viewform?usp=dialog",
   "artwork": "assets/images/formula-studio-1600.webp",
   "artworkMobile": "assets/images/formula-studio-800.webp",
   "artworkAlt": "A red Formula-style racing car against a dark studio background. Campaign concept artwork.",

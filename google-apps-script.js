@@ -140,6 +140,27 @@ function doPost(e) {
     var ss = getSpreadsheet();
     var action = data.action || "submit";
 
+    if (action === "test_email") {
+      var targetEmail = String(data.email || "team.force.racing.kitsw@gmail.com").trim();
+      var testPass = "FR26-SIM-TEST-" + Math.floor(1000 + Math.random() * 9000);
+      var testVerify = "https://force-racing.force-racing-revival.workers.dev/verify.html?pass=" + testPass;
+      var testQr = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=" + encodeURIComponent(testVerify);
+      var testHtml = buildF1EmailHtml({ name: data.name || "Test Pilot", email: targetEmail, organization: "KITS Warangal" }, testPass, testQr, testVerify);
+      var sentOk = false, sendMethod = null, sendErr = null;
+      try {
+        MailApp.sendEmail({ to: targetEmail, subject: "🏁 [TEST PASS] Official Credential // " + testPass, body: "Test pass email. Verify: " + testVerify, htmlBody: testHtml, name: "Force Racing" });
+        sentOk = true; sendMethod = "MailApp";
+      } catch (e1) {
+        try {
+          GmailApp.sendEmail(targetEmail, "🏁 [TEST PASS] Official Credential // " + testPass, "Test pass email. Verify: " + testVerify, { htmlBody: testHtml, name: "Force Racing" });
+          sentOk = true; sendMethod = "GmailApp";
+        } catch (e2) {
+          sendErr = "MailApp: " + e1.toString() + " | GmailApp: " + e2.toString();
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: sentOk ? "success" : "error", sent: sentOk, method: sendMethod, error: sendErr, recipient: targetEmail })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (action === "upload_screenshot") {
       var passId = data.passId;
       var base64Data = data.screenshotBase64;
@@ -393,20 +414,55 @@ function doPost(e) {
     var verifyUrl = "https://force-racing.force-racing-revival.workers.dev/verify.html?pass=" + encodeURIComponent(passId);
     var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=" + encodeURIComponent(verifyUrl);
 
-    if (isSimReg && data.email && data.sendEmail !== false) {
+    var emailResult = { attempted: false, sent: false, method: null, error: null };
+    var cleanEmail = String(data.email || "").trim();
+
+    if (isSimReg && cleanEmail && cleanEmail.indexOf("@") !== -1 && data.sendEmail !== false) {
+      emailResult.attempted = true;
+      var f1PlainText = "Welcome to Force Racing F1 Sim Racing Experience.\n" +
+        "Pass ID: " + passId + "\n" +
+        "Pilot: " + (data.name || "Formula Pilot") + "\n" +
+        "Trackside Pass & Proof Upload: " + verifyUrl + "\n\n" +
+        "Present your Pass ID or QR code at Central Workshop, KITS Warangal on 31 October 2026.";
+
+      var emailHtml = "";
       try {
-        var emailHtml = buildF1EmailHtml(data, passId, qrUrl, verifyUrl);
-        var f1PlainText = "Welcome to Force Racing F1 Sim Racing Experience.\n" +
-          "Pass ID: " + passId + "\n" +
-          "Pilot: " + (data.name || "Formula Pilot") + "\n" +
-          "Trackside Pass & Proof Upload: " + verifyUrl;
+        emailHtml = buildF1EmailHtml(data, passId, qrUrl, verifyUrl);
+      } catch (errBuild) {
+        emailHtml = f1PlainText;
+      }
+
+      // Tier 1: Try MailApp with options object
+      try {
         MailApp.sendEmail({
-          to: data.email,
+          to: cleanEmail,
           subject: "🏁 OFFICIAL PADDOCK CREDENTIAL // F1 Sim Racing - Pass #" + passId,
           body: f1PlainText,
-          htmlBody: emailHtml
+          htmlBody: emailHtml,
+          name: "Force Racing F1 Sim"
         });
-      } catch (errMail) {}
+        emailResult.sent = true;
+        emailResult.method = "MailApp";
+      } catch (errMail) {
+        // Tier 2: Try GmailApp
+        try {
+          GmailApp.sendEmail(cleanEmail, "🏁 OFFICIAL PADDOCK CREDENTIAL // F1 Sim Racing - Pass #" + passId, f1PlainText, {
+            htmlBody: emailHtml,
+            name: "Force Racing F1 Sim"
+          });
+          emailResult.sent = true;
+          emailResult.method = "GmailApp";
+        } catch (errGmail) {
+          // Tier 3: Positional MailApp (plain text fallback)
+          try {
+            MailApp.sendEmail(cleanEmail, "🏁 OFFICIAL PADDOCK CREDENTIAL // F1 Sim Racing - Pass #" + passId, f1PlainText);
+            emailResult.sent = true;
+            emailResult.method = "MailAppPositional";
+          } catch (errPos) {
+            emailResult.error = "MailApp: " + errMail.toString() + " | GmailApp: " + errGmail.toString();
+          }
+        }
+      }
     }
 
     if (data.sendEmail !== false && data.recipientEmail) {
@@ -449,7 +505,8 @@ function doPost(e) {
       driveUrl: driveUrl,
       verifyUrl: verifyUrl,
       qrUrl: qrUrl,
-      sheetUrl: ss.getUrl()
+      sheetUrl: ss.getUrl(),
+      emailResult: emailResult
     })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", error: err.toString() })).setMimeType(ContentService.MimeType.JSON);

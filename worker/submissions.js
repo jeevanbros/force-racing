@@ -101,7 +101,7 @@ export async function forwardToGoogleSheets(env, record) {
       message: record.message,
       screenshotBase64: record.screenshotBase64 || '',
       timestamp: record.submitted_at || new Date().toISOString(),
-      sendEmail: config.gmailEnabled !== false,
+      sendEmail: true,
       recipientEmail: config.contact?.email || 'team.force.racing.kitsw@gmail.com'
     };
 

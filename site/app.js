@@ -41,7 +41,6 @@
     });
     for (const key of ['title', 'programme', 'date', 'venue', 'fee']) {
       document.querySelectorAll(`[data-campaign="${key}"], [data-campaign="${key === 'title' ? 'name' : key}"]`).forEach(el => {
-        if (el.hasAttribute('data-home-title')) return; // Never overwrite home hero brand title
         if (typeof campaign[key] === 'string') el.textContent = key === 'date' ? readableDate(campaign[key]) : campaign[key];
       });
     }
@@ -51,11 +50,6 @@
     const hero = document.querySelector('[data-home-hero]');
     if (hero) {
       hero.dataset.campaignActive = String(on);
-      // Ensure data-home-title is NOT overwritten by campaign render so DREAM. BUILD. RACE. stays permanent
-      const homeTitle = hero.querySelector('[data-home-title]');
-      if (homeTitle && !homeTitle.innerHTML.includes('DREAM.')) {
-        homeTitle.innerHTML = 'DREAM. <span class="text-accent">BUILD.</span> <span class="text-outline">RACE.</span>';
-      }
       const cta = hero.querySelector('[data-home-cta]');
       if (cta) {
         if (on) {
@@ -78,15 +72,7 @@
     document.querySelectorAll('[data-campaign-heading]').forEach(title => {
       const words = String(campaign.title).toUpperCase().split(' ');
       const last = document.createElement('span'); last.textContent = `${words.pop()}.`;
-      const lead = words.join(' ');
-      if (lead.startsWith('F1')) {
-        const f = document.createElement('span');
-        f.className = 'f-char';
-        f.textContent = 'F';
-        title.replaceChildren(f, `1${lead.slice(2)} `, last);
-      } else {
-        title.replaceChildren(`${lead} `, last);
-      }
+      title.replaceChildren(`${words.join(' ')} `, last);
     });
     const content = document.querySelector('[data-campaign-content]');
     const inactive = document.querySelector('.campaign-inactive');
@@ -127,82 +113,16 @@
   };
   renderCampaign();
 
-  // Theme Toggle: Dark and Light Mode, remembered, with a token glide.
-  const THEME_KEY = 'force_theme';
-  const LEGACY_THEME_KEY = 'fr-theme';
-  const rootEl = document.documentElement;
-  const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const isLightTheme = () => rootEl.getAttribute('data-theme') === 'light';
-
-  const savedTheme = () => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem(LEGACY_THEME_KEY);
-      if (saved === 'light' || saved === 'dark') return saved;
-    } catch (e) {}
-    return null;
-  };
-
-  const syncThemeUI = (theme) => {
-    const light = theme === 'light';
-    document.querySelectorAll('.theme-toggle').forEach((btn) => {
-      const icon = btn.querySelector('.theme-icon');
-      const text = btn.querySelector('.theme-text');
-      if (icon) icon.textContent = light ? '☀️' : '🌙';
-      if (text) text.textContent = light ? 'LIGHT' : 'DARK';
-      btn.setAttribute('aria-pressed', String(light));
-      const label = light ? 'Switch to dark mode' : 'Switch to light mode';
-      btn.setAttribute('aria-label', label);
-      btn.setAttribute('title', label);
-    });
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
-      m.setAttribute('content', light ? '#f8fafc' : '#090b10');
-    });
-  };
-
-  let glowTimer = null;
-  const paintTheme = (theme, animate) => {
-    if (animate && !reduced()) {
-      rootEl.classList.add('theme-animating');
-      clearTimeout(glowTimer);
-      glowTimer = setTimeout(() => rootEl.classList.remove('theme-animating'), 640);
-    } else {
-      rootEl.classList.remove('theme-animating');
-    }
-    rootEl.setAttribute('data-theme', theme);
-    syncThemeUI(theme);
-  };
-
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.theme-toggle');
-    if (!btn) return;
-    e.preventDefault();
-    const next = isLightTheme() ? 'dark' : 'light';
-    paintTheme(next, true);
-    try { localStorage.setItem(THEME_KEY, next); } catch (err) {}
-  });
-
-  if (window.matchMedia) {
-    try {
-      const mq = window.matchMedia('(prefers-color-scheme: light)');
-      const onChange = (e) => { if (!savedTheme()) paintTheme(e.matches ? 'light' : 'dark', false); };
-      if (mq.addEventListener) mq.addEventListener('change', onChange);
-      else if (mq.addListener) mq.addListener(onChange);
-    } catch (e) {}
-  }
-
-  // The inline head script already set the attribute, so this only paints the label.
-  syncThemeUI(isLightTheme() ? 'light' : 'dark');
-
-  // Seamless navigation: cross-page fade and in-page anchor glide.
-  if (!reduced()) {
-    document.addEventListener('click', (e) => {
+  // Seamless Interactive Navigation & Quick Link Transitions
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.addEventListener('click', e => {
       const a = e.target.closest('a');
       if (!a) return;
       const href = a.getAttribute('href');
       if (!href) return;
 
-      // In-page anchor: smooth scroll, then a short glow on the target.
-      if (href.charAt(0) === '#' && href.length > 1) {
+      // Quick Link / Anchor smooth scroll & race glow pulse
+      if (href.startsWith('#') && href.length > 1) {
         const target = document.querySelector(href);
         if (target) {
           e.preventDefault();
@@ -210,25 +130,136 @@
           target.classList.remove('target-highlighted');
           void target.offsetWidth;
           target.classList.add('target-highlighted');
-          try { history.pushState(null, '', href); } catch (err) {}
+          try { history.pushState(null, '', href); } catch(err) {}
         }
         return;
       }
 
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (a.target || a.hasAttribute('download')) return;
-      let url;
-      try { url = new URL(href, location.href); } catch (err) { return; }
-      if (url.origin !== location.origin) return;
-      // Modern browsers cross-fade the documents themselves.
-      if ('startViewTransition' in document) return;
+      // Cross-page navigation transition
+      if (a.target || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) {
+        return;
+      }
+      if ('startViewTransition' in document) {
+        return;
+      }
       e.preventDefault();
       document.body.classList.add('page-exit');
-      setTimeout(() => { location.href = url.href; }, 170);
+      setTimeout(() => {
+        window.location.href = href;
+      }, 160);
     });
 
     window.addEventListener('pageshow', () => {
       document.body.classList.remove('page-exit');
     });
   }
+
+  // Theme Toggle: Dark and Light Mode for Mobile & Windows/Desktop
+  const updateThemeUI = (theme) => {
+    const isLight = theme === 'light';
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#090b10');
+    }
+    document.querySelectorAll('.theme-toggle').forEach(btn => {
+      const icon = btn.querySelector('.theme-icon');
+      const text = btn.querySelector('.theme-text');
+      if (icon) icon.textContent = isLight ? '☀️' : '🌙';
+      if (text) text.textContent = isLight ? 'LIGHT' : 'DARK';
+      btn.setAttribute('aria-label', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+      btn.setAttribute('title', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+    });
+  };
+
+  const initTheme = () => {
+    let saved = null;
+    try { saved = localStorage.getItem('force_theme'); } catch(e) {}
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    const current = saved || (prefersLight ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', current);
+    updateThemeUI(current);
+  };
+
+  const toggleTheme = () => {
+    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('force_theme', next); } catch(e) {}
+    updateThemeUI(next);
+  };
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.theme-toggle');
+    if (btn) {
+      e.preventDefault();
+      toggleTheme();
+    }
+  });
+
+  try {
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+        if (!localStorage.getItem('force_theme')) {
+          const next = e.matches ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          updateThemeUI(next);
+        }
+      });
+    }
+  } catch(e) {}
+
+  initTheme();
+
+  // Real-Time Visitor & Engagement Analytics (IP, Scroll Depth, Dwell Time)
+  (() => {
+    const startTime = Date.now();
+    let maxScroll = 0;
+
+    const calcScroll = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      if (h <= 0) return 100;
+      const pct = Math.min(100, Math.max(0, Math.round((window.scrollY / h) * 100)));
+      if (pct > maxScroll) maxScroll = pct;
+    };
+
+    window.addEventListener('scroll', calcScroll, { passive: true });
+    calcScroll();
+
+    // Initial visit ping (captures IP and path immediately)
+    const sendPing = (final = false) => {
+      const durationSeconds = Math.round((Date.now() - startTime) / 1000);
+      const payload = JSON.stringify({
+        path: window.location.pathname || '/',
+        durationSeconds,
+        maxScrollPercent: maxScroll
+      });
+      if (final && navigator.sendBeacon) {
+        try {
+          const blob = new Blob([payload], { type: 'application/json' });
+          navigator.sendBeacon('/api/analytics/track', blob);
+        } catch {
+          navigator.sendBeacon('/api/analytics/track', payload);
+        }
+      } else {
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true
+        }).catch(() => {});
+      }
+    };
+
+    // First ping after 1 second
+    setTimeout(() => sendPing(false), 1000);
+
+    // Heartbeat every 20 seconds
+    setInterval(() => sendPing(false), 20000);
+
+    // Final exit beacon
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') sendPing(true);
+    });
+    window.addEventListener('pagehide', () => sendPing(true));
+  })();
 })();
