@@ -23,7 +23,7 @@
       if (!e.target.closest('.site-header') && toggle.getAttribute('aria-expanded') === 'true') close();
     });
     nav.addEventListener('click', e => { if (e.target.closest('a')) close(); });
-    matchMedia('(min-width: 761px)').addEventListener('change', () => close());
+    matchMedia('(min-width: 981px)').addEventListener('change', () => close());
   }
   const baseCampaign = { ...window.FORCE_CAMPAIGN };
   let campaign = { ...baseCampaign };
