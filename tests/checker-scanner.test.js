@@ -50,35 +50,6 @@ test('QR Code Pass ID extraction logic handles URLs, queries, and raw codes', ()
   );
 });
 
-test('verify.js no longer contains the bypass grantAccess after request access', async () => {
-  const content = await readFile(new URL('../site/verify.js', import.meta.url), 'utf8');
-  // Check that the insecure button "btn-proceed-after-req" and "Open Pass Checker Console" are removed
-  assert.equal(content.includes('btn-proceed-after-req'), false, 'btn-proceed-after-req must be removed');
-  assert.equal(content.includes('Open Pass Checker Console →'), false, 'Bypass button must be removed');
-  assert.ok(content.includes('Access request submitted.'), 'Must display Access request submitted message');
-  assert.ok(content.includes('Access Request Submitted'), 'Must display Access Request Submitted heading');
-  assert.ok(content.includes('Awaiting approval. You will receive your login password at your email'), 'Must display awaiting approval with applicant email');
-  assert.ok(content.includes('Waiting for approval...'), 'Must display live indicator');
-  assert.ok(!content.includes('Administrator Jeevan'), 'Must NOT disclose Administrator Jeevan');
-  assert.ok(!content.includes('jeevanko83@gmail.com'), 'Must NOT leak administrator email');
-  assert.ok(!content.includes('team.force.racing.kitsw@gmail.com'), 'Must NOT leak admin team email');
-  assert.ok(!content.includes('forceadmin2026'), 'Master password must NOT be present in client source');
-  assert.ok(!content.includes("pinParam === 'F2026'"), 'Must NOT grant access from the ?pin= value client-side');
-  assert.ok(content.includes(': { pin: password }'), '?pin= links must be exchanged with the Worker');
-  assert.ok(content.includes('Access Already Approved'), 'Must handle an already-approved repeat request');
-});
-
-test('verify.html contains pass ID verification options and secures admin credentials', async () => {
-  const content = await readFile(new URL('../site/verify.html', import.meta.url), 'utf8');
-  assert.ok(content.includes('pass-input'), 'Must contain pass ID search input');
-  assert.ok(content.includes('search-btn'), 'Must contain search button');
-  assert.ok(!content.includes('btn-upload-qr'), 'Must not contain photo upload button');
-  assert.ok(!content.includes('qr-file-input'), 'Must not contain QR file input');
-  assert.ok(!content.includes('jeevanko83@gmail.com'), 'Must not leak admin email');
-  assert.ok(!content.includes('team.force.racing.kitsw@gmail.com'), 'Must not leak admin team email');
-  assert.ok(!content.includes('Checker Email or Admin ID'), 'Must not expose Admin ID in form label');
-});
-
 function createMockD1() {
   const state = {
     checker_accounts: new Map(),
@@ -582,17 +553,6 @@ test('/api/checker/status handles real-time polling by email and token across pe
   assert.equal(rejectedData.status, 'rejected');
 });
 
-test('verify.js implements real-time access polling, transient timer, and countdown on approval', async () => {
-  const content = await readFile(new URL('../site/verify.js', import.meta.url), 'utf8');
-  assert.ok(content.includes('/api/checker/status?email='), 'Must poll status endpoint with email');
-  assert.ok(content.includes('2500'), 'Must poll every 2.5 seconds');
-  assert.ok(content.includes('PASSCHECKER ACCESS APPROVED'), 'Must display approval message');
-  assert.ok(content.includes('Assigned Password:'), 'Must show assigned password label');
-  assert.ok(content.includes('Automatically entering console in'), 'Must display countdown message');
-  assert.ok(content.includes('[ Enter Console Now ]'), 'Must have Enter Console Now button');
-  assert.ok(content.includes('btn-enter-console-now'), 'Must bind Enter Console Now button');
-});
-
 test('/api/analytics/track records visitor IP, path, duration, and scroll depth to site_analytics', async () => {
   const mockD1 = createMockD1();
   const mockEnv = { DB: mockD1 };
@@ -662,26 +622,6 @@ test('formatDriveUrl converts various Google Drive link formats to thumbnail for
 
   const dataUri = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD...';
   assert.equal(formatDriveUrl(dataUri), dataUri);
-});
-
-test('verify.html contains clean pass inspection card and payment screenshot preview without unwanted modals', async () => {
-  const content = await readFile(new URL('../site/verify.html', import.meta.url), 'utf8');
-  assert.ok(content.includes('id="result-card"'), 'Must contain result card');
-  assert.ok(content.includes('id="v-pass"'), 'Must contain pass display');
-  assert.ok(content.includes('id="v-screenshot-img"'), 'Must contain v-screenshot-img');
-  assert.ok(!content.includes('id="btn-camera-scan-hero"'), 'Hero instant scanner must be removed');
-  assert.ok(!content.includes('id="btn-upload-qr-hero"'), 'Hero photo upload must be removed');
-  assert.ok(!content.includes('id="link-direct-qr-scan"'), 'Direct QR scan link must be removed');
-});
-
-test('verify.js has robust camera readyState check, getUserMedia fallback, and proof resolution', async () => {
-  const content = await readFile(new URL('../site/verify.js', import.meta.url), 'utf8');
-  assert.ok(content.includes('qrVideo.readyState < 2 || qrVideo.videoWidth === 0'), 'Must use readyState < 2 check');
-  assert.ok(content.includes('facingMode: { ideal: currentFacingMode }'), 'Must use ideal facingMode');
-  assert.ok(content.includes('btnCameraScan'), 'Must attach camera button');
-  assert.ok(content.includes('proofUrl'), 'Must resolve proofUrl');
-  assert.ok(content.includes('safeStorage.getItem(\'proof_\''), 'Must check safeStorage proof_ cache');
-  assert.ok(content.includes('openLightbox'), 'Must implement lightbox');
 });
 
 test('forms.js encodes payment screenshot into payload without client-side quota exhaustion', async () => {

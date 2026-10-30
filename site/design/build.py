@@ -44,30 +44,29 @@ def rawimage(file,alt,cls='',high=False):
  w,h=Image.open(ROOT/file).size
  return f'<img src="{file}" alt="{e(alt)}" width="{w}" height="{h}" class="{cls}" '+('fetchpriority="high"' if high else 'loading="lazy"')+' decoding="async">'
 
-NAV=[('index','Home'),('cars','Cars'),('team','Team'),('recruitment','Recruitment'),('support','Support'),('contact','Contact'),('verify','Pass Checker'),('trail','Campus Trail')]
+NAV=[('index','Home'),('cars','Cars'),('team','Team'),('recruitment','Recruitment'),('support','Support'),('contact','Contact'),('trail','Campus Trail')]
 SOCIAL=[('Instagram','https://www.instagram.com/force.racing?igsh=MXI6cGRnYjA0cGE='),('LinkedIn','https://www.linkedin.com/company/force-racing/'),('YouTube','https://youtube.com/@forceracing8847?si=3Ki2roWmQvvdFWp-'),('Facebook','https://www.facebook.com/forceracingkitsw/')]
 
 def brand():
  return '<a class="brand" href="index.html" aria-label="Force Racing home"><img src="assets/original/favicon.png" alt="" width="48" height="48"><span class="brand-name">FORCE RACING<small>KITS WARANGAL</small></span></a>'
 
 def header(page):
- return f'''<a class="skip" href="#main">Skip to content</a><header class="site-header{' home-header' if page=='index' else ''}"><div class="wrap header-inner">{brand()}<button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false">Menu +</button><nav class="main-nav" id="main-nav" aria-label="Main navigation">{''.join(f'<a href="{slug}.html"'+(' aria-current="page"' if page==slug else '')+f'>{label}</a>' for slug,label in NAV)}</nav><div class="header-actions"><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Switch to light mode"><span class="theme-icon" aria-hidden="true">&#9790;</span><span class="theme-text">DARK</span></button><a data-campaign-promo class="campaign-pill" href="campaign.html"{(' aria-current="page"' if page=='campaign' else '')}>F1 Sim Racing</a></div></div></header>'''
+ return f'''<a class="skip" href="#main">Skip to content</a><header class="site-header{' home-header' if page=='index' else ''}"><div class="wrap header-inner">{brand()}<button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false">Menu +</button><nav class="main-nav" id="main-nav" aria-label="Main navigation">{''.join(f'<a href="{slug}.html"'+(' aria-current="page"' if page==slug else '')+f'>{label}</a>' for slug,label in NAV)}</nav><div class="header-actions"><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Switch to light mode"><span class="theme-icon" aria-hidden="true">&#9790;</span><span class="theme-text">DARK</span></button></div></div></header>'''
 
 def footer():
- return f'''<footer class="footer"><div class="wrap"><div class="footer-callout"><div><span class="eyebrow">The next chapter is ours to build.</span><h2>BE PART OF<br>THE FORCE.</h2></div>{btn('support.html','Fuel the journey')}</div><div class="footer-grid"><div>{brand()}<p class="muted" style="margin-top:var(--gp-space-5)">Student built. Race driven.<br>Warangal, India.</p><div class="social-links">{''.join(f'<a href="{u}" target="_blank" rel="noopener noreferrer">{n}</a>' for n,u in SOCIAL)}</div></div><div><span class="footer-label">Find the workshop</span><address>Central Workshop<br>Kakatiya Institute of Technology &amp; Science<br>Warangal – 506015<br>Telangana, India</address><a href="https://www.google.com/maps/search/?api=1&amp;query=Force+Racing+India+KITS+Warangal" target="_blank" rel="noopener noreferrer">Get directions</a></div><div><span class="footer-label">Explore the team</span><nav class="footer-nav" aria-label="Footer navigation">{''.join(f'<a href="{s}.html">{n}</a>' for s,n in NAV)}<a href="campaign.html">Sim Racing</a></nav><a href="mailto:team.force.racing.kitsw@gmail.com">{MAIL_ICON}team.force.racing.kitsw@gmail.com</a><br>{caller('Md. Sohail', '+918008391525', role='Team Manager')}</div></div><div class="footer-baseline"><span>© 2026 Force Racing India. All rights reserved.</span><span><a href="privacy.html">Privacy &amp; Data Notice</a> · Dream. Build. Race.</span></div></div></footer><aside data-campaign-promo class="mobile-campaign" aria-label="F1 Sim Racing campaign"><span><span data-campaign="title">F1 SIM RACING</span><small><span data-campaign="date">31 October 2026</span> · <span data-campaign="fee">₹99 per student</span></small></span>{btn('campaign.html#register','Register')}</aside>'''
+ return f'''<footer class="footer"><div class="wrap"><div class="footer-callout"><div><span class="eyebrow">The next chapter is ours to build.</span><h2>BE PART OF<br>THE FORCE.</h2></div>{btn('support.html','Fuel the journey')}</div><div class="footer-grid"><div>{brand()}<p class="muted" style="margin-top:var(--gp-space-5)">Student built. Race driven.<br>Warangal, India.</p><div class="social-links">{''.join(f'<a href="{u}" target="_blank" rel="noopener noreferrer">{n}</a>' for n,u in SOCIAL)}</div></div><div><span class="footer-label">Find the workshop</span><address>Central Workshop<br>Kakatiya Institute of Technology &amp; Science<br>Warangal – 506015<br>Telangana, India</address><a href="https://www.google.com/maps/search/?api=1&amp;query=Force+Racing+India+KITS+Warangal" target="_blank" rel="noopener noreferrer">Get directions</a></div><div><span class="footer-label">Explore the team</span><nav class="footer-nav" aria-label="Footer navigation">{''.join(f'<a href="{s}.html">{n}</a>' for s,n in NAV)}</nav><a href="mailto:team.force.racing.kitsw@gmail.com">{MAIL_ICON}team.force.racing.kitsw@gmail.com</a><br>{caller('Md. Sohail', '+918008391525', role='Team Manager')}</div></div><div class="footer-baseline"><span>© 2026 Force Racing India. All rights reserved.</span><span><a href="privacy.html">Privacy &amp; Data Notice</a> · Dream. Build. Race.</span></div></div></footer>'''
 
 MODULES_HEAD = '''<link rel="stylesheet" href="modules/caller-dialer/caller-dialer.css">
 <link rel="stylesheet" href="modules/slot-selector/slot-selector.css">
 <link rel="stylesheet" href="modules/sponsorship-tiers/sponsorship-tiers.css">
 <link rel="stylesheet" href="modules/campus-trail/campus-trail.css">
-<script src="campaign-config.js" defer></script>
 <script src="modules/caller-dialer/caller-dialer.js" defer></script>
 <script src="modules/slot-selector/slot-selector.js" defer></script>
 <script src="modules/sponsorship-tiers/sponsorship-tiers.js" defer></script>
 <script src="modules/campus-trail/trail-data.js" defer></script>
 <script src="modules/campus-trail/campus-trail.js" defer></script>'''
 
-def write(slug,title,description,body):
+def write(slug,title,description,body,head_extra=''):
  from datetime import datetime,timezone
  active=CAMPAIGN.get('enabled') is True
  expiry=CAMPAIGN.get('expiresAt')
@@ -87,11 +86,11 @@ def write(slug,title,description,body):
   body=body.replace('<div data-campaign-content>','<div data-campaign-content hidden>')
   body=body.replace('href="#event"','href="cars.html"').replace('F1 Sim Racing Event <span class="hero-btn-pill">SUMSHODHINI ’26</span>','Explore Fleet')
  (ROOT/f'{slug}.html').write_text(f'''<!doctype html><html lang="en" data-campaign-active="{str(active).lower()}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="{e(description)}">{THEME_META}<title>{title} | Force Racing</title><link rel="icon" href="assets/original/favicon.png"><link rel="preload" href="assets/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>{THEME_BOOT}<link rel="stylesheet" href="styles.css">
-{MODULES_HEAD}
-<script src="app.js" defer></script><script src="forms.js" defer></script></head><body>{header(slug) if active else re.sub(r'(<a[^>]*data-campaign-promo[^>]*)(>)',r'\1 hidden\2',header(slug))}<main id="main">{body}</main>{footer() if active else re.sub(r'(<aside[^>]*data-campaign-promo[^>]*)(>)',r'\1 hidden\2',footer()).replace('<a href="campaign.html">Sim Racing</a>','')}{THEME_SETTLE}</body></html>''', encoding='utf-8')
+{MODULES_HEAD}{head_extra}
+<script src="app.js" defer></script><script src="forms.js" defer></script></head><body>{header(slug) if active else re.sub(r'(<a[^>]*data-campaign-promo[^>]*)(>)',r'\1 hidden\2',header(slug))}<main id="main">{body}</main>{footer() if active else re.sub(r'(<aside[^>]*data-campaign-promo[^>]*)(>)',r'\1 hidden\2',footer())}{THEME_SETTLE}</body></html>''', encoding='utf-8')
 
 def intro(label,title,copy,num):
- return f'<section class="page-intro wrap"><span class="eyebrow">{label}</span><h1>{title}</h1><div class="page-intro-bottom"><p class="lead muted">{copy}</p><span class="page-index" aria-hidden="true">/ {num}</span></div></section>'
+ return f'<section class="page-intro wrap"><span class="eyebrow">{label}</span><h1>{title}</h1><div class="page-intro-bottom"><p class="lead muted">{copy}</p></div></section>'
 
 def google(label='Open Google Form'):
  return btn(URL,label,True,True)
@@ -138,7 +137,6 @@ def hero_section():
     <h1 class="hero-title" data-home-title>DREAM. <span class="text-accent">BUILD.</span> <span class="text-outline">RACE.</span></h1>
     <p class="hero-subtitle" data-home-description>Representing <strong>Kakatiya Institute of Technology &amp; Science</strong> on national circuits. Designing, engineering, and manufacturing championship formula racecars since 2009.</p>
     <div class="hero-actions" data-home-actions>
-      <a class="btn race-btn" data-home-cta href="#event">{BOLT_ICON} F1 Sim Racing Event <span class="hero-btn-pill">SUMSHODHINI ’26</span></a>
       <a class="btn secondary" href="cars.html">Explore Fleet {ARROW}</a>
       <a class="btn secondary" href="support.html">Partnerships {ARROW}</a>
     </div>
@@ -151,63 +149,17 @@ def hero_section():
   </div>
 </section>'''
 
-def event_featured_section():
- return f'''<section class="wrap section event-featured-section" id="event" data-campaign-promo aria-label="F1 Sim Racing Challenge at Sumshodhini ’26">
-  <div class="event-featured-card">
-    <div class="event-featured-content">
-      <div class="badge-strip">
-        <span class="badge badge-gold"><span data-campaign="programme">SUMSHODHINI ’26</span></span>
-        <span class="badge badge-live"><span data-campaign="date">31 October 2026</span> · <span data-campaign="venue">Central Workshop</span></span>
-        <span class="badge badge-fee"><span data-campaign="fee">₹99 per student</span></span>
-      </div>
-      <span class="eyebrow">Campus Sim Racing Event · Mechanical Engineering</span>
-      <h2>F1 SIM RACING <span class="accent">CHALLENGE.</span></h2>
-      <p class="lead">Presented by Department of Mechanical Engineering, KITS Warangal. Step into our high-torque direct-drive formula cockpit on <strong>31 October 2026</strong> at the Central Workshop. Compete for podium lap times.</p>
-      
-      <div class="event-actions">
-        <a class="btn race-btn" href="campaign.html#register">Book Hot Lap Slot (₹99) {ARROW}</a>
-        <a class="btn secondary" href="campaign.html">Event Guide &amp; Contacts {ARROW}</a>
-      </div>
-      
-      <div class="organizer-strip">
-        <span>Trackside Help: </span>
-        {caller('Md. Shoaib', '+919951835213', role='Trackside Help')} <span class="fr-caller-sep" aria-hidden="true">·</span> 
-        {caller('Md. Sohail', '+918008391525', role='Trackside Help')} <span class="fr-caller-sep" aria-hidden="true">·</span> 
-        {caller('S. Arun', '+918328012134', role='Trackside Help')} <span class="fr-caller-sep" aria-hidden="true">·</span> 
-        {caller('S. Karthik', '+919392382245', role='Trackside Help')} <span class="fr-caller-sep" aria-hidden="true">·</span> 
-        {caller('D. Mahidhar', '+919030521196', role='Trackside Help')}
-      </div>
-    </div>
-    
-    <div class="event-poster-card">
-      <a href="campaign.html" title="Explore F1 Sim Racing event details">
-        <img src="assets/images/campaign-poster.webp" width="1440" height="810" alt="F1 Sim Racing Challenge Official Poster - Sumshodhini ’26, KITS Warangal" class="event-poster-img" loading="lazy" decoding="async">
-      </a>
-      <div class="event-poster-meta">
-        <span>Official Sumshodhini ’26 Poster</span>
-        <a href="assets/original/campaign-poster.png" target="_blank" rel="noopener noreferrer">Open full poster <svg class="icon-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12.5L12.5 3.5M12.5 3.5H5.5M12.5 3.5V10.5"/></svg></a>
-      </div>
-    </div>
-  </div>
-</section>'''
+HOME=f'''{hero_section()}<section class="section wrap reveal"><span class="eyebrow">This is Force Racing</span><div class="intro-grid"><h2>WE DON’T JUST<br>STUDY IT.<br>WE BUILD IT.</h2><div class="intro-copy"><p class="lead">We are the Formula Student team of Kakatiya Institute of Technology &amp; Science, Warangal.</p><p class="muted">Established in 2009, Force Racing brings students from the classroom to the workshop. We design, manufacture and compete with formula-style race cars in national and international Formula Student competitions.</p><a class="text-link" href="team.html">Meet the force {ARROW}</a><div class="stats"><div class="stat"><strong>2009</strong><span>Our story began</span></div><div class="stat"><strong>60</strong><span>Members in our team story</span></div><div class="stat"><strong>01</strong><span>Shared pursuit</span></div></div></div></div></section><section class="wrap section reveal" style="padding-top:0"><div class="section-top"><div><span class="eyebrow">Built to compete</span><h2>IDEAS BECOME<br>MACHINES.</h2></div><p class="muted">Every chassis carries the thinking, making and persistence of the students behind it.</p></div><div class="feature-car"><picture><source media="(max-width:760px)" srcset="assets/images/supra26-bic-phone.webp"><img src="assets/images/supra26-bic-wide.webp" width="1200" height="750" alt="FR 26, the team’s red Formula Student car in the pit lane" loading="lazy" decoding="async"></picture><div class="feature-car-copy"><span class="eyebrow">The 2026 chapter</span><h3>FR 26</h3><p>SUPRA SAE India 2026</p></div><div class="feature-bottom">{btn('cars.html','Explore our car history',True)}</div></div><div class="photo-caption"><span>FR 26 · Original team photography</span><span>ENGINEERING, MADE REAL.</span></div></section><section class="section wrap team-story reveal">{image('heroimg','Force Racing students gathered behind their blue and white race car')}<div><span class="eyebrow">More than the machine</span><h2>ONE TEAM.<br>EVERY DETAIL.</h2><p class="muted">Our mission is to develop industry-ready engineers through rigorous technical execution, business practice and project management. Primarily from Mechanical Engineering, our team learns by taking responsibility for the whole car.</p><p class="muted">Our alumni have progressed into high-performance motorsport, including Formula 1, engineering consultancy and other engineering sectors.</p><a class="text-link" href="team.html">Get to know the team {ARROW}</a></div></section>{partners()}'''
 
-def eventstrip():
- return f'''<section class="event-strip" data-campaign-promo aria-label="F1 Sim Racing event"><div class="wrap event-strip-inner"><div><span class="eyebrow">SUMSHODHINI ’26 · Campus event</span><h2>YOUR TURN AT THE WHEEL.</h2><p><span data-campaign="name">F1 Sim Racing</span> · <span data-campaign="date">31 October 2026</span> · <span data-campaign="venue">Central Workshop</span> · <span data-campaign="fee">₹99 per student</span></p></div>{btn('campaign.html','Explore the event')}</div></section>'''
-
-def simulator_section():
- return f'''<section class="simulator-section wrap reveal" data-campaign-promo><div class="simulator-card"><picture><source media="(max-width:760px)" srcset="assets/images/simulator-wheel-800.webp"><img src="assets/images/simulator-wheel-1440.webp" width="1440" height="811" alt="High-torque Formula 1 racing simulator direct-drive cockpit at Central Workshop." loading="lazy" decoding="async"></picture><div class="simulator-card-copy"><span class="eyebrow">The sim racing experience</span><h2>ALL THE<br>FOCUS.<br>YOUR TURN.</h2><p>Step into the racing spirit at <span data-campaign="programme">SUMSHODHINI ’26</span>.</p></div><div class="simulator-card-bottom">{btn('campaign.html#register','Book Hot Lap Slot (₹99)')}</div></div></section>'''
-
-HOME=f'''{hero_section()}{event_featured_section()}<section class="section wrap reveal"><span class="eyebrow">01 / This is Force Racing</span><div class="intro-grid"><h2>WE DON’T JUST<br>STUDY IT.<br>WE BUILD IT.</h2><div class="intro-copy"><p class="lead">We are the Formula Student team of Kakatiya Institute of Technology &amp; Science, Warangal.</p><p class="muted">Established in 2009, Force Racing brings students from the classroom to the workshop. We design, manufacture and compete with formula-style race cars in national and international Formula Student competitions.</p><a class="text-link" href="team.html">Meet the force {ARROW}</a><div class="stats"><div class="stat"><strong>2009</strong><span>Our story began</span></div><div class="stat"><strong>60</strong><span>Members in our team story</span></div><div class="stat"><strong>01</strong><span>Shared pursuit</span></div></div></div></div></section><section class="wrap section reveal" style="padding-top:0"><div class="section-top"><div><span class="eyebrow">02 / Built to compete</span><h2>IDEAS BECOME<br>MACHINES.</h2></div><p class="muted">Every chassis carries the thinking, making and persistence of the students behind it.</p></div><div class="feature-car"><picture><source media="(max-width:760px)" srcset="assets/images/supra26-bic-phone.webp"><img src="assets/images/supra26-bic-wide.webp" width="1200" height="750" alt="FR 26, the team’s red Formula Student car in the pit lane" loading="lazy" decoding="async"></picture><div class="feature-car-copy"><span class="eyebrow">The 2026 chapter</span><h3>FR 26</h3><p>SUPRA SAE India 2026</p></div><div class="feature-bottom">{btn('cars.html','Explore our car history',True)}</div></div><div class="photo-caption"><span>FR 26 · Original team photography</span><span>ENGINEERING, MADE REAL.</span></div></section><section class="section wrap team-story reveal">{image('heroimg','Force Racing students gathered behind their blue and white race car')}<div><span class="eyebrow">03 / More than the machine</span><h2>ONE TEAM.<br>EVERY DETAIL.</h2><p class="muted">Our mission is to develop industry-ready engineers through rigorous technical execution, business practice and project management. Primarily from Mechanical Engineering, our team learns by taking responsibility for the whole car.</p><p class="muted">Our alumni have progressed into high-performance motorsport, including Formula 1, engineering consultancy and other engineering sectors.</p><a class="text-link" href="team.html">Get to know the team {ARROW}</a></div></section>{partners()}<section class="section wrap campaign-teaser reveal" data-campaign-promo><div><span class="eyebrow">04 / See you on campus</span><h2>THE NEXT DRIVER<br>COULD BE YOU.</h2><p class="lead">F1 Sim Racing at SUMSHODHINI ’26.</p><p class="muted">The Department of Mechanical Engineering presents a campus sim racing event at KITS Warangal.</p><div class="event-inline"><span>31 OCTOBER 2026</span><span>CENTRAL WORKSHOP</span><span>₹99 / STUDENT</span></div>{btn('campaign.html','Explore &amp; register')}</div><a href="campaign.html" aria-label="Explore the F1 Sim Racing event">{rawimage(cfg('poster'),'F1 Sim Racing event poster. 31 October 2026, Central Workshop, ₹99 per student.')}</a></section>'''
-
-write('index','Dream. Build. Race.','Force Racing, the Formula Student team from KITS Warangal. Meet our cars, our team and F1 Sim Racing at SUMSHODHINI ’26.',HOME)
+write('index','Dream. Build. Race.','Force Racing, the Formula Student team from KITS Warangal. Meet our cars, our team and our season.',HOME)
 
 def car_picture(photo,name,high=False):
  return f'''<picture class="car-photo-frame"><source media="(max-width:760px)" srcset="assets/images/{photo}-phone.webp"><img src="assets/images/{photo}-wide.webp" alt="{e(name)} — archived Force Racing vehicle photograph" width="1200" height="750" class="car-img" {'fetchpriority="high"' if high else 'loading="lazy"'} decoding="async"></picture>'''
 
 CATEGORIES=[
- ('formula','Formula Student','01 / Formula Student','THE FORMULA ARCHIVE.','Single-seater, open-wheel competition race cars designed, manufactured, and campaigned by Force Racing across national and international circuits.',[('FR 26','supra26-bic',['SUPRA SAE INDIA 2026']),('FR 19','fr19',['FORMULA BHARAT 2020','SUPRA SAE INDIA 2019','FFS FMAE 2019']),('FR 18','ffs18',['FFS FMAE 2018']),('FR 17','fr17',['FORMULA BHARAT 2017','SAE SUPRA INDIA 2017','FFS FMAE 2017']),('FR 16','fr16',['SUPRA SAE INDIA 2016']),("LEGIONS’ F1",'legions12',['SAE SUPRA INDIA 2012'])]),
- ('karting','Karting','02 / Sprint Karting','PRECISION & SPEED.','High-agility sprint karts engineered for national karting championships, honing chassis dynamics and rapid track iteration.',[('KART 3','ikr',['INDIAN KARTING RACE 2024']),('KART 2','kart2',['NEKC 2020']),('KART 1','kart1',['NEKC 2018','NEKC 2019'])]),
- ('exploration','Beyond formula','03 / Pioneering & BAJA','WHERE WE BEGAN.','From rugged all-terrain BAJA buggies to high-efficiency human-electric endurance vehicles, the pioneering machines that laid our team foundation.',[('RATHAM','ratham',['EFFI-CARS 2015']),('EFFICYCLE','efficycle',['SAE NIS EFFICYCLE 2017']),('PHOENIX RACING','phoenix',['SAE NIS EFFICYCLE 2015']),('ASHWASENA','ashwasena',['SAE NIS EFFICYCLE 2013']),('TERRANAUT','baja11',['SAE BAJA INDIA 2011']),('MAIDEN MOB','baja10',['SAE BAJA INDIA 2010'])])
+ ('formula','Formula Student','Formula Student','THE FORMULA ARCHIVE.','Single-seater, open-wheel competition race cars designed, manufactured, and campaigned by Force Racing across national and international circuits.',[('FR 26','supra26-bic',['SUPRA SAE INDIA 2026']),('FR 19','fr19',['FORMULA BHARAT 2020','SUPRA SAE INDIA 2019','FFS FMAE 2019']),('FR 18','ffs18',['FFS FMAE 2018']),('FR 17','fr17',['FORMULA BHARAT 2017','SAE SUPRA INDIA 2017','FFS FMAE 2017']),('FR 16','fr16',['SUPRA SAE INDIA 2016']),("LEGIONS’ F1",'legions12',['SAE SUPRA INDIA 2012'])]),
+ ('karting','Karting','Sprint Karting','PRECISION & SPEED.','High-agility sprint karts engineered for national karting championships, honing chassis dynamics and rapid track iteration.',[('KART 3','ikr',['INDIAN KARTING RACE 2024']),('KART 2','kart2',['NEKC 2020']),('KART 1','kart1',['NEKC 2018','NEKC 2019'])]),
+ ('exploration','Beyond formula','Pioneering & BAJA','WHERE WE BEGAN.','From rugged all-terrain BAJA buggies to high-efficiency human-electric endurance vehicles, the pioneering machines that laid our team foundation.',[('RATHAM','ratham',['EFFI-CARS 2015']),('EFFICYCLE','efficycle',['SAE NIS EFFICYCLE 2017']),('PHOENIX RACING','phoenix',['SAE NIS EFFICYCLE 2015']),('ASHWASENA','ashwasena',['SAE NIS EFFICYCLE 2013']),('TERRANAUT','baja11',['SAE BAJA INDIA 2011']),('MAIDEN MOB','baja10',['SAE BAJA INDIA 2010'])])
 ]
 
 car_idx=1
@@ -307,12 +259,8 @@ def technical_partners():
 
 write('support','Championship Partnerships','Support Force Racing’s engineering journey through partnerships, components and sponsorship proposals.',intro('Championship Partnerships','FUEL THE<br>NEXT LAP.','Your brand on the national grid. Back student engineers competing at Formula Bharat and SUPRA SAE India.','03')+f'<div class="wrap support-quicknav"><a class="btn" href="#tiers">Explore sponsorship tiers {ARROW}</a></div><div class="wrap support-photo">{image("heroimg","Force Racing team and their student-built car","wide-photo",True)}</div><section class="section wrap reveal"><span class="eyebrow">How sponsorship accelerates the car</span><h2>WHERE YOUR<br>SUPPORT GOES.</h2><div class="support-lines"><article class="support-line"><span>01</span><h3>POWERTRAIN &amp;<br>COMPONENTS</h3><p>Procuring specialized racing bearings, KTM engine parts, custom ECU wiring, and high-performance fasteners.</p></article><article class="support-line"><span>02</span><h3>CHASSIS &amp;<br>COMPOSITES</h3><p>Fabrication of 4130 chromoly spaceframe chassis, carbon fiber prepreg aerodynamic wings, and impact attenuators.</p></article><article class="support-line"><span>03</span><h3>TESTING &amp;<br>TRACK TELEMETRY</h3><p>Tire sets (Hoosier), suspension calibration, dynamometer validation, and national competition logistics.</p></article></div></section>{tiers()}{technical_partners()}{partners()}<section class="section wrap form-section" id="sponsor" style="display:none;" hidden><div class="form-heading"><span class="eyebrow">Partnership Proposal</span><h2>PARTNER<br>WITH FORCE.</h2><p class="muted">Tell us about your organization and how you want to join our Formula Student championship campaign.</p><div class="direct-contact-note"><p>Direct line to team manager:</p>{caller('Md. Sohail', '+918008391525', role='Team Manager')}</div></div>{form("sponsor")}</section>')
 
-write('contact','Get in touch','Contact Force Racing at the Central Workshop, KITS Warangal, by email, phone or on-site enquiry.',intro('From a conversation to the workshop','LET’S TALK<br>RACING.','Have a question, an idea or a way to help? Start a conversation with Force Racing.','04')+f'<section class="section wrap contact-grid" style="padding-top:0"><div><div class="contact-item"><span class="eyebrow">01 / Visit the workshop</span><h2>KITS WARANGAL</h2><address>Central Workshop<br>Kakatiya Institute of Technology &amp; Science<br>Warangal – 506015, Telangana, India</address><p class="small-note">Hanamkonda, Telangana</p><a href="https://www.google.com/maps/search/?api=1&amp;query=Force+Racing+India+KITS+Warangal" target="_blank" rel="noopener noreferrer">Get directions</a></div><div class="contact-item"><span class="eyebrow">02 / Team manager</span>{caller('Md. Sohail', '+918008391525', role='Team Manager')}</div><div class="contact-item"><span class="eyebrow">03 / Email the team</span><a href="mailto:team.force.racing.kitsw@gmail.com">{MAIL_ICON} team.force.racing.kitsw@gmail.com</a></div><div class="contact-item"><span class="eyebrow">04 / Follow the journey</span><div class="social-links">'+''.join(f'<a href="{u}" target="_blank" rel="noopener noreferrer">{n}</a>' for n,u in SOCIAL)+f'</div></div></div>{image("supra26-bic","FR 26 in the pit lane at Buddh International Circuit","contact-photo",True,size=2000)}</section><section class="section wrap form-section" id="contact-form"><div class="form-heading"><span class="eyebrow">Send an enquiry</span><h2>START A<br>CONVERSATION.</h2><p class="muted">A message for the people behind the machine.</p></div>{form("contact")}</section>')
+write('contact','Get in touch','Contact Force Racing at the Central Workshop, KITS Warangal, by email, phone or on-site enquiry.',intro('From a conversation to the workshop','LET’S TALK<br>RACING.','Have a question, an idea or a way to help? Start a conversation with Force Racing.','04')+f'<section class="section wrap contact-grid" style="padding-top:0"><div><div class="contact-item"><span class="eyebrow">Visit the workshop</span><h2>KITS WARANGAL</h2><address>Central Workshop<br>Kakatiya Institute of Technology &amp; Science<br>Warangal – 506015, Telangana, India</address><p class="small-note">Hanamkonda, Telangana</p><a href="https://www.google.com/maps/search/?api=1&amp;query=Force+Racing+India+KITS+Warangal" target="_blank" rel="noopener noreferrer">Get directions</a></div><div class="contact-item"><span class="eyebrow">Team manager</span>{caller('Md. Sohail', '+918008391525', role='Team Manager')}</div><div class="contact-item"><span class="eyebrow">Email the team</span><a href="mailto:team.force.racing.kitsw@gmail.com">{MAIL_ICON} team.force.racing.kitsw@gmail.com</a></div><div class="contact-item"><span class="eyebrow">Follow the journey</span><div class="social-links">'+''.join(f'<a href="{u}" target="_blank" rel="noopener noreferrer">{n}</a>' for n,u in SOCIAL)+f'</div></div></div>{image("supra26-bic","FR 26 in the pit lane at Buddh International Circuit","contact-photo",True,size=2000)}</section><section class="section wrap form-section" id="contact-form"><div class="form-heading"><span class="eyebrow">Send an enquiry</span><h2>START A<br>CONVERSATION.</h2><p class="muted">A message for the people behind the machine.</p></div>{form("contact")}</section>')
 
-FAQ=[('When and where is the event?','F1 Sim Racing is on 31 October 2026 at the Central Workshop, Kakatiya Institute of Technology &amp; Science, Warangal. Contact the organizers before planning your visit.'),('How much does registration cost?','The official registration fee is ₹99 per participant. You can pay via UPI or at the Central Workshop desk. A digital scannable QR Pilot Credential will be dispatched to your email immediately upon submission.'),('How do I register?','Complete the on-spot registration form below to receive your official Pilot Pass ID and instant QR credential.'),(f'Are game details, timings or prizes confirmed?',f'Contact student organizer {caller("Md. Sohail", "+918008391525", role="Student organizer")} for specific simulation slot schedules and track regulations.'),('Who is presenting the event?','The Department of Mechanical Engineering at Kakatiya Institute of Technology &amp; Science, Warangal, presents the event under SUMSHODHINI ’26.')]
-faq=''.join(f'<details><summary>{q}</summary><p>{a}</p></details>' for q,a in FAQ)
-
-write('campaign','F1 Sim Racing · 31 October 2026','F1 Sim Racing at SUMSHODHINI ’26, KITS Warangal. 31 October 2026, Central Workshop. ₹99 per student. Registration details and organizer contacts.',f'''<div class="campaign-inactive wrap section" hidden><span class="eyebrow">Force Racing</span><p class="inactive-heading">OFF THE GRID.<br>STAY IN THE LOOP.</p><p class="lead muted">This campaign is no longer active. Registration requests are closed. Contact the team for the latest events.</p><div class="actions">{btn('index.html','Explore Force Racing')}{btn('contact.html','Contact the team',True)}</div></div><div data-campaign-content><section class="campaign-hero wrap"><span class="eyebrow">SUMSHODHINI ’26 · KITS Warangal</span><h1 data-campaign-heading><span class="f-char">F</span>1 SIM <span>RACING.</span></h1><p class="lead">Your turn at the wheel.<br>The Department of Mechanical Engineering presents F1 Sim Racing at SUMSHODHINI ’26.</p><div class="actions">{btn('#register','<span data-campaign-cta>On-Spot Registration</span>')}</div><dl class="event-facts"><div><dt>THE DATE</dt><dd data-campaign="date">31 October 2026</dd></div><div><dt>THE VENUE</dt><dd data-campaign="venue">Central Workshop</dd></div><div><dt>REGISTRATION FEE</dt><dd data-campaign="fee">₹99 per student</dd></div><div><dt>PRESENTED BY</dt><dd>Mechanical<br>Engineering</dd></div></dl></section><section class="section wrap poster-section" data-campaign-poster><figure>{rawimage(cfg('poster'),'Original F1 Sim Racing poster: SUMSHODHINI ’26, Department of Mechanical Engineering, KITS Warangal. 31 October 2026. Central Workshop. ₹99 per student. Organizer contacts are listed below.',high=True)}<figcaption><span>Event poster supplied by the organizers.</span><a href="{cfg('posterOriginal')}" target="_blank" rel="noopener noreferrer">Open full-size poster</a></figcaption></figure></section>{simulator_section()}<section class="section wrap form-section" id="register"><div class="form-heading"><span class="eyebrow">F1 Sim Racing · On-Spot Registration</span><h2>TAKE THE<br>FIRST STEP.</h2><p class="muted">Register on-spot for 31 October at the Central Workshop. Enter your details to receive your official Pilot Pass ID and QR Credential.</p><div class="contact-item"><span class="eyebrow">Need help?</span>{caller('Md. Sohail', '+918008391525', role='Student organizer', variant='card')}</div></div><div>{form('registration')}</div></section><section class="section wrap faq-layout reveal"><div><span class="eyebrow">Before you join us</span><h2>A FEW<br>ANSWERS.</h2></div><div class="faq-list">{faq}</div></section><section class="section wrap" style="padding-top:0"><span class="eyebrow">The organizing team</span><h2>SEE YOU AT<br>THE WORKSHOP.</h2><div class="organizer-grid"><div><h3>STUDENT ORGANIZERS</h3><ul><li>{caller('Md. Shoaib', '+919951835213', role='Student organizer')}</li><li>{caller('Md. Sohail', '+918008391525', role='Student organizer')}</li><li>{caller('S. Arun', '+918328012134', role='Student organizer')}</li><li>{caller('S. Karthik', '+919392382245', role='Student organizer')}</li><li>{caller('D. Mahidhar', '+919030521196', role='Student organizer')}</li></ul></div><div><h3>STUDENT COORDINATOR</h3><p class="muted">{caller('Bairi Divya Reddy', '+918919184467', role='President, MESA')}<br>President, MESA</p><h3>HEAD OF DEPARTMENT</h3><p class="muted">Dr. P. Srikanth<br>Head &amp; Professor of ME</p></div><div><h3>FACULTY COORDINATORS</h3><p class="muted">Dr. S. Chandramouli<br>Dr. A. HariKumar<br>Dr. Md. Sameer<br>Assistant Professors of ME</p></div><div><h3>MESA FACULTY COORDINATORS</h3><p class="muted">Dr. A. Devaraju · Associate Professor of ME<br>Dr. V. Pradeep · Assistant Professor of ME</p></div></div></section></div>''')
 
 RECRUITMENT_CONTENT = f'''<section class="section wrap" style="padding-top:0">
   <div class="intro-grid">
@@ -384,7 +332,7 @@ RECRUITMENT_CONTENT = f'''<section class="section wrap" style="padding-top:0">
   </div>
 </section>
 
-<section class="section wrap form-section" id="recruitment-form">
+<section class="section wrap form-section" id="recruitment-form" hidden>
   <div class="form-heading">
     <h2>JOIN THE<br>SQUAD.</h2>
     <span class="eyebrow">Candidate Application Protocol</span>
@@ -397,19 +345,18 @@ RECRUITMENT_CONTENT = f'''<section class="section wrap" style="padding-top:0">
   {form("recruitment")}
 </section>'''
 
-write('recruitment','Team Recruitment · Force Racing','Join Force Racing at KITS Warangal. Student recruitment for Chassis, Powertrain, Suspension, Electronics, and Media subsystems.',intro('Join Force Racing','BECOME THE<br>NEXT BUILDER.','Step out of the classroom and onto the grid. Join the Formula Student engineering squad.','05')+RECRUITMENT_CONTENT)
+write('recruitment','Team Recruitment · Force Racing','Join Force Racing at KITS Warangal. Student recruitment for Chassis, Powertrain, Suspension, Electronics, and Media subsystems.',intro('Join Force Racing','BECOME THE<br>NEXT BUILDER.','Step out of the classroom and onto the grid. Join the Formula Student engineering squad.','05')+RECRUITMENT_CONTENT,head_extra='<style>#recruitment-form[hidden]{display:none!important}</style><script>(function(){function el(){return document.getElementById("recruitment-form")}function show(){var e=el();if(!e||!e.hidden)return;e.hidden=false;requestAnimationFrame(function(){e.scrollIntoView({block:"start"})})}function sync(){if(location.hash==="#recruitment-form")show()}document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest(\'a[href="#recruitment-form"]\');if(a)setTimeout(sync,0)},!0);addEventListener("hashchange",sync);addEventListener("DOMContentLoaded",sync)}());</script><noscript><style>#recruitment-form[hidden]{display:grid!important}</style></noscript>')
 
 PRIVACY_CONTENT = f'''<section class="section wrap privacy-copy" style="padding-top:0">
 <h2>Data Transparency on Pit Lane</h2>
 <p class="lead">Force Racing is a student-run Formula Student engineering team at Kakatiya Institute of Technology &amp; Science, Warangal. We stand for technical integrity, direct accountability, and genuine respect for your personal information. Here is our straightforward, honest data commitment.</p>
 
 <h2>1. What We Collect</h2>
-<p>When you register for F1 Sim Racing or submit a sponsorship proposal, we collect only the necessary details you explicitly enter:</p>
+<p>When you submit a sponsorship proposal, recruitment application or contact enquiry, we collect only the necessary details you explicitly enter:</p>
 <ul class="tier-perks" style="margin-bottom: var(--gp-space-5);">
-  <li><strong>Your Name &amp; Email Address</strong>: To generate your official Pilot Pass ID and dispatch your scannable QR credential.</li>
-  <li><strong>Mobile Number</strong>: For immediate trackside SMS/WhatsApp check-in at the Central Workshop pit lane.</li>
+  <li><strong>Your Name &amp; Email Address</strong>: To respond to your enquiry or application and keep you updated on our progress.</li>
+  <li><strong>Mobile Number</strong>: So the team can follow up on your enquiry.</li>
   <li><strong>College / Institution or Organization</strong>: To verify student admission or corporate partnership status.</li>
-  <li><strong>Payment Screenshot</strong>: To verify your ₹99 entry fee trackside so you can enter the racing simulator cockpit without delay.</li>
 </ul>
 
 <h2>2. No Trackers, No Cookies, No Data Selling</h2>
@@ -419,12 +366,11 @@ PRIVACY_CONTENT = f'''<section class="section wrap privacy-copy" style="padding-
 <p>Your details are stored securely in:</p>
 <ul class="tier-perks" style="margin-bottom: var(--gp-space-5);">
   <li>Our team's private, encrypted Cloudflare database (D1).</li>
-  <li>Our master event Google Sheet on our official KITS Warangal Google Drive workspace.</li>
-  <li>Payment screenshots are stored in a dedicated, restricted Google Drive folder ("Force Racing Payment Proofs") accessible only to authorized student organizers (Md. Sohail, S. Arun, Dhanush).</li>
+  <li>Our official KITS Warangal Google Drive workspace.</li>
 </ul>
 
 <h2>4. Immediate Deletion Upon Request</h2>
-<p>You have full ownership of your data. If you want your registration record or payment proof permanently erased from our records, email us at <a href="mailto:team.force.racing.kitsw@gmail.com">{MAIL_ICON} team.force.racing.kitsw@gmail.com</a> with your Pass ID, and we will purge your row within 24 hours.</p>
+<p>You have full ownership of your data. If you want your enquiry or application record permanently erased from our records, email us at <a href="mailto:team.force.racing.kitsw@gmail.com">{MAIL_ICON} team.force.racing.kitsw@gmail.com</a> with your team email address, and we will purge your row within 24 hours.</p>
 </section>'''
 
 write('privacy','Data Privacy & Transparency','Data transparency notice for Force Racing: straightforward, student-run accountability with zero tracking or data selling.',intro('Pit Lane Transparency','YOUR DATA.<br>OUR RESPECT.','Straightforward, student-run accountability. Zero ad trackers, zero data selling.','06')+PRIVACY_CONTENT)
@@ -434,7 +380,7 @@ TRAIL_CONTENT = '''<section class="page-intro wrap">
   <h1>THE CIRCUIT<br><span>WALKWAY.</span></h1>
   <div class="page-intro-bottom">
     <p class="lead muted">15 Checkpoints across the KITS Warangal campus. Scan each sector code, read the telemetry notes, follow the walking steps, and arrive at the Central Workshop for your simulator stint.</p>
-    <span class="page-index" aria-hidden="true">/ 15 STOPS</span>
+    
   </div>
 </section>
 <section class="section wrap" style="padding-top:0">

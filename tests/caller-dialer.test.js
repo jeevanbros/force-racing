@@ -65,7 +65,7 @@ test('Caller Dialer JS: cleanTel and render functions generate compliant SpaceX 
 });
 
 test('Caller Dialer Audit: Site pages have zero bracketed phone numbers and include caller module', () => {
-  const pages = ['index.html', 'campaign.html', 'recruitment.html', 'team.html', 'contact.html', 'support.html', 'trail.html'];
+  const pages = ['index.html', 'recruitment.html', 'team.html', 'contact.html', 'support.html', 'trail.html'];
   const bracketPhoneRegex = /\(\s*\+?91[^\)]*\)|\(\s*[0-9]{5}[^\)]*\)/;
 
   for (const page of pages) {
