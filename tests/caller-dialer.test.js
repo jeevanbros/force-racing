@@ -75,11 +75,16 @@ test('Caller Dialer Audit: Site pages have zero bracketed phone numbers and incl
     const bracketMatch = html.match(bracketPhoneRegex);
     assert.equal(bracketMatch, null, `${page} must NOT contain bracketed phone numbers like (+91...)`);
 
-    // 2. Contains caller dialer CSS link
-    assert.ok(html.includes('modules/caller-dialer/caller-dialer.css'), `${page} must link caller-dialer.css`);
+    // 2. Ships the caller dialer styles — either the module link or the inlined build bundle
+    const dialerCss = html.includes('modules/caller-dialer/caller-dialer.css')
+      || html.includes('assets/build/site.min.css')
+      || html.includes('.fr-caller-link:focus-visible');
+    assert.ok(dialerCss, `${page} must ship caller-dialer.css (link or inlined bundle)`);
 
-    // 3. Contains caller dialer JS
-    assert.ok(html.includes('modules/caller-dialer/caller-dialer.js'), `${page} must include caller-dialer.js`);
+    // 3. Contains caller dialer JS — module source or the minified build output
+    const dialerJs = html.includes('modules/caller-dialer/caller-dialer.js')
+      || html.includes('assets/build/caller-dialer.min.js');
+    assert.ok(dialerJs, `${page} must include caller-dialer.js (module or build output)`);
 
     // 4. Dialers use tel: link
     assert.ok(html.includes('href="tel:'), `${page} must feature direct tel: dialer links`);

@@ -62,7 +62,14 @@ class RangeHandler(SimpleHTTPRequestHandler):
                     return super().translate_path("/" + path[len(prefix):] if clean.startswith(prefix) else "/")
                 finally:
                     self.directory = site
-        return super().translate_path(path)
+        local = super().translate_path(path)
+        # Canonical URLs are extensionless (/cars, /team). Map them to the .html
+        # file the same way Cloudflare Workers static assets do, so a local
+        # preview behaves like production instead of 404-ing on every nav link.
+        if not os.path.exists(local) and not os.path.splitext(clean.rstrip("/"))[1]:
+            if os.path.isfile(local + ".html"):
+                return local + ".html"
+        return local
 
     def end_headers(self):
         self.send_header("Accept-Ranges", "bytes")
