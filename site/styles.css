@@ -2155,15 +2155,29 @@ html[data-theme="light"] #sponsor[data-tier-theme="bronze"] .telemetry-form {
 [data-theme="light"] .eyebrow {
   color: #e10600 !important;
 }
-/* Hero sits on the photograph + dark scrim in both themes: keep its copy light. */
+/* The hero carries the theme: dark mode keeps white type on the photograph,
+   light mode lifts the photograph with a bright wash and switches to dark ink. */
+[data-theme="light"] .home-hero-scrim,
+html[data-theme="light"] .home-hero-scrim {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.50) 40%, rgba(255, 255, 255, 0.88) 74%, #ffffff 100%) !important;
+}
+[data-theme="light"] .home-hero-bg img,
+html[data-theme="light"] .home-hero-bg img {
+  filter: brightness(1.06) saturate(0.96) contrast(1.02);
+}
+[data-theme="light"] .hero-title,
+html[data-theme="light"] .hero-title {
+  color: #0b0f19 !important;
+  text-shadow: 0 2px 20px rgba(255, 255, 255, 0.7);
+}
 [data-theme="light"] .hero-subtitle,
 html[data-theme="light"] .hero-subtitle {
-  color: #e2e8f0 !important;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9) !important;
+  color: #1e293b !important;
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.75) !important;
 }
 [data-theme="light"] .hero-subtitle strong,
 html[data-theme="light"] .hero-subtitle strong {
-  color: #ffffff !important;
+  color: #0b0f19 !important;
 }
 
 /* Light Mode Backgrounds for Content Sections */

@@ -205,11 +205,6 @@
 
       if (successData && (successData.ok || successData.reference)) {
         const ref = successData.reference || successData.passId || 'CONFIRMED';
-        if (payload.screenshotBase64) {
-          try {
-            localStorage.setItem('proof_' + ref, payload.screenshotBase64);
-          } catch (e) {}
-        }
         form.reset(); clearErrors(form); state.key = null;
         if (form.dataset.form === 'registration') {
           const verifyLink = `verify.html?pass=${encodeURIComponent(ref)}`;
@@ -232,7 +227,7 @@
   window.selectSponsorshipTier = function(tier) {
     const formSection = document.getElementById('sponsor');
     if (formSection) {
-      formSection.style.display = 'grid';
+      formSection.style.display = '';
       formSection.hidden = false;
       const select = document.getElementById('sponsor-tier');
       if (select) select.value = tier;
@@ -268,22 +263,8 @@
     }
   };
 
-  const initSponsorHash = () => {
-    if (window.location.hash === '#sponsor') {
-      const formSection = document.getElementById('sponsor');
-      if (formSection) {
-        formSection.style.display = 'grid';
-        formSection.hidden = false;
-      }
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSponsorHash);
-  } else {
-    initSponsorHash();
-  }
-  window.addEventListener('hashchange', initSponsorHash);
+  // The proposal form stays closed until the visitor actively selects a tier.
+  // (Previously a stale #sponsor hash re-opened it on every reload.)
 
   function applyCampaign(campaign) {
     if (!campaign || typeof campaign !== 'object') return;
