@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}FORCE RACING // CAD & ENGINEERING FILE TRANSMISSION HUB{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: 110px; max-width: 1180px;">
+
+  <!-- Header Banner -->
+  <div class="section-header-wrap" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6);">
+    <div>
+      <div class="telemetry-item font-mono text-lime" style="margin-bottom: 4px;">
+        <span class="telemetry-live-dot"></span> DIRECT DEPARTMENT CAD PIPELINE
+      </div>
+      <h1 style="font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 0.04em;">
+        TRANSMIT <span class="text-lime">CAD & DESIGN FILES</span>
+      </h1>
+      <p style="color: var(--text-secondary); margin-top: 6px; font-size: 0.95rem;">
+        Directly dispatch 3D CAD models, FEA stress analyses, wiring schematics, and manufacturing specs to Subsystem Heads.
+      </p>
+    </div>
+
+    <!-- Live Telemetry Pill -->
+    <div>
+      <span class="badge badge-lime" style="font-size: 0.85rem; padding: 8px 14px;">
+        <i class="fa-solid fa-cloud-arrow-up"></i> SECURE PIT CLOUD VAULT ACTIVE
+      </span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-8); @media(min-width: 900px){ grid-template-columns: 380px 1fr; }">
+    
+    <!-- Left Column: CAD Dispatch Form -->
+    <div>
+      <div class="card card-accent-lime" style="position: sticky; top: 90px; box-shadow: 0 16px 40px rgba(0,0,0,0.5);">
+        <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+          <span class="badge badge-subsystem">SEND FILE TO LEAD</span>
+          <h2 style="font-size: 1.35rem; font-weight: 800; margin: 4px 0 0; text-transform: uppercase;">
+            TRANSMIT NEW CAD
+          </h2>
+          <p class="text-muted" style="margin: 0; font-size: 0.82rem;">
+            STEP, IGES, SolidWorks, Fusion 360, DXF, or PDF specs (up to 64MB).
+          </p>
+        </div>
+
+        <div class="card-body">
+          {% if user %}
+            <form method="POST" action="{{ url_for('main.cad_hub') }}" enctype="multipart/form-data">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+              <!-- Assembly Title -->
+              <div class="form-group">
+                <label class="form-label" for="title">Assembly / Part Title</label>
+                <input type="text" name="title" id="title" class="form-control" required placeholder="e.g. Front Bellcrank Geometry REV-C">
+              </div>
+
+              <!-- 1. Who to send to: Subsystem & Department Head Selection -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-prominent); border-left: 4px solid var(--accent-red); border-radius: var(--radius-sm); padding: var(--space-4); margin-bottom: var(--space-4);">
+                <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: var(--space-3); color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-user-check text-red"></i> Who do you want to send this CAD model to?
+                </div>
+
+                <div class="grid grid-2" style="gap: var(--space-3);">
+                  <!-- Target Subsystem -->
+                  <div class="form-group" style="margin: 0;">
+                    <label class="form-label" for="subsystem" style="font-size: 0.82rem; font-weight: 700;">
+                      1. Target Department / Subsystem <span class="text-red">*</span>
+                    </label>
+                    <select name="subsystem" id="cad-subsystem-select" class="form-select" required>
+                      <option value="" disabled selected>Select Subsystem (Chassis, Aero, Suspension)...</option>
+                      {% for sub in subsystems %}
+                        <option value="{{ sub }}">{{ sub }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <!-- Department Head / Recipient -->
+                  <div class="form-group" style="margin: 0;">
+                    <label class="form-label" for="target_head_id" style="font-size: 0.82rem; font-weight: 700;">
+                      2. Subsystem Lead / Recipient Head <span class="text-red">*</span>
+                    </label>
+                    <select name="target_head_id" id="target_head_id" class="form-select" required>
+                      <option value="" disabled selected>Select Subsystem Lead or Executive...</option>
+                      {% for head in dept_heads %}
+                        <option value="{{ head.id }}" data-subsystem="{{ head.subsystem }}">
+                          {{ head.full_name }} &mdash; {{ head.subsystem }} ({{ head.full_role_display or head.role }})
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Technical Notes / Description -->
+              <div class="form-group">
+                <label class="form-label" for="description">Technical Notes / Specs</label>
+                <textarea name="description" id="description" class="form-control" rows="3" placeholder="Provide material alloy, safety factor, or inspection instructions..."></textarea>
+              </div>
+
+              <!-- File Upload Attachment -->
+              <div class="form-group">
+                <label class="form-label" for="cad_file" style="font-weight: 700;">
+                  Select CAD Model, Drawing, or Engineering Analysis File <span class="text-red">*</span>
+                </label>
+                <input type="file" name="cad_file" id="cad_file" class="form-control" required
+                       accept=".step,.stp,.iges,.igs,.sldprt,.sldasm,.f3d,.dwg,.dxf,.pdf,.zip,.csv,.txt,.xlsx,.mat,.fem,.sim,.jpg,.jpeg,.png">
+                <div class="font-mono text-muted" style="font-size: 0.75rem; margin-top: 5px;">
+                  Supports 3D CAD (.step, .sldprt, .f3d), FEA/CFD Analysis (.fem, .sim, .mat), Telemetry & Dyno (.csv, .xlsx), Drawings (.pdf, .dwg), and ZIP archives.
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-primary btn-block" style="margin-top: var(--space-4);">
+                <i class="fa-solid fa-paper-plane"></i> TRANSMIT TO DEPARTMENT
+              </button>
+            </form>
+          {% else %}
+            <div style="text-align: center; padding: var(--space-6) 0;">
+              <i class="fa-solid fa-lock text-muted" style="font-size: 2.2rem; margin-bottom: 12px;"></i>
+              <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Sign In to Send Files</h3>
+              <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 16px;">
+                You must have an active Force Racing engineer account to upload CAD telemetry.
+              </p>
+              <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary btn-block">
+                Log In to Transmit
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Transmitted CAD Files Feed -->
+    <div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+        <h2 style="font-size: 1.45rem; font-weight: 800; margin: 0; text-transform: uppercase;">
+          CAD TRANSMISSIONS & ANALYSIS // <span class="text-red">LEDGER</span> ({{ cad_files|length }})
+        </h2>
+        <span class="font-mono text-muted" style="font-size: 0.8rem;">
+          REAL-TIME REVISION PIPELINE
+        </span>
+      </div>
+
+      {% if cad_files %}
+        <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+          {% for item in cad_files %}
+            <div class="card card-accent-cyan" style="border-left: 6px solid {% if item.status == 'Approved for Fab' %}var(--accent-lime){% elif item.status == 'Revisions Needed' %}var(--accent-red){% else %}var(--accent-cyan){% endif %};">
+              <div class="card-body" style="padding: var(--space-5);">
+                <!-- Header Meta Row -->
+                <div class="flex items-center justify-between flex-wrap gap-2" style="margin-bottom: var(--space-3);">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Status Badge -->
+                    <span class="badge {% if item.status == 'Approved for Fab' %}badge-lime{% elif item.status == 'Revisions Needed' %}badge-high{% elif item.status == 'Under Analysis' %}badge-cyan{% else %}badge-gold{% endif %}" style="font-size: 0.78rem;">
+                      {% if item.status == 'Approved for Fab' %}
+                        <i class="fa-solid fa-check-double"></i> APPROVED FOR FABRICATION
+                      {% elif item.status == 'Revisions Needed' %}
+                        <i class="fa-solid fa-triangle-exclamation"></i> REVISIONS REQUIRED
+                      {% elif item.status == 'Under Analysis' %}
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> UNDER ANALYSIS
+                      {% else %}
+                        <i class="fa-solid fa-clock"></i> PENDING REVIEW
+                      {% endif %}
+                    </span>
+
+                    <span class="badge badge-subsystem">{{ item.subsystem }}</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-primary); border: 1px solid var(--border-default);">
+                      <i class="fa-solid fa-file-lines text-cyan"></i> {{ item.file_type }}
+                    </span>
+                  </div>
+
+                  <div class="font-mono text-muted" style="font-size: 0.78rem;">
+                    <i class="fa-regular fa-clock"></i> {{ item.created_at[:16] }}
+                  </div>
+                </div>
+
+                <!-- Part Title & Description -->
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 6px; color: var(--text-primary);">
+                  {{ item.title }}
+                </h3>
+
+                {% if item.description %}
+                  <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 var(--space-3); background: var(--bg-surface); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                    {{ item.description }}
+                  </p>
+                {% endif %}
+
+                <!-- Transmission Pipeline: From -> To -->
+                <div class="flex items-center gap-2 flex-wrap font-mono" style="font-size: 0.8rem; margin-bottom: var(--space-4); color: var(--text-muted);">
+                  <span>
+                    <i class="fa-solid fa-user-pen text-cyan"></i> <strong>{{ item.uploader_name }}</strong> ({{ item.uploader_role }})
+                  </span>
+                  <span>&rarr;</span>
+                  <span>
+                    <i class="fa-solid fa-crown text-lime"></i> <strong>{{ item.target_head_name or 'Subsystem Lead' }}</strong> ({{ item.subsystem }})
+                  </span>
+                </div>
+
+                <!-- Feedback Log if Present -->
+                {% if item.feedback %}
+                  <div style="margin-bottom: var(--space-4); background: rgba(0, 240, 255, 0.05); border-left: 3px solid var(--accent-cyan); padding: 8px 12px; border-radius: 0 var(--radius-xs) var(--radius-xs) 0;">
+                    <div class="font-mono text-cyan" style="font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px;">
+                      <i class="fa-solid fa-comment-dots"></i> Department Lead Feedback:
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-primary);">
+                      {{ item.feedback }}
+                    </div>
+                  </div>
+                {% endif %}
+
+                <!-- Actions Row -->
+                <div class="flex items-center justify-between flex-wrap gap-3" style="padding-top: var(--space-3); border-top: 1px solid var(--border-subtle);">
+                  <div class="font-mono text-muted" style="font-size: 0.78rem;">
+                    <i class="fa-solid fa-paperclip"></i> {{ item.original_name }} &bull; {{ (item.file_size / 1024 / 1024)|round(2) }} MB
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <!-- Download Button -->
+                    <a href="{{ url_for('main.download_cad_file', file_id=item.id) }}" class="btn btn-sm btn-outline-cyan" title="Download CAD File">
+                      <i class="fa-solid fa-download"></i> Download
+                    </a>
+
+                    <!-- Department Lead Review Toggle Modal/Form -->
+                    {% if user and (user.id == item.target_head_id or (user.role == 'Subsystem Lead' and user.subsystem == item.subsystem) or user.role in ['Captain', 'Vice Captain', 'Manager']) %}
+                      <button type="button" class="btn btn-sm btn-secondary" onclick="toggleCadReviewForm({{ item.id }})" title="Review and sign-off">
+                        <i class="fa-solid fa-signature text-lime"></i> Review
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Hidden Lead Review Form -->
+                {% if user and (user.id == item.target_head_id or (user.role == 'Subsystem Lead' and user.subsystem == item.subsystem) or user.role in ['Captain', 'Vice Captain', 'Manager']) %}
+                  <div id="cad-review-box-{{ item.id }}" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: var(--bg-surface-elevated); border: 1px solid var(--border-prominent); border-radius: var(--radius-sm);">
+                    <form method="POST" action="{{ url_for('main.update_cad_status', file_id=item.id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      
+                      <div class="form-group" style="margin-bottom: var(--space-3);">
+                        <label class="form-label" style="font-size: 0.8rem;">Change Sign-Off Status</label>
+                        <select name="status" class="form-select" style="font-size: 0.85rem;" required>
+                          <option value="Pending Review" {% if item.status == 'Pending Review' %}selected{% endif %}>Pending Review</option>
+                          <option value="Under Analysis" {% if item.status == 'Under Analysis' %}selected{% endif %}>Under Analysis</option>
+                          <option value="Approved for Fab" {% if item.status == 'Approved for Fab' %}selected{% endif %}>Approved for Fabrication</option>
+                          <option value="Revisions Needed" {% if item.status == 'Revisions Needed' %}selected{% endif %}>Revisions Needed</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group" style="margin-bottom: var(--space-3);">
+                        <label class="form-label" style="font-size: 0.8rem;">Inspection & Sign-off Notes</label>
+                        <textarea name="feedback" class="form-control" rows="2" style="font-size: 0.85rem;" placeholder="e.g. Cleared for CNC milling. Minimum thickness verified at 4mm.">{{ item.feedback }}</textarea>
+                      </div>
+
+                      <div class="flex items-center justify-end gap-2">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="toggleCadReviewForm({{ item.id }})">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Save Sign-Off</button>
+                      </div>
+                    </form>
+                  </div>
+                {% endif %}
+
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card text-center" style="padding: var(--space-10) var(--space-4);">
+          <i class="fa-solid fa-folder-open text-muted" style="font-size: 3rem; margin-bottom: 14px;"></i>
+          <h3 style="font-size: 1.2rem; margin-bottom: 6px;">No CAD Transmissions Yet</h3>
+          <p class="text-secondary" style="font-size: 0.88rem; max-width: 400px; margin: 0 auto;">
+            Be the first engineer to dispatch a 3D CAD model or manufacturing drawing to your department head using the transmission panel.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function toggleCadReviewForm(id) {
+    const box = document.getElementById('cad-review-box-' + id);
+    if (box) {
+      box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+    }
+  }
+
+  // Filter department leads by selected subsystem
+  const subSelect = document.getElementById('cad-subsystem-select');
+  const leadSelect = document.getElementById('target_head_id');
+  if (subSelect && leadSelect) {
+    subSelect.addEventListener('change', function() {
+      const selectedSub = this.value;
+      const options = leadSelect.querySelectorAll('option:not([disabled])');
+      let firstMatch = null;
+      options.forEach(opt => {
+        if (opt.getAttribute('data-subsystem') === selectedSub) {
+          opt.style.display = 'block';
+          if (!firstMatch) firstMatch = opt;
+        } else {
+          opt.style.display = 'none';
+        }
+      });
+      if (firstMatch) {
+        leadSelect.value = firstMatch.value;
+      }
+    });
+  }
+</script>
+{% endblock %}

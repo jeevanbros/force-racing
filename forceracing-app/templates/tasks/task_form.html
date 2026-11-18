@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} // FORCE RACING OPERATIONS{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12); max-width: 820px;">
+  <!-- Breadcrumb navigation -->
+  <div class="font-mono text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-4);">
+    <a href="{{ url_for('tasks.dashboard') }}" class="text-secondary" style="text-decoration: none;">
+      <i class="fa-solid fa-gauge-high"></i> Pit Wall
+    </a>
+    <span style="margin: 0 8px;">/</span>
+    <span class="text-red">{{ title }}</span>
+  </div>
+
+  <div class="card card-accent-red">
+    <div class="card-header">
+      <div>
+        <div class="telemetry-item font-mono text-muted" style="margin-bottom: 2px;">
+          <span class="telemetry-live-dot"></span> TECHNICAL SPECIFICATION // OPERATIONS
+        </div>
+        <h2 class="card-title" style="font-size: 1.6rem; text-transform: uppercase;">
+          {{ title }}
+        </h2>
+      </div>
+      {% if task %}
+        <span class="badge badge-normal font-mono">TASK #{{ task.id }}</span>
+      {% endif %}
+    </div>
+
+    <div class="card-body">
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <!-- Task Title -->
+        <div class="form-group">
+          <label class="form-label" for="title">
+            Task Title <span class="text-red">*</span>
+          </label>
+          {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="e.g., Main Roll Hoop TIG Weld Inspection", id="title", autofocus=True) }}
+          {% if form.title.errors %}
+            <div class="form-error">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{ form.title.errors[0] }}
+            </div>
+          {% else %}
+            <div class="form-text">Provide an actionable, concise engineering title.</div>
+          {% endif %}
+        </div>
+
+        <!-- Row: Subsystem & Assignee -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <!-- Subsystem -->
+          <div class="form-group">
+            <label class="form-label" for="subsystem">
+              Target Subsystem <span class="text-red">*</span>
+            </label>
+            {{ form.subsystem(class="form-select" + (" is-invalid" if form.subsystem.errors else ""), id="subsystem") }}
+            {% if form.subsystem.errors %}
+              <div class="form-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ form.subsystem.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Assignee -->
+          <div class="form-group">
+            <label class="form-label" for="assignee_id">
+              Assigned Engineer <span class="text-red">*</span>
+            </label>
+            {{ form.assignee_id(class="form-select" + (" is-invalid" if form.assignee_id.errors else ""), id="assignee_id") }}
+            {% if form.assignee_id.errors %}
+              <div class="form-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ form.assignee_id.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Row: Priority, Due Date, Status -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4);">
+          <!-- Priority -->
+          <div class="form-group">
+            <label class="form-label" for="priority">
+              Priority Level <span class="text-red">*</span>
+            </label>
+            {{ form.priority(class="form-select" + (" is-invalid" if form.priority.errors else ""), id="priority") }}
+            {% if form.priority.errors %}
+              <div class="form-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ form.priority.errors[0] }}
+              </div>
+            {% else %}
+              <div class="form-text">High triggers pit-wall alert.</div>
+            {% endif %}
+          </div>
+
+          <!-- Due Date -->
+          <div class="form-group">
+            <label class="form-label" for="due_date">
+              Due Date Target <span class="text-red">*</span>
+            </label>
+            {{ form.due_date(class="form-control" + (" is-invalid" if form.due_date.errors else ""), type="date", id="due_date") }}
+            {% if form.due_date.errors %}
+              <div class="form-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ form.due_date.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label class="form-label" for="status">
+              Current Status
+            </label>
+            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else ""), id="status") }}
+            {% if form.status.errors %}
+              <div class="form-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ form.status.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="description">
+            Technical Specification & Instructions
+          </label>
+          {{ form.description(class="form-control", rows=4, placeholder="Detailed engineering instructions, safety constraints, torque specs, or SES rules reference...", id="description") }}
+          {% if form.description.errors %}
+            <div class="form-error">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{ form.description.errors[0] }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Progress Notes / Log -->
+        <div class="form-group">
+          <label class="form-label" for="notes">
+            Telemetry & Progress Notes
+          </label>
+          {{ form.notes(class="form-control", rows=3, placeholder="Any inspection notes, part serial numbers, or updates...", id="notes") }}
+          {% if form.notes.errors %}
+            <div class="form-error">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              {{ form.notes.errors[0] }}
+            </div>
+          {% else %}
+            <div class="form-text">Engineers and Leads can also update notes directly from their daily queue.</div>
+          {% endif %}
+        </div>
+
+        <!-- Submit & Actions -->
+        <div class="card-footer" style="padding-left: 0; padding-right: 0; margin-top: var(--space-6); background: transparent; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3);">
+          <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary" style="box-shadow: 0 0 16px var(--accent-red-glow);">
+            <i class="fa-solid fa-check"></i> {{ action_name }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

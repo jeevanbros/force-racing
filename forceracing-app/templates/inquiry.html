@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Force Racing // Partnership Inquiry{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: 90px; max-width: 640px;">
+  
+  <!-- Header -->
+  <div class="page-header" style="text-align: center; margin-bottom: var(--space-6);">
+    <span class="section-subtitle">
+      <i class="fa-solid fa-handshake text-red"></i> SPONSORSHIP & COLLABORATION
+    </span>
+    <h1 class="racing-title" style="font-size: 2.2rem; margin: var(--space-1) 0 var(--space-2);">
+      PARTNERSHIP INQUIRY
+    </h1>
+    <p class="text-secondary" style="font-size: 0.95rem; margin: 0 auto; max-width: 500px;">
+      Connect with Force Racing for the upcoming SUPRA SAEINDIA 2027 season. Submit your organization details below to receive our official partnership package.
+    </p>
+  </div>
+
+  <!-- Simple Inquiry Card -->
+  <div class="card card-accent-red" style="padding: var(--space-6);">
+    <form method="POST" action="{{ url_for('main.inquiry') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Organization -->
+      <div class="form-group" style="margin-bottom: var(--space-4);">
+        <label class="form-label" for="organization" style="font-weight: 700; font-size: 0.95rem;">
+          Organization / Company Name <span class="text-red">*</span>
+        </label>
+        <div style="position: relative;">
+          <i class="fa-solid fa-building text-red" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+          <input type="text" id="organization" name="organization" class="form-control" 
+                 placeholder="e.g. Bosch India / Brembo / Individual Sponsor" 
+                 style="padding-left: 42px; height: 48px;" required autofocus>
+        </div>
+      </div>
+
+      <!-- Official Email -->
+      <div class="form-group" style="margin-bottom: var(--space-4);">
+        <label class="form-label" for="email" style="font-weight: 700; font-size: 0.95rem;">
+          Official Contact Mail <span class="text-red">*</span>
+        </label>
+        <div style="position: relative;">
+          <i class="fa-solid fa-envelope text-red" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i>
+          <input type="email" id="email" name="email" class="form-control" 
+                 placeholder="partner@company.com" 
+                 style="padding-left: 42px; height: 48px;" required>
+        </div>
+        <small class="text-muted" style="display: block; margin-top: 6px; font-size: 0.8rem;">
+          <i class="fa-solid fa-shield-check text-red"></i> An official confirmation and sponsorship dossier will be automatically dispatched to this email address.
+        </small>
+      </div>
+
+      <!-- Optional Message / Collaboration Scope -->
+      <div class="form-group" style="margin-bottom: var(--space-5);">
+        <label class="form-label" for="message" style="font-weight: 600; font-size: 0.88rem;">
+          Collaboration Notes <span class="text-muted">(Optional)</span>
+        </label>
+        <textarea id="message" name="message" class="form-control" rows="3" 
+                  placeholder="Tell us briefly about your focus (components, technical mentorship, financial sponsorship, etc.)..."></textarea>
+      </div>
+
+      <!-- Submit Action -->
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; height: 50px; font-size: 1.05rem; font-weight: 800; letter-spacing: 0.04em;">
+          <i class="fa-solid fa-paper-plane"></i> SUBMIT PARTNERSHIP INQUIRY
+        </button>
+        <a href="{{ url_for('main.home') }}" class="btn btn-secondary" style="width: 100%; text-align: center;">
+          Cancel & Return Home
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Official Guarantee Note -->
+  <div class="card" style="margin-top: var(--space-6); padding: var(--space-4); background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); text-align: center;">
+    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+      <strong class="text-primary"><i class="fa-solid fa-certificate text-red"></i> Official Formula Student Partnership</strong><br>
+      Force Racing is backed by Kakatiya Institute of Technology & Science, Warangal. All official corporate collaborations receive formal documentation, tax-deductible receipt assistance, and vehicle livery branding.
+    </div>
+  </div>
+
+</div>
+{% endblock %}

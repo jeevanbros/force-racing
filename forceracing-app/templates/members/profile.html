@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Force Racing // Member Profile{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12); max-width: 760px;">
+  
+  <!-- Header -->
+  <div class="section-header-wrap" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6);">
+    <div>
+      <span class="section-subtitle">
+        <i class="fa-solid fa-id-card text-red"></i> CREW IDENTITY & ACCOUNT
+      </span>
+      <h1 class="racing-title" style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); margin: 0;">
+        Member <span class="text-red">Profile</span>
+      </h1>
+      <p class="text-secondary" style="margin-top: 6px; font-size: 0.95rem;">
+        View your official subsystem assignment, role credentials, and contact details.
+      </p>
+    </div>
+
+    <div>
+      <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-list-check"></i> Tasks Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Profile Identity Badge Card -->
+  <div class="card card-accent-red" style="padding: var(--space-6); margin-bottom: var(--space-6); display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;">
+    <div class="user-avatar-initials" style="width: 70px; height: 70px; font-size: 1.8rem; background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff;">
+      {{ user.full_name[:2].upper() if user.full_name else 'FR' }}
+    </div>
+    <div style="flex-grow: 1;">
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; margin: 0; color: var(--text-primary);">
+          {{ user.full_name }}
+        </h2>
+        <span class="badge badge-role {% if user.role in ['Captain', 'Vice Captain'] %}role-captain{% elif user.role == 'Manager' %}role-manager{% elif user.role == 'Subsystem Lead' %}role-subsystem-lead{% else %}role-member{% endif %}">
+          {{ user.role }}
+        </span>
+        <span class="badge badge-subsystem">{{ user.subsystem }}</span>
+      </div>
+      <div class="font-mono text-muted" style="font-size: 0.88rem; margin-top: 4px;">
+        Username: <strong class="text-primary">@{{ user.username }}</strong> &bull; Member since: {{ user.created_at[:10] }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Edit Form -->
+  <div class="card" style="margin-bottom: var(--space-6);">
+    <div class="card-header" style="border-bottom: 1px solid var(--border-subtle); padding: var(--space-4) var(--space-6);">
+      <h3 class="card-title" style="font-size: 1.2rem; margin: 0;">
+        <i class="fa-solid fa-user-pen text-red"></i> Account Information
+      </h3>
+    </div>
+    <div class="card-body" style="padding: var(--space-6);">
+      <form method="POST" action="{{ url_for('members.profile') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Full Name -->
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+          <label class="form-label" for="full_name" style="font-weight: 700;">
+            Full Name <span class="text-red">*</span>
+          </label>
+          <input type="text" id="full_name" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+        </div>
+
+        <!-- Email Address -->
+        <div class="form-group" style="margin-bottom: var(--space-5);">
+          <label class="form-label" for="email" style="font-weight: 700;">
+            Email Address <span class="text-red">*</span>
+          </label>
+          <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+          <div class="form-text" style="color: var(--text-muted); font-size: 0.82rem; margin-top: 4px;">
+            Used for official team communications and notices.
+          </div>
+        </div>
+
+        <!-- Read-Only Subsystem & Role -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-5);">
+          <div>
+            <label class="form-label" style="color: var(--text-muted); font-size: 0.85rem;">Assigned Subsystem</label>
+            <input type="text" class="form-control" value="{{ user.subsystem }}" disabled style="background-color: var(--bg-surface-elevated); opacity: 0.8; cursor: not-allowed;">
+          </div>
+          <div>
+            <label class="form-label" style="color: var(--text-muted); font-size: 0.85rem;">Official Role</label>
+            <input type="text" class="form-control" value="{{ user.role }}" disabled style="background-color: var(--bg-surface-elevated); opacity: 0.8; cursor: not-allowed;">
+          </div>
+        </div>
+
+        <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-6); font-size: 0.85rem; color: var(--text-secondary);">
+          <i class="fa-solid fa-shield-halved text-red"></i> Pit crew registry roles and subsystem appointments are authorized by the Team Captain and Vice Captain.
+        </div>
+
+        <!-- Save Profile Changes Button -->
+        <div style="display: flex; justify-content: flex-end;">
+          <button type="submit" class="btn btn-primary" style="min-width: 160px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Profile
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Completion & Telemetry Notifications for Assigners -->
+  <div class="card card-accent-green" style="margin-bottom: var(--space-6); padding: var(--space-6);">
+    <div class="flex items-center justify-between" style="margin-bottom: var(--space-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-3);">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-bell text-green" style="font-size: 1.3rem;"></i>
+        <h3 class="card-title" style="font-size: 1.25rem; margin: 0; font-weight: 800; text-transform: uppercase;">
+          Work Completion & Telemetry Notifications
+        </h3>
+      </div>
+      <span class="badge badge-normal" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); font-weight: 700;">
+        {{ notifications | length }} Notifications
+      </span>
+    </div>
+
+    {% if notifications %}
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        {% for n in notifications %}
+          <div style="background: var(--bg-surface-elevated); border: 1px solid {% if n.is_read %}var(--border-subtle){% else %}var(--accent-green){% endif %}; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);">
+            <div style="flex: 1; min-width: 260px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                <span class="badge {% if n.is_read %}badge-normal{% else %}badge-high{% endif %}" style="font-size: 0.72rem; padding: 2px 8px;">
+                  {% if n.is_read %}SEEN{% else %}NEW TELEMETRY{% endif %}
+                </span>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ n.title }}</strong>
+                <span class="font-mono text-muted" style="font-size: 0.78rem;">{{ n.created_at }}</span>
+              </div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.4;">
+                {{ n.message }}
+              </p>
+            </div>
+            {% if not n.is_read %}
+              <form method="POST" action="{{ url_for('tasks.mark_notification_read', notif_id=n.id) }}" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;">
+                  <i class="fa-solid fa-check"></i> Dismiss
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center" style="padding: var(--space-4) 0; color: var(--text-muted); font-size: 0.95rem;">
+        <i class="fa-solid fa-check-double text-green" style="font-size: 1.5rem; margin-bottom: 8px; display: block;"></i>
+        All clear! No pending task completion notifications.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Tasks Assigned by Me (Repeat Operations - Elementary) -->
+  <div class="card" style="margin-bottom: var(--space-8); border-top: 3px solid var(--accent-cyan); padding: var(--space-6);">
+    <div class="flex items-center justify-between" style="margin-bottom: var(--space-4); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-3);">
+      <div>
+        <span class="section-subtitle" style="font-size: 0.75rem;">
+          <i class="fa-solid fa-repeat text-cyan"></i> REPEAT OPERATIONS &bull; ELEMENTARY
+        </span>
+        <h3 class="card-title" style="font-size: 1.25rem; font-weight: 800; margin: 4px 0 0 0; text-transform: uppercase;">
+          Tasks Assigned By You
+        </h3>
+      </div>
+      <span class="badge badge-subsystem">{{ assigned_by_me_tasks | length }} Assigned</span>
+    </div>
+
+    {% if assigned_by_me_tasks %}
+      <div class="table-responsive">
+        <table class="data-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Assigned Crew</th>
+              <th>Subsystem</th>
+              <th>Due Date</th>
+              <th>Priority</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for at in assigned_by_me_tasks %}
+              <tr>
+                <td>
+                  <strong style="color: var(--text-primary);">{{ at.title }}</strong>
+                  {% if at.notes %}
+                    <div class="font-mono text-muted" style="font-size: 0.78rem; margin-top: 2px;">{{ at.notes }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <span style="font-weight: 600;">{{ at.assignee_name }}</span>
+                  <div class="font-mono text-muted" style="font-size: 0.78rem;">@{{ at.assignee_username }}</div>
+                </td>
+                <td><span class="badge badge-subsystem">{{ at.subsystem }}</span></td>
+                <td><span class="font-mono" style="font-size: 0.85rem;">{{ at.due_date }}</span></td>
+                <td>
+                  <span class="badge {% if at.priority == 'High' %}badge-high{% else %}badge-normal{% endif %}">
+                    {{ at.priority }}
+                  </span>
+                </td>
+                <td>
+                  {% if at.status == 'Done' %}
+                    <span class="badge badge-done" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green);">
+                      <i class="fa-solid fa-circle-check"></i> COMPLETED & ROUTED BACK
+                    </span>
+                  {% elif at.status == 'In Progress' %}
+                    <span class="badge badge-inprogress">
+                      <i class="fa-solid fa-spinner fa-spin"></i> IN PROGRESS
+                    </span>
+                  {% else %}
+                    <span class="badge badge-todo">
+                      <i class="fa-solid fa-circle"></i> TO DO
+                    </span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center" style="padding: var(--space-4) 0; color: var(--text-muted); font-size: 0.95rem;">
+        You have not assigned any operational tasks yet. When you deploy tasks to crew members, they will report status back here automatically.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

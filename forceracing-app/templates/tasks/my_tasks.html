@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}MY PIT TASKS // FORCE RACING{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12); max-width: 1040px;">
+  <!-- Header Banner -->
+  <div class="section-header-wrap" style="align-items: center; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6);">
+    <div>
+      <div class="telemetry-item font-mono text-muted" style="margin-bottom: 4px;">
+        <span class="telemetry-live-dot"></span> DAILY PIT ASSIGNMENTS // SECTOR 1
+      </div>
+      <h1 style="font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 0.04em;">
+        My Daily Tasks // <span class="text-red">Pit Assignments</span>
+      </h1>
+      <p style="color: var(--text-secondary); margin-top: 6px; font-size: 0.95rem;">
+        Track execution for <strong class="text-primary">{{ user.full_name }}</strong> &mdash; 
+        <span class="badge badge-subsystem">{{ user.subsystem }}</span>
+        <span class="badge badge-role {% if user.role in ['Captain', 'Vice Captain'] %}role-captain{% elif user.role == 'Manager' %}role-manager{% elif user.role == 'Subsystem Lead' %}role-subsystem-lead{% else %}role-member{% endif %}">{{ user.role }}</span>
+      </p>
+    </div>
+
+    {% if is_leader %}
+      <div>
+        <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-secondary">
+          <i class="fa-solid fa-gauge-high"></i> Pit Wall Dashboard
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if is_lead %}
+    <!-- Subsystem Lead Notification Banner -->
+    <div style="background-color: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: var(--radius-sm); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-6); display: flex; align-items: center; gap: 12px;">
+      <i class="fa-solid fa-crown text-cyan" style="font-size: 1.4rem;"></i>
+      <div style="font-size: 0.9rem; color: var(--text-primary);">
+        <strong>Subsystem Lead Authority:</strong> You are viewing tasks directly assigned to you as well as operational tasks across the entire <strong class="text-cyan">{{ user.subsystem }}</strong> subsystem. You can update telemetry logs and status for any task in your subsystem.
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Completion & Telemetry Notifications for Assigners -->
+  {% if unread_notifications %}
+    <div class="card card-accent-green" style="padding: var(--space-5); margin-bottom: var(--space-6);">
+      <div class="flex items-center justify-between" style="margin-bottom: var(--space-3); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-3);">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-bell text-green" style="font-size: 1.2rem;"></i>
+          <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; text-transform: uppercase;">
+            Work Completion & Telemetry Notifications
+          </h3>
+        </div>
+        <span class="badge badge-normal" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); font-weight: 700;">
+          {{ unread_notifications | length }} Recent
+        </span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+        {% for n in unread_notifications %}
+          <div style="background: var(--bg-surface-elevated); border: 1px solid {% if n.is_read %}var(--border-subtle){% else %}var(--accent-green){% endif %}; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);">
+            <div style="flex: 1; min-width: 260px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                <span class="badge {% if n.is_read %}badge-normal{% else %}badge-high{% endif %}" style="font-size: 0.72rem; padding: 2px 8px;">
+                  {% if n.is_read %}SEEN{% else %}NEW TELEMETRY{% endif %}
+                </span>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ n.title }}</strong>
+                <span class="font-mono text-muted" style="font-size: 0.78rem;">{{ n.created_at }}</span>
+              </div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.4;">
+                {{ n.message }}
+              </p>
+            </div>
+            {% if not n.is_read %}
+              <form method="POST" action="{{ url_for('tasks.mark_notification_read', notif_id=n.id) }}" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;">
+                  <i class="fa-solid fa-check"></i> Dismiss
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Quick Status Summary Metrics -->
+  {% set pending_tasks = tasks | rejectattr('status', 'equalto', 'Done') | list %}
+  {% set high_pending = pending_tasks | selectattr('priority', 'equalto', 'High') | list %}
+  {% set done_tasks = tasks | selectattr('status', 'equalto', 'Done') | list %}
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-8);">
+    <div class="card" style="padding: var(--space-4); text-align: center;">
+      <div class="font-mono text-muted" style="font-size: 0.78rem; text-transform: uppercase;">Active Queue</div>
+      <div style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--text-primary); line-height: 1.1;">
+        {{ pending_tasks | length }}
+      </div>
+      <div class="text-secondary font-mono" style="font-size: 0.75rem;">Tasks in progress</div>
+    </div>
+
+    <div class="card card-accent-red" style="padding: var(--space-4); text-align: center;">
+      <div class="font-mono text-red" style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700;">Critical High</div>
+      <div style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--accent-red); line-height: 1.1;">
+        {{ high_pending | length }}
+      </div>
+      <div class="text-secondary font-mono" style="font-size: 0.75rem;">Requires urgent sign-off</div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--accent-green); padding: var(--space-4); text-align: center;">
+      <div class="font-mono text-green" style="font-size: 0.78rem; text-transform: uppercase;">Completed</div>
+      <div style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--accent-green); line-height: 1.1;">
+        {{ done_tasks | length }}
+      </div>
+      <div class="text-secondary font-mono" style="font-size: 0.75rem;">Verified pit lane milestones</div>
+    </div>
+  </div>
+
+  {% if tasks %}
+    <!-- Task Cards Stream -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+      {% for t in tasks %}
+        {% set is_overdue = (t.due_date < today_str and t.status != 'Done') %}
+        {% set is_today = (t.due_date == today_str and t.status != 'Done') %}
+        {% set is_high = (t.priority == 'High') %}
+        {% set is_done = (t.status == 'Done') %}
+
+        <div class="card {% if is_high and not is_done %}card-accent-red{% elif is_done %}style-task-done-card{% endif %}" 
+             style="border-left: {% if is_high and not is_done %}6px solid var(--accent-red){% elif is_done %}6px solid var(--accent-green){% else %}6px solid var(--border-prominent){% endif %};">
+          
+          <div class="card-body" style="padding: var(--space-5) var(--space-6);">
+            <!-- Top meta row: Priority, Subsystem, Due Date, Assignee -->
+            <div class="flex justify-between items-center flex-wrap gap-2" style="margin-bottom: var(--space-3);">
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Priority Badge -->
+                {% if is_high %}
+                  <span class="badge badge-high" style="font-size: 0.82rem; padding: 5px 12px; font-weight: 800; background: var(--accent-red); color: #fff;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> IMPORTANT &bull; HIGH PRIORITY
+                  </span>
+                {% else %}
+                  <span class="badge badge-normal" style="font-size: 0.82rem; padding: 5px 12px; font-weight: 700; background: var(--bg-surface); border: 1px solid var(--border-prominent); color: var(--text-primary);">
+                    NORMAL PRIORITY
+                  </span>
+                {% endif %}
+
+                <!-- Subsystem Badge -->
+                <span class="badge badge-subsystem">{{ t.subsystem }}</span>
+
+                <!-- Assignee (if lead viewing another member's work) -->
+                {% if is_lead and t.assignee_id != user.id %}
+                  <span class="badge" style="background-color: var(--bg-surface-active); color: var(--text-secondary); border: 1px solid var(--border-default);">
+                    <i class="fa-solid fa-user"></i> {{ t.assignee_name }}
+                  </span>
+                {% elif t.assignee_id == user.id %}
+                  <span class="badge" style="background-color: rgba(0, 240, 255, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.3);">
+                    <i class="fa-solid fa-user-check"></i> Assigned to You
+                  </span>
+                {% endif %}
+              </div>
+
+              <!-- Due Date Display -->
+              <div class="font-mono" style="font-size: 0.88rem; font-weight: 600;">
+                {% if is_overdue %}
+                  <span class="text-red flex items-center gap-1" title="Overdue!">
+                    <i class="fa-solid fa-clock-rotate-left"></i> OVERDUE ({{ t.due_date }})
+                  </span>
+                {% elif is_today %}
+                  <span class="text-gold flex items-center gap-1" title="Target completion today">
+                    <i class="fa-solid fa-bolt"></i> DUE TODAY ({{ t.due_date }})
+                  </span>
+                {% else %}
+                  <span class="text-muted flex items-center gap-1">
+                    <i class="fa-regular fa-calendar"></i> Target: {{ t.due_date }}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Task Title & Description -->
+            <h3 style="font-size: 1.35rem; font-weight: 700; margin: 0 0 var(--space-2); color: var(--text-primary); {% if is_done %}text-decoration: line-through; opacity: 0.75;{% endif %}">
+              {{ t.title }}
+            </h3>
+
+            {% if t.description %}
+              <div style="font-size: 0.94rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--space-4); background-color: var(--bg-surface); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                {{ t.description }}
+              </div>
+            {% endif %}
+
+            <!-- Telemetry Notes Log -->
+            {% if t.notes %}
+              <div style="margin-bottom: var(--space-4); background: rgba(0,0,0,0.25); border-left: 3px solid var(--accent-cyan); padding: var(--space-2) var(--space-4); border-radius: 0 var(--radius-xs) var(--radius-xs) 0;">
+                <div class="font-mono text-cyan" style="font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px;">
+                  <i class="fa-solid fa-clipboard-list"></i> Progress & Telemetry Log:
+                </div>
+                <div class="font-mono text-secondary" style="font-size: 0.83rem; white-space: pre-line;">
+                  {{ t.notes }}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- One-Click Status Update Panel -->
+            <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-top: var(--space-3);">
+              <form method="POST" action="{{ url_for('tasks.update_status', task_id=t.id) }}" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                {{ status_form.hidden_tag() }}
+
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-muted" style="font-size: 0.8rem; text-transform: uppercase;">Status:</span>
+                    
+                    <!-- Quick Toggle Buttons -->
+                    <div style="display: inline-flex; border: 1px solid var(--border-default); border-radius: var(--radius-sm); overflow: hidden;">
+                      <label style="margin: 0; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.2s;
+                        {% if t.status == 'To Do' %}background: #252f44; color: #fff;{% else %}background: var(--bg-surface); color: var(--text-muted);{% endif %}">
+                        <input type="radio" name="status" value="To Do" {% if t.status == 'To Do' %}checked{% endif %} style="display: none;" onchange="this.form.submit()">
+                        <i class="fa-solid fa-circle" style="font-size: 0.65rem;"></i> To Do
+                      </label>
+
+                      <label style="margin: 0; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.2s; border-left: 1px solid var(--border-default); border-right: 1px solid var(--border-default);
+                        {% if t.status == 'In Progress' %}background: var(--accent-gold); color: #000; font-weight: 700;{% else %}background: var(--bg-surface); color: var(--text-muted);{% endif %}">
+                        <input type="radio" name="status" value="In Progress" {% if t.status == 'In Progress' %}checked{% endif %} style="display: none;" onchange="this.form.submit()">
+                        <i class="fa-solid fa-spinner"></i> In Progress
+                      </label>
+
+                      <label style="margin: 0; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.2s;
+                        {% if t.status == 'Done' %}background: var(--accent-green); color: #000; font-weight: 700;{% else %}background: var(--bg-surface); color: var(--text-muted);{% endif %}">
+                        <input type="radio" name="status" value="Done" {% if t.status == 'Done' %}checked{% endif %} style="display: none;" onchange="this.form.submit()">
+                        <i class="fa-solid fa-check"></i> Done
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Progress Notes & Submit Button -->
+                  <div class="flex items-center gap-2" style="flex-grow: 1; max-width: 460px;">
+                    <input type="text" name="notes" class="form-control" placeholder="Add progress notes or fabrication details..." style="font-size: 0.85rem; padding: 6px 12px; height: 36px;">
+                    <button type="submit" class="btn btn-sm btn-primary" style="height: 36px; padding: 0 16px; font-weight: 700; white-space: nowrap;" title="Submit work and update task status">
+                      <i class="fa-solid fa-check"></i> Submit Update
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <!-- Friendly Pit-Wall Empty State -->
+    <div class="card" style="padding: var(--space-12) var(--space-6); text-align: center; border: 2px dashed var(--accent-green);">
+      <div class="task-empty-icon" style="color: var(--accent-green); font-size: 4rem; margin-bottom: var(--space-4);">
+        <i class="fa-solid fa-flag-checkered"></i>
+      </div>
+      <h2 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: var(--space-2); text-transform: uppercase;">
+        🏎️ All Clear in the Pit! No Pending Tasks.
+      </h2>
+      <p style="color: var(--text-secondary); max-width: 520px; margin: 0 auto var(--space-6); font-size: 1.05rem; line-height: 1.6;">
+        Every operational task assigned to your queue has been resolved and verified. Your subsystem is running at peak velocity for the next track run.
+      </p>
+      <div class="flex justify-center gap-3">
+        {% if is_leader %}
+          <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-primary">
+            <i class="fa-solid fa-gauge-high"></i> Pit Wall Command
+          </a>
+        {% else %}
+          <a href="{{ config.WEBSITE_URL }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Official Force Racing HQ
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  <!-- Tasks Assigned by Me (Repeat Operations - Elementary) -->
+  {% if assigned_by_me_tasks %}
+    <div class="card" style="padding: var(--space-5); margin-top: var(--space-8); border-top: 3px solid var(--accent-cyan);">
+      <div class="flex items-center justify-between" style="margin-bottom: var(--space-3); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--space-3);">
+        <div>
+          <span class="section-subtitle" style="font-size: 0.75rem;">
+            <i class="fa-solid fa-repeat text-cyan"></i> REPEAT OPERATIONS &bull; ELEMENTARY
+          </span>
+          <h3 style="font-size: 1.2rem; font-weight: 800; margin: 4px 0 0 0; text-transform: uppercase;">
+            Tasks Assigned By You (Auto-Routes Upon Completion)
+          </h3>
+        </div>
+        <span class="badge badge-subsystem">{{ assigned_by_me_tasks | length }} Assigned</span>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Assigned Crew</th>
+              <th>Subsystem</th>
+              <th>Due Date</th>
+              <th>Priority</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for at in assigned_by_me_tasks %}
+              <tr>
+                <td>
+                  <strong style="color: var(--text-primary);">{{ at.title }}</strong>
+                  {% if at.notes %}
+                    <div class="font-mono text-muted" style="font-size: 0.78rem; margin-top: 2px;">{{ at.notes }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <span style="font-weight: 600;">{{ at.assignee_name }}</span>
+                  <div class="font-mono text-muted" style="font-size: 0.78rem;">@{{ at.assignee_username }}</div>
+                </td>
+                <td><span class="badge badge-subsystem">{{ at.subsystem }}</span></td>
+                <td><span class="font-mono" style="font-size: 0.85rem;">{{ at.due_date }}</span></td>
+                <td>
+                  <span class="badge {% if at.priority == 'High' %}badge-high{% else %}badge-normal{% endif %}">
+                    {{ at.priority }}
+                  </span>
+                </td>
+                <td>
+                  {% if at.status == 'Done' %}
+                    <span class="badge badge-done" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green);">
+                      <i class="fa-solid fa-circle-check"></i> COMPLETED & ROUTED BACK
+                    </span>
+                  {% elif at.status == 'In Progress' %}
+                    <span class="badge badge-inprogress">
+                      <i class="fa-solid fa-spinner fa-spin"></i> IN PROGRESS
+                    </span>
+                  {% else %}
+                    <span class="badge badge-todo">
+                      <i class="fa-solid fa-circle"></i> TO DO
+                    </span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

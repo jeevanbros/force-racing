@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Force Racing // Formula Student Team{% endblock %}
+
+{% block content %}
+<!-- 1. HERO SECTION WITH OFFICIAL CAR PICTURE -->
+<section class="hero-section" style="background-image: url('{{ url_for('static', filename='images/heroimg-1440.webp') }}'); background-position: center 30%;">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <div class="hero-badge-tag">
+      <i class="fa-solid fa-flag-checkered text-red"></i> KITS WARANGAL &bull; FORMULA STUDENT
+    </div>
+    <h1 class="hero-motto">
+      DREAM. <span class="text-red">BUILD.</span> RACE.
+    </h1>
+    <p class="hero-subtitle">
+      Welcome to Force Racing. Engineering student race cars, competing nationally at SUPRA SAEINDIA and Formula Student championships.
+    </p>
+  </div>
+</section>
+
+<div class="container" style="padding-bottom: 90px;">
+
+  <!-- 2. LIVE SUPRA SAE INDIA 2027 COUNTDOWN -->
+  <section class="countdown-section" aria-label="Championship Event Countdown" style="margin-top: var(--space-6);">
+    <div class="countdown-box" data-supra-date="{{ supra_date }}">
+      <h2 class="countdown-heading" style="font-size: clamp(1.8rem, 3.5vw, 2.5rem); letter-spacing: 0.05em; margin-bottom: var(--space-2);">
+        SUPRA SAE INDIA 2027
+      </h2>
+      <p class="countdown-subheading" style="margin-bottom: var(--space-6);">
+        SUPRA SAE INDIA COUNTDOWN TIME
+      </p>
+
+      <div class="countdown-grid">
+        <!-- DAYS -->
+        <div class="countdown-tile">
+          <span class="countdown-tile-number text-primary" id="countdown-days">---</span>
+          <span class="countdown-tile-label">DAYS</span>
+        </div>
+        <!-- HOURS -->
+        <div class="countdown-tile">
+          <span class="countdown-tile-number text-red" id="countdown-hours">--</span>
+          <span class="countdown-tile-label">HOURS</span>
+        </div>
+        <!-- MINUTES -->
+        <div class="countdown-tile">
+          <span class="countdown-tile-number text-primary" id="countdown-minutes">--</span>
+          <span class="countdown-tile-label">MINUTES</span>
+        </div>
+        <!-- SECONDS -->
+        <div class="countdown-tile">
+          <span class="countdown-tile-number text-red" id="countdown-seconds">--</span>
+          <span class="countdown-tile-label">SECONDS</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. LOGGED-IN TODAY'S WORK & ASSIGNMENTS WIDGET -->
+  {% if user %}
+  <section class="today-tasks-section" style="margin-top: var(--space-8);">
+    <div class="card card-accent-red">
+      <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+        <div>
+          <span class="section-subtitle">
+            <i class="fa-solid fa-list-check text-red"></i> DAILY WORK SCHEDULE
+          </span>
+          <h3 class="card-title" style="margin: 0;">
+            {% if is_leader %}
+              High Priority Team Assignments
+            {% else %}
+              My Assigned Work
+            {% endif %}
+          </h3>
+        </div>
+        <div>
+          <a href="{{ url_for('tasks.dashboard') if is_leader else url_for('tasks.my_tasks') }}" class="btn btn-sm btn-secondary">
+            View All Tasks &rarr;
+          </a>
+        </div>
+      </div>
+
+      <div class="card-body">
+        {% if today_tasks %}
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            {% for task in today_tasks %}
+              <div class="task-widget-item flex items-center justify-between flex-wrap gap-3" 
+                   style="padding: var(--space-3) var(--space-4); background-color: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); border-left: 4px solid {% if task.priority == 'High' %}var(--accent-red){% else %}var(--border-prominent){% endif %};">
+                
+                <div class="flex items-center gap-3">
+                  <span class="badge {% if task.priority == 'High' %}badge-high{% else %}badge-normal{% endif %}" style="font-size: 0.72rem;">
+                    {{ task.priority }}
+                  </span>
+                  
+                  <span class="badge badge-subsystem" style="font-size: 0.72rem;">
+                    {{ task.subsystem }}
+                  </span>
+
+                  <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0; color: var(--text-primary);">
+                      {{ task.title }}
+                    </h4>
+                    <span class="font-mono text-muted" style="font-size: 0.75rem;">
+                      Assignee: <strong class="text-primary">{{ task.assignee_name }}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-muted" style="font-size: 0.8rem;">
+                    Due: <strong class="text-primary">{{ task.due_date }}</strong>
+                  </span>
+                  
+                  <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-primary);">
+                    {{ task.status }}
+                  </span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="task-empty-state" style="text-align: center; padding: var(--space-6);">
+            <div style="font-size: 2.2rem; color: var(--accent-red); margin-bottom: var(--space-2);">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h4 class="racing-title" style="font-size: 1.2rem;">All Scheduled Work Up to Date</h4>
+            <p class="text-secondary" style="max-width: 480px; margin: 0 auto 16px; font-size: 0.9rem;">
+              No urgent tasks pending for your queue today. Subsystem testing and vehicle assembly are moving forward on schedule.
+            </p>
+            <a href="{{ url_for('tasks.dashboard') if is_leader else url_for('tasks.my_tasks') }}" class="btn btn-sm btn-secondary">
+              Open Task Dashboard
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- 4. TEAM PORTAL CARDS -->
+  <section class="quicklinks-section" aria-label="Team Portals" style="margin-top: var(--space-8);">
+    <div class="section-header-wrap" style="margin-bottom: var(--space-4);">
+      <div>
+        <span class="section-subtitle">
+          <i class="fa-solid fa-grip text-red"></i> QUICK NAVIGATION
+        </span>
+        <h2 class="racing-title">Force Racing Portals</h2>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Card 1: Crew -->
+      <a href="{{ url_for('main.crew') }}" class="quicklink-card">
+        <div class="quicklink-icon-wrap text-red">
+          <i class="fa-solid fa-users-gear"></i>
+        </div>
+        <h3 class="quicklink-title">Crew</h3>
+        <p class="quicklink-desc">
+          Team leads, department structure, and subsystem roster
+        </p>
+        <span class="quicklink-cta">View Crew &rarr;</span>
+      </a>
+
+      <!-- Card 2: Headquarters -->
+      <div class="quicklink-card">
+        <div class="quicklink-icon-wrap text-red">
+          <i class="fa-solid fa-location-dot"></i>
+        </div>
+        <h3 class="quicklink-title">Headquarters</h3>
+        <p class="quicklink-desc">
+          Force Racing Workshop, Dept of Mechanical Engineering, KITS Warangal
+        </p>
+        <a href="{{ config.HQ_MAPS_URL }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary" style="margin-top: 8px;">
+          <i class="fa-solid fa-map-location-dot"></i> Get Directions
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. APPS & TELEMETRY DOWNLOAD SUITE (x64, x86, ANDROID) -->
+  <section class="card card-accent-red" style="margin-top: var(--space-8); padding: var(--space-6); background: var(--bg-surface-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-md);">
+    <div style="margin-bottom: var(--space-5);">
+      <span class="badge badge-red" style="font-weight: 800; margin-bottom: 6px;">
+        <i class="fa-solid fa-download"></i> MULTI-ARCHITECTURE RELEASE (v2.1.0)
+      </span>
+      <h3 class="racing-title" style="font-size: 1.6rem; margin: 4px 0 6px;">
+        Force Racing Operations App Suite
+      </h3>
+      <p class="text-secondary" style="font-size: 0.92rem; margin: 0; max-width: 720px;">
+        Direct binaries for trackside telemetry, pit wall command, and mobile operations. Built for 64-bit &amp; 32-bit Windows PCs and Android devices.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+      <!-- 64-bit PC -->
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span class="badge" style="background: rgba(0, 240, 255, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.4); font-weight: 800; font-size: 0.75rem;">
+              <i class="fa-brands fa-windows"></i> WINDOWS x64
+            </span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">64-Bit Desktop</span>
+          </div>
+          <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800;">PC App (64-Bit Standalone)</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0 0 14px;">
+            Full telemetry suite &amp; embedded Chromium pitwall launcher for modern 64-bit Windows workstations.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="{{ url_for('static', filename='downloads/ForceRacing-x64.exe') }}" download="ForceRacing-x64.exe" class="btn btn-primary" style="flex: 1; padding: 10px 14px; font-size: 0.85rem; font-weight: 800; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-download"></i> EXE (154 MB)
+          </a>
+          <a href="https://github.com/jeevanbros/force-racing/releases/download/v2.1.0/ForceRacing-x64.zip" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 10px 12px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Download ZIP from GitHub Releases">
+            <i class="fa-solid fa-file-zipper"></i> ZIP
+          </a>
+        </div>
+      </div>
+
+      <!-- 32-bit PC -->
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span class="badge" style="background: rgba(212, 255, 0, 0.15); color: #d4ff00; border: 1px solid rgba(212, 255, 0, 0.4); font-weight: 800; font-size: 0.75rem;">
+              <i class="fa-brands fa-windows"></i> WINDOWS x86
+            </span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">32-Bit Workshop Edition</span>
+          </div>
+          <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800;">PC App (32-Bit Standalone)</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0 0 14px;">
+            Portable runtime bundle with quick batch launcher for legacy 32-bit workshop laptops and dyno PCs.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="{{ url_for('static', filename='downloads/ForceRacing-x86.zip') }}" download="ForceRacing-x86.zip" class="btn btn-primary" style="flex: 1; padding: 10px 14px; font-size: 0.85rem; font-weight: 800; justify-content: center; display: inline-flex; align-items: center; gap: 6px; background: #d4ff00; color: #000; border-color: #d4ff00;">
+            <i class="fa-solid fa-file-zipper"></i> ZIP (18.3 MB)
+          </a>
+          <a href="{{ url_for('static', filename='downloads/ForceRacing-PC-x86.exe') }}" download="ForceRacing-PC-x86.exe" class="btn btn-secondary" style="padding: 10px 12px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Download 32-bit Executable Launcher">
+            <i class="fa-solid fa-play"></i> EXE
+          </a>
+        </div>
+      </div>
+
+      <!-- Android Mobile APK -->
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span class="badge badge-red" style="font-weight: 800; font-size: 0.75rem;">
+              <i class="fa-brands fa-android"></i> ANDROID APK
+            </span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Mobile Companion</span>
+          </div>
+          <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800;">Mobile App (Android)</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0 0 14px;">
+            5-Sensor security cleared mobile companion with live telemetry, task notifications, and team radio.
+          </p>
+        </div>
+        <div>
+          <a href="{{ url_for('static', filename='downloads/ForceRacing.apk') }}" download="ForceRacing.apk" class="btn btn-primary" style="width: 100%; padding: 10px 14px; font-size: 0.85rem; font-weight: 800; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-brands fa-android"></i> APK (7.4 MB)
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official GitHub Release Footer Link -->
+    <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.82rem; color: var(--text-muted);">
+      <div>
+        <i class="fa-brands fa-github"></i> Official GitHub Release: <code style="color: var(--accent-cyan);">v2.1.0</code>
+      </div>
+      <a href="https://github.com/jeevanbros/force-racing/releases/tag/v2.1.0" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        View Release on GitHub <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem;"></i>
+      </a>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

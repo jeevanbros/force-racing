@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Force Racing // Search{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: 110px; max-width: 960px;">
+
+  <!-- Header -->
+  <div class="text-center" style="margin-bottom: var(--space-8);">
+    <span class="section-subtitle">
+      <i class="fa-solid fa-magnifying-glass text-red"></i> UNIVERSAL SEARCH
+    </span>
+    <h1 class="racing-title" style="font-size: clamp(2rem, 4vw, 2.8rem); margin: 0;">
+      SEARCH <span class="text-red">FORCE RACING</span>
+    </h1>
+    <p class="text-secondary" style="font-size: 0.95rem; margin-top: 6px;">
+      Find team members, CAD blueprints, tasks, and race cars with live term highlighting.
+    </p>
+
+    <!-- Search Input Bar -->
+    <form method="GET" action="{{ url_for('main.search') }}" style="max-width: 640px; margin: var(--space-6) auto 0; position: relative;">
+      <div style="position: relative; display: flex; align-items: center;">
+        <i class="fa-solid fa-magnifying-glass text-red" style="position: absolute; left: 18px; font-size: 1.15rem; pointer-events: none;"></i>
+        <input type="text" name="q" id="search-input" value="{{ query }}" autofocus
+               placeholder="Search chassis, aero, CAD files, members, Supra 2026..." 
+               class="form-control" 
+               style="height: 52px; padding-left: 50px; padding-right: 110px; border-radius: var(--radius-full); font-size: 1rem; border-color: var(--border-prominent); background-color: var(--bg-surface-elevated); box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+        <button type="submit" class="btn btn-primary" style="position: absolute; right: 6px; height: 40px; border-radius: var(--radius-full); padding: 0 20px;">
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Search Results -->
+  {% if query %}
+    {% set total_count = (results.members|length) + (results.tasks|length) + (results.cad_files|length) + (results.cars|length) %}
+    
+    <div style="margin-bottom: var(--space-6); display: flex; align-items: center; justify-content: space-between;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; text-transform: uppercase; margin: 0;">
+        Results for <span class="text-red">"{{ query }}"</span> &mdash; <span class="text-muted">{{ total_count }} matches found</span>
+      </h2>
+    </div>
+
+    <!-- 1. Garage Cars Matches -->
+    {% if results.cars %}
+      <div style="margin-bottom: var(--space-8);">
+        <div class="flex items-center gap-2" style="margin-bottom: var(--space-3);">
+          <i class="fa-solid fa-car text-red"></i>
+          <h3 style="font-size: 1.1rem; text-transform: uppercase; margin: 0;">Race Cars & Prototypes ({{ results.cars|length }})</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);">
+          {% for car in results.cars %}
+            <div class="card" style="padding: var(--space-4); border-left: 4px solid var(--accent-red);">
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <img src="{{ url_for('static', filename='images/' + car.image) }}" alt="{{ car.name }}" 
+                     style="width: 70px; height: 50px; object-fit: cover; border-radius: var(--radius-xs);">
+                <div>
+                  <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700;">{{ car.name }}</h4>
+                  <div class="font-mono text-secondary" style="font-size: 0.75rem;">{{ car.category }} &bull; {{ car.year }}</div>
+                  <div class="font-mono text-muted" style="font-size: 0.72rem;">{{ car.engine }}</div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- 2. CAD Files Matches -->
+    {% if results.cad_files %}
+      <div style="margin-bottom: var(--space-8);">
+        <div class="flex items-center gap-2" style="margin-bottom: var(--space-3);">
+          <i class="fa-solid fa-cubes text-red"></i>
+          <h3 style="font-size: 1.1rem; text-transform: uppercase; margin: 0;">CAD Blueprints & Models ({{ results.cad_files|length }})</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+          {% for f in results.cad_files %}
+            <div class="card" style="padding: var(--space-4); display: flex; align-items: center; justify-content: space-between; flex-wrap: gap-2;">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-subsystem">{{ f.subsystem }}</span>
+                  <span class="badge badge-red">{{ f.status }}</span>
+                </div>
+                <h4 style="margin: 6px 0 2px; font-size: 1.05rem;">{{ f.title }}</h4>
+                <div class="font-mono text-muted" style="font-size: 0.78rem;">
+                  By {{ f.uploader_name }} &bull; {{ f.original_name }}
+                </div>
+              </div>
+              <a href="{{ url_for('main.cad_hub') }}" class="btn btn-sm btn-secondary">
+                View in Hub
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- 3. Members Matches -->
+    {% if results.members %}
+      <div style="margin-bottom: var(--space-8);">
+        <div class="flex items-center gap-2" style="margin-bottom: var(--space-3);">
+          <i class="fa-solid fa-users text-red"></i>
+          <h3 style="font-size: 1.1rem; text-transform: uppercase; margin: 0;">Team Members & Leads ({{ results.members|length }})</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4);">
+          {% for m in results.members %}
+            <div class="card" style="padding: var(--space-4); display: flex; align-items: center; gap: 12px;">
+              <div class="user-avatar-initials" style="width: 44px; height: 44px; font-size: 1rem; border-color: var(--accent-red); color: var(--accent-red);">
+                {{ m.full_name[:2].upper() }}
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-weight: 700; font-size: 0.95rem;">{{ m.full_name }}</div>
+                <div class="font-mono text-muted" style="font-size: 0.75rem;">@{{ m.username }}</div>
+                <div class="flex items-center gap-1" style="margin-top: 4px;">
+                  <span class="badge badge-subsystem" style="font-size: 0.65rem;">{{ m.subsystem }}</span>
+                  <span class="badge badge-role" style="font-size: 0.65rem;">{{ m.role }}</span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- 4. Tasks Matches -->
+    {% if results.tasks %}
+      <div style="margin-bottom: var(--space-8);">
+        <div class="flex items-center gap-2" style="margin-bottom: var(--space-3);">
+          <i class="fa-solid fa-list-check text-red"></i>
+          <h3 style="font-size: 1.1rem; text-transform: uppercase; margin: 0;">Tasks & Work Items ({{ results.tasks|length }})</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+          {% for t in results.tasks %}
+            <div class="card" style="padding: var(--space-4); border-left: 4px solid {% if t.priority == 'High' %}var(--accent-red){% else %}var(--border-prominent){% endif %};">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <span class="badge badge-subsystem">{{ t.subsystem }}</span>
+                  <span class="badge {% if t.priority == 'High' %}badge-high{% else %}badge-normal{% endif %}">{{ t.priority }}</span>
+                  <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-primary);">{{ t.status }}</span>
+                  <h4 style="margin: 6px 0 2px; font-size: 1.05rem;">{{ t.title }}</h4>
+                  <div class="font-mono text-muted" style="font-size: 0.78rem;">
+                    Assigned: {{ t.assignee_name }} &bull; Due: {{ t.due_date }}
+                  </div>
+                </div>
+                {% if user %}
+                  <a href="{{ url_for('tasks.my_tasks') }}" class="btn btn-sm btn-secondary">
+                    View Task
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if total_count == 0 %}
+      <div class="card text-center" style="padding: var(--space-10) var(--space-4);">
+        <i class="fa-solid fa-ghost text-muted" style="font-size: 3rem; margin-bottom: 12px;"></i>
+        <h3 style="font-size: 1.25rem;">No Results Found for "{{ query }}"</h3>
+        <p class="text-secondary" style="font-size: 0.88rem; max-width: 420px; margin: 0 auto;">
+          Try searching for keywords like "Chassis", "Wing", "Suspension", "Braking", "Rohan", or "Supra".
+        </p>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <!-- Quick Search Categories -->
+    <div style="margin-top: var(--space-8);">
+      <h3 class="font-mono text-muted text-center" style="font-size: 0.85rem; text-transform: uppercase; margin-bottom: var(--space-4);">
+        POPULAR SEARCH TOPICS
+      </h3>
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <a href="{{ url_for('main.search', q='Chassis') }}" class="btn btn-sm btn-secondary" style="border-radius: var(--radius-full);">#Chassis</a>
+        <a href="{{ url_for('main.search', q='Aerodynamics') }}" class="btn btn-sm btn-secondary" style="border-radius: var(--radius-full);">#Aerodynamics</a>
+        <a href="{{ url_for('main.search', q='Suspension') }}" class="btn btn-sm btn-secondary" style="border-radius: var(--radius-full);">#Suspension</a>
+        <a href="{{ url_for('main.search', q='Braking') }}" class="btn btn-sm btn-secondary" style="border-radius: var(--radius-full);">#Braking</a>
+        <a href="{{ url_for('main.search', q='Powertrain') }}" class="btn btn-sm btn-secondary" style="border-radius: var(--radius-full);">#Powertrain</a>
+        <a href="{{ url_for('main.search', q='Supra 2026') }}" class="btn btn-sm btn-secondary" style="border-radius: var(--radius-full);">#Supra 2026</a>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

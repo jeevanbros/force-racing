@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}CREW ROSTER // FORCE RACING MANAGEMENT{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: var(--space-12);">
+  <!-- Header -->
+  <div class="section-header-wrap" style="align-items: center; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8);">
+    <div>
+      <div class="telemetry-item font-mono text-muted" style="margin-bottom: 4px;">
+        <span class="telemetry-live-dot"></span> LEADERSHIP ACCESS // PERSONNEL MANAGEMENT
+      </div>
+      <h1 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 0.04em;">
+        Team Crew <span class="text-red">Roster</span>
+      </h1>
+      <p style="color: var(--text-secondary); margin-top: 6px; font-size: 1rem; max-width: 650px;">
+        Engineering directory, subsystem assignments, and pit wall role management.
+      </p>
+    </div>
+
+    <div>
+      <a href="{{ url_for('tasks.dashboard') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-gauge-high"></i> Pit Wall Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Subsystem Member Counts Pills -->
+  <div style="display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-6);">
+    <div style="background-color: var(--bg-surface-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: 8px 16px; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+      <i class="fa-solid fa-users text-cyan"></i>
+      <span class="text-muted">Total Crew:</span>
+      <strong class="text-primary font-mono">{{ members|length }}</strong>
+    </div>
+
+    {% for s in subsystems %}
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: 8px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 8px;">
+        <span class="badge badge-subsystem" style="padding: 2px 8px; font-size: 0.75rem;">{{ s }}</span>
+        <strong class="text-secondary font-mono">{{ subsystem_counts.get(s, 0) }}</strong>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="card" style="margin-bottom: var(--space-6);">
+    <div class="card-body" style="padding: var(--space-4) var(--space-6);">
+      <form method="GET" action="{{ url_for('members.list_members') }}" style="display: grid; grid-template-columns: 2fr 1.2fr 1.2fr auto auto; gap: var(--space-3); align-items: end;">
+        <!-- Search -->
+        <div>
+          <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Search Member</label>
+          <div style="position: relative;">
+            <input type="text" name="search" class="form-control" placeholder="Search by name, username, or email..." value="{{ search_query }}" style="padding-left: 36px;">
+            <i class="fa-solid fa-magnifying-glass text-muted" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.9rem;"></i>
+          </div>
+        </div>
+
+        <!-- Subsystem -->
+        <div>
+          <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Subsystem</label>
+          <select name="subsystem" class="form-select">
+            <option value="All" {% if active_subsystem == 'All' or not active_subsystem %}selected{% endif %}>All Subsystems</option>
+            {% for s in subsystems %}
+              <option value="{{ s }}" {% if active_subsystem == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Role -->
+        <div>
+          <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Role</label>
+          <select name="role" class="form-select">
+            <option value="All" {% if active_role == 'All' or not active_role %}selected{% endif %}>All Roles</option>
+            {% for r in roles %}
+              <option value="{{ r }}" {% if active_role == r %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Submit -->
+        <div>
+          <button type="submit" class="btn btn-primary" style="height: 42px; white-space: nowrap;">
+            <i class="fa-solid fa-filter"></i> Filter
+          </button>
+        </div>
+
+        <!-- Reset -->
+        {% if search_query or (active_subsystem and active_subsystem != 'All') or (active_role and active_role != 'All') %}
+          <div>
+            <a href="{{ url_for('members.list_members') }}" class="btn btn-secondary" style="height: 42px; display: inline-flex; align-items: center;" title="Reset filters">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </a>
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <!-- Members Roster Table -->
+  <div class="card">
+    <div class="card-header flex justify-between items-center">
+      <h3 class="card-title" style="margin: 0;">
+        <i class="fa-solid fa-address-book text-red"></i> Pit Crew Registry
+      </h3>
+      <span class="font-mono text-muted" style="font-size: 0.85rem;">
+        Showing {{ members|length }} personnel
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      {% if members %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Crew Member</th>
+              <th style="width: 140px;">Subsystem</th>
+              <th style="width: 150px;">Current Role</th>
+              <th style="width: 220px;">Email Contact</th>
+              <th style="width: 280px; text-align: right;">Role Management Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in members %}
+              <tr>
+                <!-- Member details -->
+                <td>
+                  <div class="flex items-center gap-3">
+                    <span class="user-avatar-initials" style="width: 36px; height: 36px; font-size: 0.85rem;">
+                      {{ m.full_name[:2] if m.full_name else 'FR' }}
+                    </span>
+                    <div>
+                      <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); line-height: 1.2;">
+                        {{ m.full_name }}
+                        {% if m.id == user.id %}
+                          <span class="badge" style="background: rgba(0,240,255,0.15); color: var(--accent-cyan); font-size: 0.7rem; padding: 2px 6px;">YOU</span>
+                        {% endif %}
+                      </div>
+                      <div class="font-mono text-muted" style="font-size: 0.8rem;">
+                        @{{ m.username }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Subsystem -->
+                <td>
+                  <span class="badge badge-subsystem">{{ m.subsystem }}</span>
+                </td>
+
+                <!-- Role Badge -->
+                <td>
+                  <span class="badge badge-role {% if m.role in ['Captain', 'Vice Captain'] %}role-captain{% elif m.role == 'Manager' %}role-manager{% elif m.role == 'Subsystem Lead' %}role-subsystem-lead{% else %}role-member{% endif %}">
+                    {{ m.role }}
+                  </span>
+                </td>
+
+                <!-- Email -->
+                <td>
+                  <a href="mailto:{{ m.email }}" class="text-secondary flex items-center gap-2" style="text-decoration: none; font-size: 0.9rem;">
+                    <i class="fa-solid fa-envelope text-muted"></i> {{ m.email }}
+                  </a>
+                </td>
+
+                <!-- Role Management Form -->
+                <td style="text-align: right;">
+                  <form method="POST" action="{{ url_for('members.change_role', user_id=m.id) }}" style="display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-2);">
+                    {{ role_form.hidden_tag() }}
+                    <select name="role" class="form-select" style="width: auto; padding: 5px 28px 5px 10px; font-size: 0.82rem; height: 32px;">
+                      {% for r in roles %}
+                        <option value="{{ r }}" {% if m.role == r %}selected{% endif %}>{{ r }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-cyan" style="height: 32px; white-space: nowrap;" title="Update member role">
+                      <i class="fa-solid fa-arrows-rotate"></i> Change
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <!-- Empty filter state -->
+        <div class="task-empty-state">
+          <div class="task-empty-icon" style="color: var(--accent-cyan);">
+            <i class="fa-solid fa-users-slash"></i>
+          </div>
+          <h3 style="font-size: 1.4rem; color: var(--text-primary); margin-bottom: 6px;">No Crew Members Found</h3>
+          <p class="text-muted" style="max-width: 440px; margin: 0 auto var(--space-5);">
+            No team members matched your active filter criteria. Clear filters to view the full crew roster.
+          </p>
+          <a href="{{ url_for('members.list_members') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-rotate-left"></i> Reset Filters
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

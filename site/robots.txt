@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://force-racing.force-racing-revival.workers.dev/sitemap.xml

@@ -1,0 +1,189 @@
+<!-- Tasks Assigned by You & Completion Alerts Section -->
+<div class="card assigned-tasks-card">
+  <div class="card-header flex justify-between items-center flex-wrap gap-2">
+    <div>
+      <h3 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-bullhorn text-cyan"></i> Tasks Assigned by You &amp; Completion Alerts
+      </h3>
+      <p class="text-muted" style="font-size: 0.85rem; margin: 3px 0 0 0;">
+        Track delegation status and verified completion alerts for tasks you originated.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary">
+        <i class="fa-solid fa-plus"></i> Assign New Task
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Completion Alerts Banner -->
+    {% if completion_alerts %}
+      <div style="margin-bottom: var(--space-5);">
+        <div class="font-mono text-green" style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-bell text-green"></i> Verified Completion Alerts ({{ completion_alerts|length }})
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          {% for alert in completion_alerts %}
+            <div class="completion-alert-item">
+              <div class="flex items-center gap-3">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent-green); color: #000; font-size: 0.85rem; font-weight: 800;">
+                  <i class="fa-solid fa-check"></i>
+                </span>
+                <div>
+                  <div style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                    {{ alert.title }}
+                  </div>
+                  <div class="font-mono text-secondary" style="font-size: 0.8rem;">
+                    Completed by <strong class="text-primary">{{ alert.assignee_name }}</strong> &bull; Subsystem: <span class="badge badge-subsystem" style="font-size: 0.72rem; padding: 2px 6px;">{{ alert.subsystem }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge badge-done" style="font-size: 0.75rem;"><i class="fa-solid fa-circle-check"></i> COMPLETED</span>
+                <a href="{{ url_for('tasks.edit_task', task_id=alert.id) }}" class="btn btn-sm btn-secondary" title="Review task details">
+                  <i class="fa-solid fa-eye"></i> Details
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Assigned Tasks List / Table -->
+    {% if assigned_by_user %}
+      <!-- Desktop Table View -->
+      <div class="desktop-table-view table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Priority</th>
+              <th>Task Specification</th>
+              <th style="width: 140px;">Subsystem</th>
+              <th style="width: 170px;">Assignee</th>
+              <th style="width: 130px;">Due Date</th>
+              <th style="width: 120px;">Status</th>
+              <th style="width: 100px; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in assigned_by_user %}
+              <tr>
+                <td>
+                  {% if t.priority == 'High' %}
+                    <span class="badge badge-high" style="font-size: 0.75rem;"><i class="fa-solid fa-circle-exclamation"></i> HIGH</span>
+                  {% else %}
+                    <span class="badge badge-normal" style="font-size: 0.75rem;">NORMAL</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{{ url_for('tasks.edit_task', task_id=t.id) }}" style="font-weight: 600; color: var(--text-primary);">
+                    {{ t.title }}
+                  </a>
+                  {% if t.description %}
+                    <div class="text-secondary" style="font-size: 0.82rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">
+                      {{ t.description }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge badge-subsystem" style="font-size: 0.75rem;">{{ t.subsystem }}</span>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="user-avatar-initials" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                      {{ t.assignee_name[:2] if t.assignee_name else 'EN' }}
+                    </span>
+                    <span style="font-size: 0.85rem; font-weight: 600;">{{ t.assignee_name }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="font-mono text-secondary" style="font-size: 0.82rem;">{{ t.due_date }}</span>
+                </td>
+                <td>
+                  {% if t.status == 'Done' %}
+                    <span class="badge badge-done" style="font-size: 0.75rem;"><i class="fa-solid fa-check"></i> DONE</span>
+                  {% elif t.status == 'In Progress' %}
+                    <span class="badge badge-progress" style="font-size: 0.75rem;"><i class="fa-solid fa-spinner fa-spin"></i> ACTIVE</span>
+                  {% else %}
+                    <span class="badge badge-todo" style="font-size: 0.75rem;"><i class="fa-solid fa-circle"></i> TO DO</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right;">
+                  <a href="{{ url_for('tasks.edit_task', task_id=t.id) }}" class="btn btn-sm btn-secondary" title="View/Edit task">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards View -->
+      <div class="mobile-tasks-view">
+        {% for t in assigned_by_user %}
+          <div class="mobile-task-card {% if t.priority == 'High' %}is-high-priority{% endif %} {% if t.status == 'Done' %}is-done{% endif %}">
+            <div class="mobile-task-header">
+              <div class="mobile-task-badges">
+                {% if t.priority == 'High' %}
+                  <span class="badge badge-high" style="font-size: 0.75rem;"><i class="fa-solid fa-circle-exclamation"></i> HIGH</span>
+                {% else %}
+                  <span class="badge badge-normal" style="font-size: 0.75rem;">NORMAL</span>
+                {% endif %}
+                <span class="badge badge-subsystem" style="font-size: 0.75rem;">{{ t.subsystem }}</span>
+              </div>
+              <div>
+                {% if t.status == 'Done' %}
+                  <span class="badge badge-done" style="font-size: 0.75rem;"><i class="fa-solid fa-check"></i> DONE</span>
+                {% elif t.status == 'In Progress' %}
+                  <span class="badge badge-progress" style="font-size: 0.75rem;"><i class="fa-solid fa-spinner fa-spin"></i> ACTIVE</span>
+                {% else %}
+                  <span class="badge badge-todo" style="font-size: 0.75rem;"><i class="fa-solid fa-circle"></i> TO DO</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div>
+              <h4 class="mobile-task-title">
+                <a href="{{ url_for('tasks.edit_task', task_id=t.id) }}">{{ t.title }}</a>
+              </h4>
+              {% if t.description %}
+                <div class="mobile-task-desc">{{ t.description }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mobile-task-footer">
+              <div class="mobile-task-assignee">
+                <span class="user-avatar-initials" style="width: 26px; height: 26px; font-size: 0.7rem;">
+                  {{ t.assignee_name[:2] if t.assignee_name else 'EN' }}
+                </span>
+                <div class="mobile-task-meta">
+                  <span class="mobile-task-name">{{ t.assignee_name }}</span>
+                  <span class="mobile-task-due text-muted"><i class="fa-regular fa-calendar"></i> {{ t.due_date }}</span>
+                </div>
+              </div>
+              <div class="mobile-task-action">
+                <a href="{{ url_for('tasks.edit_task', task_id=t.id) }}" class="btn btn-sm btn-secondary">
+                  <i class="fa-solid fa-pen-to-square"></i> Details
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: var(--space-6) var(--space-4); background-color: var(--bg-surface-elevated); border-radius: var(--radius-sm); border: 1px dashed var(--border-default);">
+        <i class="fa-solid fa-clipboard-user text-muted" style="font-size: 2rem; margin-bottom: 8px; display: block;"></i>
+        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">No Tasks Assigned by You Yet</div>
+        <p class="text-muted" style="font-size: 0.85rem; max-width: 400px; margin: 0 auto var(--space-3);">
+          When you delegate engineering or pit lane tasks to team members, their progress and completion alerts will appear here.
+        </p>
+        <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary">
+          <i class="fa-solid fa-plus"></i> Assign First Task
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

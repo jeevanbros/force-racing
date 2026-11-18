@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}404 // TRACK LIMITS EXCEEDED - FORCE RACING{% endblock %}
+
+{% block content %}
+<div class="container error-page-wrapper">
+  <div class="error-card error-card-404">
+    <div class="error-hud-badge">
+      <i class="fa-solid fa-triangle-exclamation"></i> RACE CONTROL FLAG DEPLOYED
+    </div>
+
+    <div class="error-code-title">
+      404
+    </div>
+
+    <h1 class="error-subtitle">
+      TRACK LIMITS EXCEEDED
+    </h1>
+
+    <p class="error-desc">
+      The requested pit telemetry route does not exist. You have run wide into the gravel trap or the route has been retired from the active sector grid.
+    </p>
+
+    <div class="error-telemetry-box">
+      <div><strong>TELEMETRY STATUS:</strong> ROUTE_NOT_FOUND_ERR_404</div>
+      <div><strong>TARGET SECTOR:</strong> {{ request.path }}</div>
+      <div><strong>PIT WALL GRID:</strong> ONLINE (SECTOR 1 ACTIVE)</div>
+    </div>
+
+    <div class="error-actions">
+      <a href="{{ url_for('main.home') if 'main.home' in current_app.view_functions else '/' }}" class="btn btn-primary">
+        <i class="fa-solid fa-house"></i> Return to Pit Wall
+      </a>
+      <a href="{{ url_for('tasks.dashboard') if 'tasks.dashboard' in current_app.view_functions else (url_for('tasks.my_tasks') if 'tasks.my_tasks' in current_app.view_functions else '/') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-gauge-high"></i> Operations Telemetry
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

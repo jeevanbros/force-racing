@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Force Racing // Fleet & Garage Showcase{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: var(--space-8); padding-bottom: 100px; max-width: 1200px;">
+  
+  <!-- Header -->
+  <div class="section-header-wrap" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6);">
+    <div>
+      <span class="section-subtitle">
+        <i class="fa-solid fa-car text-red"></i> 15-CAR COMPETITION ARCHIVE (2011 - 2026)
+      </span>
+      <h1 class="racing-title" style="font-size: clamp(2rem, 4vw, 2.8rem); margin: 0;">
+        THE <span class="text-red">GARAGE</span>
+      </h1>
+      <p class="text-secondary" style="margin-top: 6px; font-size: 0.95rem; max-width: 680px;">
+        High-resolution gallery and technical specifications of every Formula Student and competition vehicle engineered by Force Racing at KITS Warangal.
+      </p>
+    </div>
+  </div>
+
+  <!-- Interactive Search & Filter Controls -->
+  <div class="card" style="padding: var(--space-4); margin-bottom: var(--space-6);">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      
+      <!-- Live Search with Instant Text Highlighting -->
+      <div style="flex: 1; min-width: 260px; position: relative;">
+        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+        <input type="text" id="garage-filter-input" class="form-control" placeholder="Search fleet by car name, engine, or category..." 
+               style="padding-left: 40px;" oninput="filterGarageCards(this.value)">
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="flex items-center gap-2 flex-wrap">
+        {% for cat in categories %}
+          <a href="{{ url_for('main.garage', category=cat) }}" 
+             class="btn btn-sm {% if current_category == cat %}btn-primary{% else %}btn-secondary{% endif %}"
+             style="border-radius: var(--radius-full); padding: 8px 18px; font-weight: 700; font-size: 0.85rem;">
+            {{ cat }}
+          </a>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Fleet Photo Showcase Grid -->
+  <div id="fleet-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--space-6);">
+    {% for car in cars %}
+      <div class="card card-car-item fleet-card" data-car-name="{{ car.name }}" data-car-engine="{{ car.engine }}" data-car-category="{{ car.category }}"
+           style="overflow: hidden; border-radius: var(--radius-md); display: flex; flex-direction: column; background: var(--bg-surface-elevated); border: 1px solid var(--border-default); transition: transform 0.25s, box-shadow 0.25s;">
+        
+        <!-- Direct High-Res Vehicle Photo with Click-to-Enlarge Lightbox -->
+        <div class="fleet-image-wrap" style="position: relative; height: 230px; background-color: #050608; overflow: hidden; cursor: pointer;"
+             onclick="openPhotoLightbox('{{ url_for('static', filename='images/' + car.image) }}', '{{ car.name }}', '{{ car.year }} &bull; {{ car.engine }}')">
+          <img src="{{ url_for('static', filename='images/' + car.image) }}" 
+               alt="{{ car.name }}" 
+               loading="lazy"
+               class="fleet-photo-img"
+               style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;"
+               onerror="this.src='{{ url_for('static', filename='images/heroimg-1440.webp') }}'">
+          
+          <!-- Badges -->
+          <div style="position: absolute; top: 12px; left: 12px; display: flex; gap: 6px;">
+            <span class="badge badge-red" style="font-weight: 800;">{{ car.category }}</span>
+            <span class="badge badge-subsystem">{{ car.year }}</span>
+          </div>
+
+          <!-- Zoom overlay indicator -->
+          <div class="photo-zoom-hint" style="position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+        </div>
+
+        <!-- Vehicle Details Body -->
+        <div class="card-body" style="padding: var(--space-5); flex: 1; display: flex; flex-direction: column;">
+          <h3 class="fleet-car-title" style="font-size: 1.25rem; font-weight: 800; margin: 0 0 8px; color: var(--text-primary); letter-spacing: 0.02em;">
+            {{ car.name }}
+          </h3>
+
+          <p class="fleet-car-desc" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 var(--space-4); flex-grow: 1;">
+            {{ car.highlights }}
+          </p>
+
+          <!-- Specifications Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; margin-bottom: var(--space-4);">
+            <div>
+              <div class="font-mono text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Powertrain</div>
+              <div class="font-mono text-primary fleet-spec-engine" style="font-size: 0.85rem; font-weight: 700;">{{ car.engine }}</div>
+            </div>
+            <div>
+              <div class="font-mono text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Power</div>
+              <div class="font-mono text-red" style="font-size: 0.85rem; font-weight: 700;">{{ car.power }}</div>
+            </div>
+            <div>
+              <div class="font-mono text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Weight</div>
+              <div class="font-mono text-primary" style="font-size: 0.85rem; font-weight: 700;">{{ car.weight }}</div>
+            </div>
+            <div>
+              <div class="font-mono text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Acceleration</div>
+              <div class="font-mono text-primary" style="font-size: 0.85rem; font-weight: 700;">{{ car.acceleration }}</div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Row -->
+          <div class="flex items-center justify-between" style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+            <div class="font-mono text-muted" style="font-size: 0.78rem;">
+              <i class="fa-solid fa-wrench text-red"></i> {{ car.chassis }}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- High-Resolution Photo Lightbox Modal -->
+<div id="photo-lightbox-modal" class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 99999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="position: relative; max-width: 1000px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; align-items: center;">
+    <button type="button" onclick="closePhotoLightbox()" 
+            style="position: absolute; top: -45px; right: 0; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer; padding: 6px 12px; z-index: 100000;"
+            aria-label="Close Lightbox">
+      &times;
+    </button>
+    <img id="lightbox-img" src="" alt="Enlarged Car" style="max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+    <div style="margin-top: 14px; text-align: center; color: #fff;">
+      <h3 id="lightbox-title" style="margin: 0; font-size: 1.4rem; font-weight: 800; letter-spacing: 0.04em;"></h3>
+      <p id="lightbox-meta" style="margin: 4px 0 0; color: #94a3b8; font-size: 0.9rem; font-family: var(--font-mono);"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openPhotoLightbox(src, title, meta) {
+    var modal = document.getElementById('photo-lightbox-modal');
+    var img = document.getElementById('lightbox-img');
+    var titleEl = document.getElementById('lightbox-title');
+    var metaEl = document.getElementById('lightbox-meta');
+    if (modal && img) {
+      img.src = src;
+      if (titleEl) titleEl.textContent = title;
+      if (metaEl) metaEl.innerHTML = meta;
+      modal.classList.add('is-active');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('pointer-events', 'auto', 'important');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closePhotoLightbox() {
+    var modal = document.getElementById('photo-lightbox-modal');
+    if (modal) {
+      modal.classList.remove('is-active');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('pointer-events', 'none', 'important');
+      document.body.style.overflow = '';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('photo-lightbox-modal');
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closePhotoLightbox();
+        }
+      });
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closePhotoLightbox();
+    }
+  });
+
+  // Interactive Live Filter & Highlighting for Fleet
+  function filterGarageCards(query) {
+    var cleanQ = (query || '').trim().toLowerCase();
+    var cards = document.querySelectorAll('.fleet-card');
+    cards.forEach(function(card) {
+      var name = card.getAttribute('data-car-name') || '';
+      var engine = card.getAttribute('data-car-engine') || '';
+      var category = card.getAttribute('data-car-category') || '';
+      var allText = (name + ' ' + engine + ' ' + category).toLowerCase();
+      
+      var titleEl = card.querySelector('.fleet-car-title');
+      var engineEl = card.querySelector('.fleet-spec-engine');
+
+      if (!cleanQ || allText.indexOf(cleanQ) !== -1) {
+        card.style.display = 'flex';
+        // Highlight matched text in title
+        if (titleEl && cleanQ) {
+          highlightElementText(titleEl, name, cleanQ);
+        } else if (titleEl) {
+          titleEl.textContent = name;
+        }
+        // Highlight matched text in engine
+        if (engineEl && cleanQ) {
+          highlightElementText(engineEl, engine, cleanQ);
+        } else if (engineEl) {
+          engineEl.textContent = engine;
+        }
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function highlightElementText(el, originalText, query) {
+    if (!query) {
+      el.textContent = originalText;
+      return;
+    }
+    var regex = new RegExp('(' + escapeRegExp(query) + ')', 'gi');
+    el.innerHTML = originalText.replace(regex, '<mark class="search-highlight">$1</mark>');
+  }
+
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+</script>
+{% endblock %}

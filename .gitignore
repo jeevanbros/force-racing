@@ -19,3 +19,24 @@ usb-package/
 .edge-test-live-verify/
 .edge-*/
 review/
+
+# Python / Virtual Environment & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Databases & Local Secrets
+*.db
+*.db-journal
+*.sqlite3
+*.key
+*.pem
+*.crt
