@@ -81,6 +81,20 @@ class Config:
     SMTP_USERNAME = os.getenv('SMTP_USERNAME', '')
     SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
     MAIL_FROM = os.getenv('MAIL_FROM', 'pitwall@forceracing.in')
+
+    # Google API & Google Sheets Synchronization
+    GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+    GOOGLE_SHEETS_ID = os.environ.get("GOOGLE_SHEETS_ID", "")
+    GOOGLE_SHEETS_SYNC_ENABLED = os.environ.get("GOOGLE_SHEETS_SYNC_ENABLED", "True").lower() in ("true", "1", "yes")
+    GOOGLE_FORM_URL = os.environ.get("GOOGLE_FORM_URL", "")
+
+    # Excel Master Database Storage
+    if getattr(sys, 'frozen', False):
+        DATA_DIR = os.getenv('DATA_DIR', os.path.join(EXE_DIR, 'data'))
+    else:
+        DATA_DIR = os.getenv('DATA_DIR', os.path.join(BASE_DIR, 'data'))
+    EXCEL_DATABASE_PATH = os.getenv('EXCEL_DATABASE_PATH', os.path.join(DATA_DIR, 'ForceRacing_Master_Database.xlsx'))
+    os.makedirs(DATA_DIR, exist_ok=True)
     
     # Cookie Security Settings
     SESSION_COOKIE_HTTPONLY = True
@@ -93,3 +107,18 @@ class Config:
     SMTP_USERNAME = os.getenv('SMTP_USERNAME', '')
     SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
     MAIL_FROM = os.getenv('MAIL_FROM', 'pitwall@forceracing.in')
+
+    # Google API & Google Sheets Synchronization
+    GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+    GOOGLE_SHEETS_ID = os.environ.get("GOOGLE_SHEETS_ID", "")
+    GOOGLE_SHEETS_SYNC_ENABLED = os.environ.get("GOOGLE_SHEETS_SYNC_ENABLED", "True").lower() in ("true", "1", "yes")
+    GOOGLE_FORM_URL = os.environ.get("GOOGLE_FORM_URL", "")
+
+    # Excel Master Database Storage
+    if getattr(sys, 'frozen', False):
+        DATA_DIR = os.getenv('DATA_DIR', os.path.join(EXE_DIR, 'data'))
+    else:
+        DATA_DIR = os.getenv('DATA_DIR', os.path.join(BASE_DIR, 'data'))
+    EXCEL_DATABASE_PATH = os.getenv('EXCEL_DATABASE_PATH', os.path.join(DATA_DIR, 'ForceRacing_Master_Database.xlsx'))
+    os.makedirs(DATA_DIR, exist_ok=True)
+

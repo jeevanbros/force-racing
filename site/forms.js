@@ -214,7 +214,7 @@
             : `A confirmation email has been queued for <strong>${payload.email}</strong>. Your trackside credential is ready below.`;
           status(form, `<strong>🏁 ON-SPOT REGISTRATION CONFIRMED!</strong><br>Your Official Pilot Pass: <span style="font-family:monospace;font-size:1.3rem;color:#00f0ff;font-weight:900;">${ref}</span><br>${emailMsg}<div style="margin-top:12px;"><a class="btn" href="${verifyLink}" style="display:inline-block;background:#00f0ff;color:#000;font-weight:800;padding:10px 18px;border-radius:4px;text-decoration:none;">Open Pass Checker &amp; Trackside Pass &rarr;</a></div>`, 'success', true);
         } else if (form.dataset.form === 'recruitment') {
-          status(form, `<strong>🏁 APPLICATION TRANSMITTED!</strong><br>Candidate Reference: <span style="font-family:monospace;font-size:1.2rem;color:#ff1801;font-weight:900;">${ref}</span>`, 'success', true);
+          status(form, `<strong>🏁 APPLICATION TRANSMITTED!</strong><br>Candidate Reference: <span style="font-family:monospace;font-size:1.2rem;color:#ff1801;font-weight:900;">${ref}</span><br>A welcoming email with your Interview Pass and preparation guidelines has been dispatched to your email. Subsystem leads will contact you shortly for your Central Workshop interview.`, 'success', true);
         } else {
           status(form, `Your enquiry has been received. Reference: <strong>${ref}</strong>. The Force Racing management team will follow up promptly.`, 'success', true);
         }

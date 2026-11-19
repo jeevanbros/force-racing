@@ -108,8 +108,9 @@ if __name__ == '__main__':
     
     app = create_app()
     print("=" * 70)
-    print("  🏎️  FORCE RACING // TEAM OPERATIONS PIT WALL")
+    print("  ???  FORCE RACING // TEAM OPERATIONS PIT WALL")
     print("  Host: http://localhost:5000")
     print("  SUPRA 2027 Countdown: Active")
     print("=" * 70)
     app.run(host='0.0.0.0', port=5000, debug=True)
+
