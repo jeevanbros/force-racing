@@ -1588,6 +1588,22 @@
       <h4>🔔 In-App Dispatch & Alerts</h4>
       <button class="btn-close-modal" onclick="toggleNotifDrawer()">×</button>
     </div>
+
+    <!-- Live Operational Alert Composer -->
+    <div class="dispatch-composer" style="margin:10px 0 14px 0; padding:12px; background:var(--gp-surface); border:1px solid var(--gp-line); border-radius:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:0.75rem; font-weight:700; color:var(--gp-ink); text-transform:uppercase; letter-spacing:0.5px;">📢 Dispatch Team Alert</span>
+        <select id="dispatch-alert-priority" style="font-size:0.72rem; padding:2px 6px; background:var(--gp-bg); color:var(--gp-ink); border:1px solid var(--gp-line); border-radius:4px;">
+          <option value="normal">Normal Alert</option>
+          <option value="urgent">🚨 Urgent Broadcast</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="dispatch-alert-input" class="form-control" placeholder="Broadcast operational alert to entire team..." style="font-size:0.8rem; padding:6px 10px; flex:1;">
+        <button type="button" class="btn-submit" onclick="dispatchCustomAlert()" style="padding:6px 12px; font-size:0.78rem; width:auto; white-space:nowrap; margin-top:0;">Broadcast</button>
+      </div>
+    </div>
+
     <div class="notif-tabs" style="display:flex; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--gp-line); padding-bottom:8px;">
       <button type="button" class="notif-tab active" id="tab-notif-live" onclick="switchNotifTab('live')" style="background:transparent; border:none; color:var(--gp-ink); font-weight:700; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-bottom:2px solid var(--gp-accent);">LIVE ALERTS (<span id="notif-tab-count">0</span>)</button>
       <button type="button" class="notif-tab" id="tab-notif-queue" onclick="switchNotifTab('queue')" style="background:transparent; border:none; color:var(--gp-ink-2); font-weight:700; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-bottom:2px solid transparent;">OFFLINE QUEUE (<span id="queue-tab-count">0</span>)</button>
@@ -1908,7 +1924,10 @@
         <div class="acc-meta" style="flex:1;">
           <h4 id="acc-modal-name">Dhanush V.</h4>
           <p id="acc-modal-contact">captain@forceracing.in · +91 98765 00001</p>
-          <span class="acc-badge" id="acc-modal-badge">Captain · Leadership</span>
+          <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+            <span class="acc-badge" id="acc-modal-badge">Captain · Leadership</span>
+            <span id="acc-modal-unique-code" style="font-size:0.75rem; font-weight:700; color:var(--gp-cyan); background:rgba(0,240,255,0.12); border:1px solid var(--gp-cyan); padding:2px 8px; border-radius:4px;">FR26-LEAD-01</span>
+          </div>
           <div style="margin-top:8px;">
             <button type="button" class="btn-quick-chat" style="display:inline-block; padding:3px 10px; cursor:pointer; margin-right:6px;" onclick="openPhotoViewer()">🔍 View Photo</button>
             <label for="avatar-file-input" class="btn-quick-chat" style="display:inline-block; padding:3px 10px; cursor:pointer;">
@@ -1945,6 +1964,10 @@
       <!-- Tab 4: Edit Profile (Name, Email, Phone editable; Subsystem & Role locked) -->
       <div id="acc-view-edit" style="display:none;">
         <form onsubmit="handleProfileSave(event)">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Official Member Code (Unique ID)</label>
+            <input type="text" id="prof-unique-code" class="form-control" disabled style="opacity:0.95; font-weight:700; color:var(--gp-cyan); background:rgba(0,240,255,0.06); border-color:var(--gp-cyan); cursor:not-allowed;">
+          </div>
           <div class="form-group">
             <label>Full Name</label>
             <input type="text" id="prof-name" class="form-control" required>
@@ -1962,7 +1985,7 @@
             <div class="form-group">
               <label>Subsystem</label>
               <input type="text" id="prof-subsystem" class="form-control" disabled style="opacity:0.6; cursor:not-allowed;">
-              <p id="prof-subsystem-hint" style="font-size:0.72rem; color:var(--gp-accent); margin-top:3px;">🔒 Subsystem locked. Managed by Captain & Admin.</p>
+              <p id="prof-subsystem-hint" style="font-size:0.72rem; color:var(--gp-accent); margin-top:3px;">🔒 Subsystem locked. Managed by Captain, Vice Captain & Subsystem Leads.</p>
             </div>
             <div class="form-group">
               <label>Assigned Role</label>
@@ -1997,6 +2020,7 @@
           <h4 id="drawer-member-name">Vikram Sharma</h4>
           <p id="drawer-member-role-sub">Chassis Head 1 · Chassis</p>
           <p id="drawer-member-academic">Mechanical · 3rd Year</p>
+          <div style="margin:4px 0;"><span id="drawer-member-code" class="badge-authority" style="background:rgba(0,240,255,0.12); border:1px solid var(--gp-cyan); color:var(--gp-cyan); font-size:0.75rem; padding:3px 10px;">FR26-MEM-01</span></div>
           <p id="drawer-member-contact">vikram@forceracing.in · +91 98765 11111</p>
           <div class="drawer-stats-row">
             <span class="drawer-stat-pill" id="drawer-assigned-count">📋 Assigned: 3</span>
@@ -2027,6 +2051,9 @@
     // ============================================================
     // STATE ENGINE & DATABASE SEED (ALL 6 SUBSYSTEMS)
     // ============================================================
+        // ============================================================
+    // SUBSYSTEM TAXONOMY
+    // ============================================================
     const SUBSYSTEM_LIST = [
       "Chassis",
       "Powertrain",
@@ -2036,168 +2063,99 @@
       "Management"
     ];
 
-    let ALL_TEAM_MEMBERS = [
-      { id: "captain", name: "Dhanush V.", role: "Captain", subsystem: "Leadership", branch: "Mechanical", year: "4th Year", online: true, email: "captain@forceracing.in", phone: "+91 98765 00001", authority: "superior", avatarUrl: null },
-      { id: "vicecaptain", name: "Arun K.", role: "Vice Captain", subsystem: "Leadership", branch: "Mechanical", year: "4th Year", online: true, email: "vicecaptain@forceracing.in", phone: "+91 98765 00002", authority: "superior", avatarUrl: null },
-      { id: "manager", name: "Md. Sohail", role: "Team Manager", subsystem: "Management", branch: "Mechanical", year: "4th Year", online: false, email: "manager@forceracing.in", phone: "+91 80083 91525", authority: "superior", avatarUrl: null },
-      { id: "chassis_head_1", name: "Vikram Sharma", role: "Chassis Head 1", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: true, email: "vikram.chassis@forceracing.in", phone: "+91 98765 11111", authority: "lead", avatarUrl: null },
-      { id: "chassis_head_2", name: "Rohan Varma", role: "Chassis Head 2", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: false, email: "rohan.chassis@forceracing.in", phone: "+91 98765 22222", authority: "lead", avatarUrl: null },
-      { id: "powertrain_lead", name: "Aditya Nair", role: "Powertrain Lead", subsystem: "Powertrain", branch: "Mechanical", year: "3rd Year", online: true, email: "aditya.power@forceracing.in", phone: "+91 98765 33331", authority: "lead", avatarUrl: null },
-      { id: "aero_lead", name: "Pooja Reddy", role: "Aerodynamics Lead", subsystem: "Aerodynamics", branch: "Mechanical", year: "3rd Year", online: false, email: "pooja.aero@forceracing.in", phone: "+91 98765 44441", authority: "lead", avatarUrl: null },
-      { id: "suspension_lead", name: "Srikanth M.", role: "Suspension & Braking Lead", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: true, email: "srikanth.susp@forceracing.in", phone: "+91 98765 77771", authority: "lead", avatarUrl: null },
-      { id: "electronics_lead", name: "Ananya Rao", role: "Electronics Lead", subsystem: "Electronics", branch: "ECE", year: "3rd Year", online: false, email: "ananya.elec@forceracing.in", phone: "+91 98765 88881", authority: "lead", avatarUrl: null },
-      { id: "member_karthik", name: "Karthik P.", role: "Junior Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: true, email: "karthik.p@forceracing.in", phone: "+91 98765 55551", authority: "member", avatarUrl: null },
-      { id: "member_sai", name: "Sai Teja", role: "Fabrication Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: false, email: "sai.teja@forceracing.in", phone: "+91 98765 66661", authority: "member", avatarUrl: null }
+    // ============================================================
+    // OFFICIAL FORCE RACING CREW ROSTER (FROM WEBSITE team.html)
+    // ============================================================
+    const OFFICIAL_WEBSITE_ROSTER = [
+      { id: "dhanush", uniqueCode: "FR26-LEAD-01", name: "Dhanush", role: "Captain", subsystem: "Steering & Wheels", branch: "Mechanical", year: "Final Year", online: true, email: "captain@forceracing.in", phone: "+91 98765 00001", authority: "captain", avatarUrl: null },
+      { id: "arun", uniqueCode: "FR26-LEAD-02", name: "Arun", role: "Vice Captain", subsystem: "Powertrain", branch: "Mechanical", year: "Final Year", online: true, email: "vicecaptain@forceracing.in", phone: "+91 98765 00002", authority: "vicecaptain", avatarUrl: null },
+      { id: "sohail", uniqueCode: "FR26-MGT-01", name: "Md. Sohail", role: "Team Manager", subsystem: "Chassis", branch: "Mechanical", year: "Final Year", online: false, email: "manager@forceracing.in", phone: "+91 80083 91525", authority: "manager", avatarUrl: null },
+      { id: "hanumanth", uniqueCode: "FR26-CHS-01", name: "Hanumanth", role: "Chassis Lead", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: true, email: "hanumanth@forceracing.in", phone: "+91 98765 10001", authority: "lead", avatarUrl: null },
+      { id: "jeevan", uniqueCode: "FR26-CHS-02", name: "Jeevan", role: "Chassis · Logistics", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: true, email: "jeevan@forceracing.in", phone: "+91 98765 10002", authority: "member", avatarUrl: null },
+      { id: "navya", uniqueCode: "FR26-CHS-03", name: "Navya", role: "Team Member", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: false, email: "navya@forceracing.in", phone: "+91 98765 10003", authority: "member", avatarUrl: null },
+      { id: "j_harsha", uniqueCode: "FR26-SUS-01", name: "J Harsha", role: "Suspension Lead", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: true, email: "jharsha@forceracing.in", phone: "+91 98765 10004", authority: "lead", avatarUrl: null },
+      { id: "prashanth", uniqueCode: "FR26-SUS-02", name: "Prashanth", role: "Team Member", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: false, email: "prashanth@forceracing.in", phone: "+91 98765 10005", authority: "member", avatarUrl: null },
+      { id: "karthik", uniqueCode: "FR26-POW-01", name: "Karthik", role: "Powertrain Lead", subsystem: "Powertrain", branch: "Mechanical", year: "3rd Year", online: true, email: "karthik@forceracing.in", phone: "+91 98765 10006", authority: "lead", avatarUrl: null },
+      { id: "rakesh", uniqueCode: "FR26-POW-02", name: "Rakesh", role: "Team Member", subsystem: "Powertrain", branch: "Mechanical", year: "3rd Year", online: false, email: "rakesh@forceracing.in", phone: "+91 98765 10007", authority: "member", avatarUrl: null },
+      { id: "dhanya", uniqueCode: "FR26-POW-03", name: "Dhanya", role: "Public Relations · Powertrain", subsystem: "Powertrain", branch: "Mechanical", year: "3rd Year", online: true, email: "dhanya@forceracing.in", phone: "+91 98765 10008", authority: "member", avatarUrl: null },
+      { id: "mahidhar", uniqueCode: "FR26-BRK-01", name: "Mahidhar", role: "Brakes · Finance", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: false, email: "mahidhar@forceracing.in", phone: "+91 98765 10009", authority: "member", avatarUrl: null },
+      { id: "p_harsha", uniqueCode: "FR26-BRK-02", name: "P Harsha", role: "Team Member", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: false, email: "pharsha@forceracing.in", phone: "+91 98765 10010", authority: "member", avatarUrl: null },
+      { id: "ruthvik", uniqueCode: "FR26-STR-01", name: "Ruthvik", role: "Steering & Wheels", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: false, email: "ruthvik@forceracing.in", phone: "+91 98765 10011", authority: "member", avatarUrl: null },
+      { id: "ashish", uniqueCode: "FR26-MED-01", name: "Ashish", role: "Social Media", subsystem: "Management", branch: "Mechanical", year: "3rd Year", online: false, email: "ashish@forceracing.in", phone: "+91 98765 10012", authority: "member", avatarUrl: null }
     ];
 
+    let ALL_TEAM_MEMBERS = OFFICIAL_WEBSITE_ROSTER.map(m => ({ ...m }));
     let currentUser = null;
     let activeDrawerMember = null;
     let notifPollTimer = null;
     let activeReply = null;
-  
 
-    let notifications = [
-      { id: 1, text: "Captain Dhanush assigned: 'TIG Welding Inspection' to Chassis Head 1." },
-      { id: 2, text: "Chassis Head 1 attached: 'Chassis_Jig_Fitment_Proof.jpg' and submitted task." },
-      { id: 3, text: "Vice Captain Arun uploaded: 'FR26_Chassis_Tub_v3.STEP' to Central File Hub." }
-    ];
-
-    let tasks = [
-      {
-        id: 101,
-        subsystem: "Chassis",
-        priority: "Priority",
-        title: "TIG Welding Seam Inspection & Ultrasonic Check",
-        desc: "Complete non-destructive weld testing on front bulkhead nodes and upload NDT inspection certificate.",
-        assignedBy: "Capt. Dhanush (Captain)",
-        assignedById: "captain",
-        assigneeId: "chassis_head_1",
-        assigneeName: "Vikram Sharma (Chassis Head 1)",
-        uploadedFile: null,
-        deliverableNotes: "",
-        status: "pending" // pending -> under_review -> awaiting_superior -> done
-      },
-      {
-        id: 102,
-        subsystem: "Chassis",
-        priority: "Normal",
-        title: "Tube Notching & Jig Fitment for Main Roll Hoop",
-        desc: "Finish laser notching 4130 Chromoly tubes according to drawing FR26-CHS-DWG-04. Upload jig photos.",
-        assignedBy: "Vikram Sharma (Chassis Head 1)",
-        assigneeId: "member_karthik",
-        assigneeName: "Karthik P. (Junior Member)",
-        uploadedFile: "Chassis_Jig_Fitment_Proof.jpg",
-        deliverableNotes: "Tube fitment verified with tolerance under 0.5mm.",
-        status: "done"
-      },
-      {
-        id: 103,
-        subsystem: "Powertrain",
-        priority: "Priority",
-        title: "KTM 390 Restrictor Flow Bench Analysis",
-        desc: "Perform CFD air restrictor flow testing and measure pressure drop across 20mm Formula intake. Attach simulation report.",
-        assignedBy: "Capt. Dhanush (Captain)",
-        assigneeId: "powertrain_lead",
-        assigneeName: "Aditya Nair (Powertrain Lead)",
-        uploadedFile: "KTM_390_Restrictor_CFD_Analysis.pdf",
-        deliverableNotes: "Flow simulation complete, mass flow 0.074 kg/s verified.",
-        status: "under_review"
-      },
-      {
-        id: 104,
-        subsystem: "Aerodynamics",
-        priority: "Priority",
-        title: "Front Wing Endplate Multi-Element Angle Sweep",
-        desc: "Analyze ground effect downforce coefficients across 4 wing flap angles (6 to 14 deg). Attach report.",
-        assignedBy: "Capt. Dhanush (Captain)",
-        assigneeId: "aero_lead",
-        assigneeName: "Pooja Reddy (Aerodynamics Lead)",
-        uploadedFile: null,
-        deliverableNotes: "",
-        status: "pending"
-      },
-      {
-        id: 105,
-        subsystem: "Suspension & Braking",
-        priority: "Normal",
-        title: "Double Wishbone Kinematics & Roll Center Calculation",
-        desc: "Calculate dynamic camber change and roll center migration in Lotus Shark. Upload geometry file.",
-        assignedBy: "Arun K. (Vice Captain)",
-        assigneeId: "suspension_lead",
-        assigneeName: "Srikanth M. (Suspension & Braking Lead)",
-        uploadedFile: "FR26_Suspension_Kinematics.xlsx",
-        deliverableNotes: "Roll center migration maintained within 12mm.",
-        assignedById: "chassis_head_1",
-        status: "awaiting_approval"
-      },
-      {
-        id: 106,
-        subsystem: "Electronics",
-        priority: "Priority",
-        title: "Wiring Harness Pinout & MoTeC M130 Integration",
-        desc: "Map sensor loom for CAN bus speed sensors, throttle position, and lambda sensor. Upload schematic.",
-        assignedBy: "Capt. Dhanush (Captain)",
-        assigneeId: "electronics_lead",
-        assigneeName: "Ananya Rao (Electronics Lead)",
-        uploadedFile: null,
-        deliverableNotes: "",
-        status: "pending"
-      },
-      {
-        id: 107,
-        subsystem: "Management",
-        priority: "Normal",
-        title: "SUPRA SAEINDIA 2027 Cost Report & BOM Reconciliation",
-        desc: "Compile audited Bills of Materials with fastener receipts and fabrication labor hours.",
-        assignedBy: "Capt. Dhanush (Captain)",
-        assigneeId: "manager",
-        assigneeName: "Md. Sohail (Team Manager)",
-        uploadedFile: "SUPRA_2027_BOM_Audited_Draft.pdf",
-        deliverableNotes: "Section 1-4 reconciled with suppliers.",
-        status: "done"
-      }
-    ];
-
-    let sharedFiles = [
-      { name: "FR26_Spaceframe_CAD_Assembly_v4.STEP", type: "3D CAD Model", size: "48.2 MB", uploaderId: "captain", uploader: "Dhanush V. (Captain)", date: "20 Nov, 08:30" },
-      { name: "Front_Wing_Downforce_Analysis.pdf", type: "CFD Report", size: "12.8 MB", uploaderId: "aero_lead", uploader: "Pooja Reddy (Aero Lead)", date: "19 Nov, 16:15" },
-      { name: "Chassis_Jig_Fitment_Proof.jpg", type: "Task Deliverable", size: "3.2 MB", uploaderId: "member_karthik", uploader: "Karthik P. (Junior Member)", date: "20 Nov, 09:10" },
-      { name: "KTM_390_ECU_Pinout_Telemetry.csv", type: "Wiring Dataset", size: "2.1 MB", uploaderId: "powertrain_lead", uploader: "Aditya Nair", date: "18 Nov, 14:00" },
-      { name: "FR26_Suspension_Kinematics.xlsx", type: "Kinematics Sheet", size: "4.5 MB", uploaderId: "suspension_lead", uploader: "Srikanth M.", date: "19 Nov, 11:20" }
-    ];
-
-    // Direct Chat & Offline Message Store
-    // Key format: "chat_user1_user2"
+    // ALL DATA RESET TO CLEAN REGISTERED SLATE (0, 0, 0, 0)
+    let notifications = [];
+    let tasks = [];
+    let sharedFiles = [];
     let directChats = {};
-    let offlineQueuedMessages = []; // { toId, fromId, fromName, text, file, timestamp }
+    let offlineQueuedMessages = [];
+
+    // Unique Code Generator (Format: FR26-[SUBSYSTEM_CODE]-[NUM])
+    function generateUniqueCode(subsystem) {
+      const subMap = {
+        'Chassis': 'CHS',
+        'Powertrain': 'POW',
+        'Aerodynamics': 'AER',
+        'Electronics': 'ELE',
+        'Suspension & Braking': 'SUS',
+        'Management': 'MGT',
+        'Leadership': 'LEAD',
+        'Steering & Wheels': 'STR'
+      };
+      const code = subMap[subsystem] || 'MEM';
+      const count = ALL_TEAM_MEMBERS.filter(m => m.uniqueCode && m.uniqueCode.includes(code)).length + 1;
+      const numStr = count < 10 ? '0' + count : String(count);
+      return 'FR26-' + code + '-' + numStr;
+    }
+
+    // Clean out deprecated sample keys
+    try {
+      localStorage.removeItem('fr_tasks_v2');
+      localStorage.removeItem('fr_files_v2');
+      localStorage.removeItem('fr_queue_v2');
+      localStorage.removeItem('fr_members_v2');
+    } catch(e) {}
 
     // Load persisted state if exists
     try {
-      const savedMembers = localStorage.getItem('fr_members_v2');
-      if (savedMembers) ALL_TEAM_MEMBERS = JSON.parse(savedMembers);
+      const savedMembers = localStorage.getItem('fr_members_v3');
+      if (savedMembers) {
+        const parsed = JSON.parse(savedMembers);
+        OFFICIAL_WEBSITE_ROSTER.forEach(off => {
+          if (!parsed.find(p => p.id === off.id)) parsed.push({ ...off });
+        });
+        ALL_TEAM_MEMBERS = parsed;
+      }
 
-      const savedTasks = localStorage.getItem('fr_tasks_v2');
+      const savedTasks = localStorage.getItem('fr_tasks_v3');
       if (savedTasks) tasks = JSON.parse(savedTasks);
 
-      const savedFiles = localStorage.getItem('fr_files_v2');
+      const savedFiles = localStorage.getItem('fr_files_v3');
       if (savedFiles) sharedFiles = JSON.parse(savedFiles);
 
-      const savedChats = localStorage.getItem('fr_chats_v2');
+      const savedChats = localStorage.getItem('fr_chats_v3');
       if (savedChats) directChats = JSON.parse(savedChats);
 
-      const savedQueue = localStorage.getItem('fr_queue_v2');
-      if (savedQueue) offlineQueuedMessages = JSON.parse(savedQueue);
+      const savedNotifs = localStorage.getItem('fr_notifs_v3');
+      if (savedNotifs) notifications = JSON.parse(savedNotifs);
     } catch(e) {
       console.warn("Could not load localStorage:", e);
     }
 
     function saveState() {
       try {
-        localStorage.setItem('fr_members_v2', JSON.stringify(ALL_TEAM_MEMBERS));
-        localStorage.setItem('fr_tasks_v2', JSON.stringify(tasks));
-        localStorage.setItem('fr_files_v2', JSON.stringify(sharedFiles));
-        localStorage.setItem('fr_chats_v2', JSON.stringify(directChats));
-        localStorage.setItem('fr_queue_v2', JSON.stringify(offlineQueuedMessages));
+        localStorage.setItem('fr_members_v3', JSON.stringify(ALL_TEAM_MEMBERS));
+        localStorage.setItem('fr_tasks_v3', JSON.stringify(tasks));
+        localStorage.setItem('fr_files_v3', JSON.stringify(sharedFiles));
+        localStorage.setItem('fr_chats_v3', JSON.stringify(directChats));
+        localStorage.setItem('fr_notifs_v3', JSON.stringify(notifications));
       } catch(e) {
         console.warn("Storage quota or error:", e);
       }
@@ -2224,9 +2182,8 @@
 
       const bar = document.getElementById('pw-bar-fill');
       const statusText = document.getElementById('pw-text-status');
-      const submitBtn = document.getElementById('btn-reg-submit');
 
-      bar.style.width = score + '%';
+      if (bar) bar.style.width = score + '%';
 
       if (!hasUpper || !hasSpecial) {
         if (bar) bar.style.background = 'var(--gp-accent)';
@@ -2237,24 +2194,34 @@
       }
     }
 
-    function quickLogin(roleKey) {
-      const u = ALL_TEAM_MEMBERS.find(x => x.id === roleKey) || ALL_TEAM_MEMBERS[0];
-      loginSuccess(u);
-    }
-
     function handleLoginSubmit(e) {
       e.preventDefault();
-      const id = document.getElementById('login-identifier').value.trim().toLowerCase();
-      let u = ALL_TEAM_MEMBERS.find(x => x.id === id || (x.email && x.email.toLowerCase() === id));
-      if (!u) {
-        if (id.includes('capt') && !id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'captain');
-        else if (id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'vicecaptain');
-        else if (id.includes('sohail') || id.includes('manager')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'manager');
-        else if (id.includes('vikram') || id.includes('head_1')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'chassis_head_1');
-        else if (id.includes('rohan') || id.includes('head_2')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'chassis_head_2');
-        else if (id.includes('karthik')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'member_karthik');
-        else u = ALL_TEAM_MEMBERS.find(x => x.id === 'member_karthik') || ALL_TEAM_MEMBERS[0];
+      const rawInput = (document.getElementById('login-identifier').value || '').trim();
+      const pw = (document.getElementById('login-password').value || '').trim();
+      if (!rawInput) {
+        showToast('⚠️ Please enter your official email, name, or Member Code.');
+        return;
       }
+
+      const idLower = rawInput.toLowerCase();
+
+      // Find member by uniqueCode, id, email, or exact/partial name
+      let u = ALL_TEAM_MEMBERS.find(x => 
+        (x.uniqueCode && x.uniqueCode.toLowerCase() === idLower) ||
+        x.id.toLowerCase() === idLower ||
+        (x.email && x.email.toLowerCase() === idLower) ||
+        x.name.toLowerCase() === idLower
+      );
+
+      if (!u) {
+        u = ALL_TEAM_MEMBERS.find(x => x.name.toLowerCase().includes(idLower) || idLower.includes(x.name.toLowerCase()));
+      }
+
+      if (!u) {
+        showToast('❌ Unregistered member "' + rawInput + '". Please sign up first via the SIGN UP tab.');
+        return;
+      }
+
       loginSuccess(u);
     }
 
@@ -2265,17 +2232,17 @@
       const year = (document.getElementById('reg-year').value || '').trim();
       const email = (document.getElementById('reg-email').value || '').trim();
       const phone = (document.getElementById('reg-phone').value || '').trim();
-      const subsystem = (document.getElementById('reg-subsystem').value || '').trim();
-      const baseRole = (document.getElementById('reg-role').value || '').trim();
+      let subsystem = (document.getElementById('reg-subsystem').value || '').trim();
+      let role = (document.getElementById('reg-role').value || '').trim();
       const pw = (document.getElementById('reg-password').value || '').trim();
 
-      // Everything is mandatory validation
-      if (!name || !branch || !year || !email || !phone || !subsystem || !baseRole || !pw) {
-        showToast('⚠️ All fields are mandatory.');
+      // Mandatory validation
+      if (!name || !branch || !year || !email || !phone || !subsystem || !role || !pw) {
+        showToast('⚠️ All fields are mandatory. Please complete all registration details.');
         return;
       }
 
-      // Password requirements: 1 uppercase and 1 special symbol
+      // Password requirements: 1 uppercase, 1 special symbol
       const hasUpper = /[A-Z]/.test(pw);
       const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
       if (!hasUpper || !hasSpecial) {
@@ -2288,55 +2255,67 @@
         return;
       }
 
-      // Automatic duplicate lead numbering: first gets clean title, second gets title 2, third gets title 3
-      let finalRole = baseRole;
-      if (baseRole.includes('Lead') || baseRole.includes('Head')) {
-        const leadPrefix = baseRole.replace(/\s+(Lead|Head)$/i, '');
-        const existingLeads = ALL_TEAM_MEMBERS.filter(m => {
-          if (!m.role) return false;
-          return m.role === baseRole || 
-                 m.role.startsWith(baseRole + ' ') || 
-                 (m.role.includes(leadPrefix) && (m.role.includes('Lead') || m.role.includes('Head')));
-        });
-        const count = existingLeads.length;
-        if (count >= 1) {
-          finalRole = `${baseRole} ${count + 1}`;
+      // ANTI-MISMANAGEMENT ROSTER LOCK: Cross-check against official website crew
+      const nameLower = name.toLowerCase();
+      const officialMatch = OFFICIAL_WEBSITE_ROSTER.find(m => 
+        m.name.toLowerCase() === nameLower || 
+        nameLower.includes(m.name.toLowerCase()) || 
+        (m.email && m.email.toLowerCase() === email.toLowerCase())
+      );
+
+      if (officialMatch) {
+        if (role !== officialMatch.role) {
+          showToast('🔒 Roster Locked: Matched official crew. Designated as ' + officialMatch.role + ' (' + officialMatch.subsystem + ').');
+        }
+        role = officialMatch.role;
+        subsystem = officialMatch.subsystem;
+      } else {
+        // Unofficial applicant cannot claim leadership positions
+        const restricted = ['Captain', 'Vice Captain', 'Team Manager'];
+        if (restricted.includes(role)) {
+          showToast('⚠️ Leadership positions (Captain, Vice Captain, Team Manager) are designated to official website crew leads.');
+          return;
         }
       }
 
-      const newUser = {
-        id: "usr_" + Date.now(),
-        name: name,
-        role: finalRole,
-        subsystem: subsystem,
-        email: email,
-        phone: phone,
-        branch: branch,
-        year: year,
-        online: true,
-        avatarUrl: null,
-        authority: finalRole.includes('Head') || finalRole.includes('Lead') ? 'lead' : (finalRole === 'Captain' || finalRole === 'Vice Captain' || finalRole === 'Team Manager' ? 'superior' : 'member')
-      };
+      const uniqueCode = officialMatch ? officialMatch.uniqueCode : generateUniqueCode(subsystem);
 
-      ALL_TEAM_MEMBERS.push(newUser);
+      let existingMember = ALL_TEAM_MEMBERS.find(m => 
+        (officialMatch && m.id === officialMatch.id) || 
+        (m.email && m.email.toLowerCase() === email.toLowerCase()) ||
+        m.name.toLowerCase() === nameLower
+      );
+
+      if (existingMember) {
+        existingMember.uniqueCode = existingMember.uniqueCode || uniqueCode;
+        existingMember.branch = branch;
+        existingMember.year = year;
+        existingMember.phone = phone;
+        existingMember.email = email;
+        existingMember.online = true;
+      } else {
+        existingMember = {
+          id: "usr_" + Date.now(),
+          uniqueCode: uniqueCode,
+          name: name,
+          role: role,
+          subsystem: subsystem,
+          email: email,
+          phone: phone,
+          branch: branch,
+          year: year,
+          online: true,
+          avatarUrl: null,
+          authority: (role.includes('Head') || role.includes('Lead')) ? 'lead' : (role === 'Captain' ? 'captain' : (role === 'Vice Captain' ? 'vicecaptain' : (role === 'Team Manager' ? 'manager' : 'member')))
+        };
+        ALL_TEAM_MEMBERS.push(existingMember);
+      }
+
       saveState();
 
-      // Notify backend if available
-      try {
-        fetch('/api/portal/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `👋 New team member signed up: ${name} (${finalRole} · ${subsystem}).`,
-            type: 'member_signup',
-            userId: newUser.id,
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-      } catch(err) {}
-
-      showToast(`✓ Welcome, ${name}! Account created as ${finalRole}.`);
-      loginSuccess(newUser);
+      // Clean in-app entry: ZERO bot popups, ZERO email dispatching
+      showToast('✓ Registration complete! Welcome ' + existingMember.name + ' · Unique Code: ' + existingMember.uniqueCode);
+      loginSuccess(existingMember);
     }
 
     function loginSuccess(user) {
@@ -2435,13 +2414,68 @@
     }
 
     function logout() {
-      if (currentUser) currentUser.online = false;
-      saveState();
-      stopNotificationPolling();
+      if (currentUser) {
+        currentUser.online = false;
+      }
       currentUser = null;
+      activeDrawerMember = null;
+      activeReply = null;
+      localStorage.removeItem('force_portal_current_user');
+      localStorage.removeItem('force_portal_session_expiry');
+      localStorage.removeItem('force_portal_last_active');
+
+      if (typeof stopNotificationPolling === 'function') {
+        stopNotificationPolling();
+      }
+
+      // COMPLETE FORM WIPE: CLEAR ALL SIGNUP & LOGIN INPUTS
+      const signupForm = document.getElementById('form-signup');
+      if (signupForm) signupForm.reset();
+
+      const loginForm = document.getElementById('form-login');
+      if (loginForm) loginForm.reset();
+
+      const fieldsToClear = [
+        'reg-name', 'reg-branch', 'reg-year', 'reg-email', 'reg-phone', 
+        'reg-subsystem', 'reg-role', 'reg-password', 
+        'login-identifier', 'login-password',
+        'dispatch-alert-input'
+      ];
+      fieldsToClear.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = '';
+          el.style.borderColor = '';
+        }
+      });
+
+      // Reset password meter and hints
+      const pwBar = document.getElementById('pw-bar-fill');
+      if (pwBar) {
+        pwBar.style.width = '0%';
+        pwBar.style.background = 'transparent';
+      }
+      const pwStatus = document.getElementById('pw-text-status');
+      if (pwStatus) {
+        pwStatus.innerHTML = 'Needs uppercase letter & special symbol';
+        pwStatus.style.color = '';
+      }
+
+      // Return to clean sign in tab
+      switchAuthTab('login');
+
+      // Hide dashboard, show authentication gateway
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('auth-view').style.display = 'block';
-      document.getElementById('header-user-slot').innerHTML = '<span style="font-size:0.85rem; color:var(--gp-ink-2);">🔒 Secure Pit Gateway</span>';
+
+      // Reset header slot
+      const headerSlot = document.getElementById('header-user-slot');
+      if (headerSlot) {
+        headerSlot.innerHTML = '<span style="font-size:0.85rem; color:var(--gp-ink-2);">🔒 Secure Pit Gateway</span>';
+      }
+
+      saveState();
+      showToast('Logged out securely. Form fields and session wiped.');
     }
 
     // ============================================================
@@ -2931,6 +2965,17 @@
       cont.innerHTML = '';
       document.getElementById('active-tasks-label').innerText = `${tasks.length} Active Pit Tasks`;
 
+      if (tasks.length === 0) {
+        cont.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; background: var(--gp-surface); border: 1px dashed var(--gp-line); border-radius: 12px;">
+            <div style="font-size: 2.2rem; margin-bottom: 8px;">📋</div>
+            <h3 style="font-size: 1.05rem; color: var(--gp-ink); margin-bottom: 4px; font-weight:700;">0 Active Engineering Directives</h3>
+            <p style="font-size: 0.82rem; color: var(--gp-ink-2); max-width: 440px; margin: 0 auto;">No tasks registered in the operations log. Captain, Vice Captain, Manager, or Subsystem Leads can assign tasks above.</p>
+          </div>
+        `;
+        return;
+      }
+
       tasks.forEach(t => {
         const card = document.createElement('div');
         card.className = 'task-card';
@@ -3242,6 +3287,17 @@
       const cont = document.getElementById('file-grid-container');
       cont.innerHTML = '';
 
+      if (sharedFiles.length === 0) {
+        cont.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 36px 20px; text-align: center; background: var(--gp-surface); border: 1px dashed var(--gp-line); border-radius: 10px;">
+            <div style="font-size: 2rem; margin-bottom: 6px;">📂</div>
+            <h4 style="font-size: 0.95rem; color: var(--gp-ink); margin-bottom: 4px; font-weight:700;">0 Central Files Uploaded</h4>
+            <p style="font-size: 0.8rem; color: var(--gp-ink-2);">No documents or CAD packages in repository. Upload team files using the button above.</p>
+          </div>
+        `;
+        return;
+      }
+
       sharedFiles.forEach(f => {
         const item = document.createElement('div');
         item.className = 'file-card';
@@ -3325,6 +3381,11 @@
       document.getElementById('prof-phone').value = currentUser.phone || "+91 98765 00000";
       document.getElementById('prof-subsystem').value = currentUser.subsystem;
       document.getElementById('prof-role').value = currentUser.role;
+      const codeVal = currentUser.uniqueCode || generateUniqueCode(currentUser.subsystem);
+      const codeBadge = document.getElementById('acc-modal-unique-code');
+      if (codeBadge) codeBadge.innerText = codeVal;
+      const codeInput = document.getElementById('prof-unique-code');
+      if (codeInput) codeInput.value = codeVal;
 
       // Lock/Unlock subsystem & role
       const isCaptain = currentUser.id === 'captain';
@@ -3348,7 +3409,7 @@
         roleInput.disabled = true;
         roleInput.style.opacity = '0.6';
         roleInput.style.cursor = 'not-allowed';
-        subHint.innerText = '🔒 Subsystem locked. Managed by Captain & Admin.';
+        subHint.innerText = '🔒 Subsystem locked. Managed by Captain, Vice Captain & Subsystem Leads.';
         subHint.style.color = 'var(--gp-accent)';
       }
 
@@ -3521,6 +3582,46 @@
       el.style.display = el.style.display === 'block' ? 'none' : 'block';
     }
 
+    function dispatchCustomAlert() {
+      const input = document.getElementById('dispatch-alert-input');
+      const prioSelect = document.getElementById('dispatch-alert-priority');
+      const text = (input ? input.value : '').trim();
+      if (!text) {
+        showToast('⚠️ Please enter an alert message before dispatching.');
+        return;
+      }
+      const isUrgent = prioSelect && prioSelect.value === 'urgent';
+      const sender = currentUser ? `${currentUser.name} (${currentUser.role})` : 'Pit Operations';
+      const fullText = (isUrgent ? '🚨 [URGENT DISPATCH] ' : '📢 [TEAM ALERT] ') + sender + ': ' + text;
+
+      const newNotif = {
+        id: Date.now(),
+        text: fullText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        urgent: isUrgent
+      };
+
+      notifications.unshift(newNotif);
+      saveState();
+      renderNotifications();
+      if (input) input.value = '';
+
+      if (typeof playAudioVisualPing === 'function') {
+        playAudioVisualPing();
+      }
+      showToast(fullText);
+
+      fetch('/api/portal/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: fullText,
+          sender: sender,
+          urgent: isUrgent
+        })
+      }).catch(e => console.warn('Worker notif sync:', e));
+    }
+
     function renderNotifications() {
       const cont = document.getElementById('notif-list-container');
       const badge = document.getElementById('notif-count');
@@ -3531,6 +3632,16 @@
       if (tabQueueCount) tabQueueCount.innerText = offlineQueuedMessages.length;
 
       cont.innerHTML = '';
+      if (notifications.length === 0) {
+        cont.innerHTML = `
+          <div style="padding: 30px 16px; text-align: center; color: var(--gp-ink-2); font-size: 0.82rem;">
+            <div style="font-size: 1.8rem; margin-bottom: 6px;">🔔</div>
+            <div style="font-weight: 600; color: var(--gp-ink);">0 Active Dispatches</div>
+            <div>All operational alerts and team directives will appear here live.</div>
+          </div>
+        `;
+        return;
+      }
       notifications.forEach(n => {
         const item = document.createElement('div');
         item.className = 'notif-item';

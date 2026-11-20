@@ -21,17 +21,13 @@ test('Portal API - OPTIONS returns 204 with CORS', async () => {
   assert.equal(res.headers.get('Access-Control-Allow-Origin'), '*');
 });
 
-test('Portal API - GET /api/portal/notifications', async () => {
+test('Portal API - GET /api/portal/notifications (clean 0 slate)', async () => {
   const { res, data } = await callApi('http://localhost:8787/api/portal/notifications');
   assert.equal(res.status, 200);
   assert.equal(data.ok, true);
   assert.ok(Array.isArray(data.notifications));
-  assert.ok(data.notifications.length >= 3);
-
-  // Filter by userId
-  const { data: userNotifs } = await callApi('http://localhost:8787/api/portal/notifications?userId=chassis_head_1');
-  assert.equal(userNotifs.ok, true);
-  assert.ok(userNotifs.notifications.length > 0);
+  // Clean initial registered slate: 0 initial dummy notifications
+  assert.equal(data.notifications.length, 0);
 });
 
 test('Portal API - POST /api/portal/notifications', async () => {
@@ -86,17 +82,13 @@ test('Portal API - POST & GET /api/portal/chat with auto-notification', async ()
   assert.equal(chatData.messages[chatData.messages.length - 1].text, 'Have you verified the roll hoop jig clearances?');
 });
 
-test('Portal API - GET /api/portal/tasks', async () => {
+test('Portal API - GET /api/portal/tasks (clean 0 slate)', async () => {
   const { res, data } = await callApi('http://localhost:8787/api/portal/tasks');
   assert.equal(res.status, 200);
   assert.equal(data.ok, true);
   assert.ok(Array.isArray(data.tasks));
-  assert.ok(data.tasks.length >= 7);
-
-  // Filter query
-  const { data: filtered } = await callApi('http://localhost:8787/api/portal/tasks?subsystem=Chassis');
-  assert.equal(filtered.ok, true);
-  assert.ok(filtered.tasks.every(t => t.subsystem.toLowerCase() === 'chassis'));
+  // Clean initial registered slate: 0 initial dummy tasks
+  assert.equal(data.tasks.length, 0);
 });
 
 test('Portal API - POST /api/portal/tasks (Create -> Submit Proof -> Lead Verify -> Approve)', async () => {
