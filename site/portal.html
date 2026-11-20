@@ -1635,7 +1635,7 @@
         <form id="form-signup" style="display:none;" onsubmit="handleSignupSubmit(event)">
           <div class="form-group">
             <label>Full Name <span class="req">*</span></label>
-            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Vikram Sharma" required>
+            <input type="text" id="reg-name" class="form-control" placeholder="Full Name" required>
           </div>
 
           <div class="form-row">
@@ -1665,18 +1665,19 @@
 
           <div class="form-group">
             <label>Email Address <span class="req">*</span></label>
-            <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required>
+            <input type="email" id="reg-email" class="form-control" placeholder="Email Address" required>
           </div>
 
           <div class="form-group">
             <label>Phone Number <span class="req">*</span></label>
-            <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98765 43210" required>
+            <input type="tel" id="reg-phone" class="form-control" placeholder="Phone Number" required>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Subsystem</label>
-              <select id="reg-subsystem" class="form-control">
+              <label>Subsystem <span class="req">*</span></label>
+              <select id="reg-subsystem" class="form-control" required>
+                <option value="">Select Subsystem</option>
                 <option value="Chassis">Chassis</option>
                 <option value="Powertrain">Powertrain</option>
                 <option value="Aerodynamics">Aerodynamics</option>
@@ -1686,8 +1687,9 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Role</label>
-              <select id="reg-role" class="form-control">
+              <label>Role <span class="req">*</span></label>
+              <select id="reg-role" class="form-control" required>
+                <option value="">Select Role</option>
                 <option value="Team Member">Team Member</option>
                 <option value="Chassis Lead">Chassis Lead</option>
                 <option value="Powertrain Lead">Powertrain Lead</option>
@@ -1703,7 +1705,7 @@
 
           <div class="form-group">
             <label>Password <span class="req">*</span></label>
-            <input type="password" id="reg-password" class="form-control" placeholder="Needs 1 uppercase & 1 symbol" required oninput="checkPasswordStrength(this.value)">
+            <input type="password" id="reg-password" class="form-control" placeholder="Password" required oninput="checkPasswordStrength(this.value)">
             <div class="pw-meter">
               <div class="pw-bar-track">
                 <div class="pw-bar-fill" id="pw-bar-fill"></div>
@@ -2258,7 +2260,22 @@
 
         function handleSignupSubmit(e) {
       e.preventDefault();
-      const pw = document.getElementById('reg-password').value;
+      const name = (document.getElementById('reg-name').value || '').trim();
+      const branch = (document.getElementById('reg-branch').value || '').trim();
+      const year = (document.getElementById('reg-year').value || '').trim();
+      const email = (document.getElementById('reg-email').value || '').trim();
+      const phone = (document.getElementById('reg-phone').value || '').trim();
+      const subsystem = (document.getElementById('reg-subsystem').value || '').trim();
+      const baseRole = (document.getElementById('reg-role').value || '').trim();
+      const pw = (document.getElementById('reg-password').value || '').trim();
+
+      // Everything is mandatory validation
+      if (!name || !branch || !year || !email || !phone || !subsystem || !baseRole || !pw) {
+        showToast('⚠️ All fields are mandatory. Please fill in all required details.');
+        return;
+      }
+
+      // Password requirements: 1 uppercase and 1 special symbol
       const hasUpper = /[A-Z]/.test(pw);
       const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
       if (!hasUpper || !hasSpecial) {
@@ -2271,14 +2288,7 @@
         return;
       }
 
-      const name = document.getElementById('reg-name').value;
-      const branch = document.getElementById('reg-branch').value;
-      const year = document.getElementById('reg-year').value;
-      const email = document.getElementById('reg-email').value;
-      const phone = document.getElementById('reg-phone').value;
-      const subsystem = document.getElementById('reg-subsystem').value;
-      const baseRole = document.getElementById('reg-role').value;
-
+      // Automatic duplicate lead numbering: first gets clean title, second gets title 2, third gets title 3
       let finalRole = baseRole;
       if (baseRole.includes('Lead') || baseRole.includes('Head')) {
         const leadPrefix = baseRole.replace(/\s+(Lead|Head)$/i, '');
@@ -2311,7 +2321,21 @@
       ALL_TEAM_MEMBERS.push(newUser);
       saveState();
 
-      // Immediately log into account. NO telegram bot popups!
+      // Notify backend if available
+      try {
+        fetch('/api/portal/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `👋 New team member signed up: ${name} (${finalRole} · ${subsystem}).`,
+            type: 'member_signup',
+            userId: newUser.id,
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+      } catch(err) {}
+
+      showToast(`✓ Welcome, ${name}! Account created as ${finalRole}.`);
       loginSuccess(newUser);
     }
 
