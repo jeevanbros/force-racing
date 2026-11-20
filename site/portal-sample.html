@@ -1,9 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      function syncWebsiteTheme() {
+        try {
+          const stored = localStorage.getItem("force_theme");
+          const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+          const active = stored || (prefersLight ? "light" : "dark");
+          document.documentElement.setAttribute("data-theme", active);
+        } catch(e) {}
+      }
+      syncWebsiteTheme();
+      window.addEventListener("storage", function(e) {
+        if (e.key === "force_theme") syncWebsiteTheme();
+      });
+      window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function() {
+        if (!localStorage.getItem("force_theme")) syncWebsiteTheme();
+      });
+    })();
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pit Wall Portal — Force Racing // Team Operations Hub</title>
+  <title>Engineering Operations Hub — Force Racing // KITS Warangal</title>
   <link rel="icon" href="assets/original/favicon.png">
   <link rel="preload" href="assets/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
   <style>
@@ -43,6 +62,82 @@
       --gp-header-height: 72px;
       --gp-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
       --gp-transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    
+    /* ========================================================
+       WEBSITE THEME SYNC: LIGHT THEME OVERRIDES
+       Matches website theme when data-theme="light"
+       ======================================================== */
+    [data-theme="light"] {
+      --gp-bg: #f8fafc;
+      --gp-bg-sunk: #edf2f7;
+      --gp-surface: #ffffff;
+      --gp-surface-elevated: #f1f5f9;
+      --gp-surface-hover: #e2e8f0;
+      --gp-ink: #0b0f19;
+      --gp-ink-2: #334155;
+      --gp-ink-3: #64748b;
+      --gp-line: rgba(15, 23, 42, 0.12);
+      --gp-line-2: rgba(15, 23, 42, 0.22);
+      --gp-accent: #e10600;
+      --gp-accent-sunk: #b80500;
+      --gp-cyan: #0284c7;
+      --gp-gold: #d97706;
+      --gp-ok: #059669;
+      --gp-offline: #dc2626;
+      --gp-card-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    [data-theme="light"] body {
+      background-color: var(--gp-bg);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(225, 6, 0, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 90% 20%, rgba(2, 132, 199, 0.04) 0%, transparent 35%);
+      color: var(--gp-ink);
+    }
+    [data-theme="light"] header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--gp-line);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    [data-theme="light"] .form-control {
+      background: #ffffff;
+      border-color: rgba(15, 23, 42, 0.18);
+      color: #0b0f19;
+    }
+    [data-theme="light"] .chat-input {
+      background: #ffffff;
+      border-color: rgba(15, 23, 42, 0.18);
+      color: #0b0f19;
+    }
+    [data-theme="light"] .member-card {
+      background: #f8fafc;
+    }
+    [data-theme="light"] .member-card:hover {
+      background: #f1f5f9;
+    }
+    [data-theme="light"] .task-card {
+      background: #f8fafc;
+    }
+    [data-theme="light"] .task-file-box {
+      background: #ffffff;
+      border-color: var(--gp-line);
+    }
+    [data-theme="light"] .chat-msg-received {
+      background: #f1f5f9;
+      color: #0b0f19;
+      border-color: var(--gp-line);
+    }
+    [data-theme="light"] .chat-reply-banner {
+      background: #edf2f7;
+      border-color: var(--gp-line);
+    }
+    [data-theme="light"] .file-card {
+      background: #f8fafc;
+    }
+    [data-theme="light"] .history-item {
+      background: #f8fafc;
     }
 
     /* Automatic OS Light Mode Synchronization */
@@ -450,44 +545,7 @@
       box-shadow: none;
     }
 
-    /* Demo Quick Testing Bar */
-    .demo-role-bar {
-      margin-top: 22px;
-      background: var(--gp-surface-elevated);
-      border: 1px dashed var(--gp-line-2);
-      border-radius: var(--gp-radius);
-      padding: 14px;
-      text-align: center;
-    }
-    .demo-role-bar h4 {
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--gp-ink-2);
-      margin-bottom: 10px;
-    }
-    .demo-btn-group {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .btn-demo-pill {
-      background: var(--gp-surface);
-      border: 1px solid var(--gp-line);
-      color: var(--gp-ink);
-      padding: 5px 10px;
-      border-radius: 99px;
-      font-size: 0.76rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--gp-transition);
-    }
-    .btn-demo-pill:hover {
-      border-color: var(--gp-cyan);
-      color: var(--gp-cyan);
-      transform: translateY(-1px);
-    }
+    /* Demo bar removed for production deployment */
 
     /* ========================================================
        3. AUTHENTICATED DASHBOARD (ONLY AFTER LOGIN)
@@ -1509,11 +1567,11 @@
   <!-- Header -->
   <header>
     <div class="header-inner">
-      <a href="javascript:void(0)" onclick="handlePortalBrandClick(event)" class="brand" title="Click to refresh Pit Wall operations">
+      <a href="javascript:void(0)" onclick="handlePortalBrandClick(event)" class="brand" title="Click to refresh Operations Hub">
         <img src="assets/original/favicon.png" alt="Force Racing">
         <div class="brand-title">
           FORCE RACING
-          <small>PIT WALL OPERATIONS PORTAL</small>
+          <small>ENGINEERING OPERATIONS HUB</small>
         </div>
       </a>
 
@@ -1570,7 +1628,7 @@
             <label>Password <span class="req">*</span></label>
             <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
           </div>
-          <button type="submit" class="btn-submit">ENTER PIT WALL</button>
+          <button type="submit" class="btn-submit">ENTER OPERATIONS HUB</button>
         </form>
 
         <!-- Sign Up Form (Mandatory Fields + Password Strength Meter) -->
@@ -1660,18 +1718,7 @@
           <button type="submit" class="btn-submit" id="btn-reg-submit" disabled>COMPLETE SIGN UP & ENTER</button>
         </form>
 
-        <!-- 1-Click Demo Testing Account Switcher -->
-        <div class="demo-role-bar">
-          <h4>🧪 1-Click Demo Testing Switcher</h4>
-          <div class="demo-btn-group">
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('captain')">⚡ Captain</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('vicecaptain')">⚡ Vice Captain</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('manager')">⚡ Team Manager</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_1')">🔧 Chassis Head 1</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_2')">🔧 Chassis Head 2</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('member_karthik')">👤 Member (Karthik)</button>
-          </div>
-        </div>
+        
 
       </div>
     </div>
@@ -2328,6 +2375,7 @@
       renderSubsystemTelemetry();
       renderFilesHub();
       renderNotifications();
+      setupBackNavigationProtection();
       startNotificationPolling();
     }
 
@@ -3591,6 +3639,34 @@
         <div style="margin-top:20px; display:flex; gap:10px;">
           <button type="button" class="btn-submit" style="width:auto; padding:8px 24px;" onclick="closePhotoViewer()">Close Photo</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================== -->
+  <!-- EXIT CONFIRMATION MODAL (BACK BUTTON INTERCEPTION)         -->
+  <!-- ========================================================== -->
+  <div class="modal-overlay" id="exit-confirm-modal" style="display:none; z-index:9999;">
+    <div class="modal-card" style="max-width:480px; text-align:center; padding:28px 24px;">
+      <div style="font-size:2.8rem; margin-bottom:12px;">🛡️</div>
+      <h3 style="font-family:var(--gp-font-head); font-size:1.6rem; margin-bottom:8px;">LEAVING OPERATIONS HUB?</h3>
+      <p style="font-size:0.9rem; color:var(--gp-ink-2); margin-bottom:20px; line-height:1.5;" id="exit-modal-desc">
+        You are currently signed in. Choose how you would like to proceed:
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button type="button" class="btn-submit" style="margin-top:0; background:var(--gp-cyan); color:#000;" onclick="handleStayOnHub()">
+          🛡️ Stay on Operations Hub
+        </button>
+
+        <button type="button" class="btn-submit" style="margin-top:0; background:transparent; border:1px solid var(--gp-line-2); color:var(--gp-ink);" onclick="handleStaySignedInAndExit()">
+          ⏳ Stay Signed In & Exit (Auto Signs Out in 15 Min)
+        </button>
+
+        <button type="button" class="btn-submit" style="margin-top:0; background:rgba(239,68,68,0.15); border:1px solid var(--gp-offline); color:var(--gp-offline);" onclick="handleSignOutAndExit()">
+          🚪 Sign Out & Exit Now
+        </button>
       </div>
     </div>
   </div>
