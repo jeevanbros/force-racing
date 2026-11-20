@@ -49,7 +49,7 @@ export async function store(env, record, payloadHash) {
   const id = crypto.randomUUID(), time = now();
   const prefix = record.type === 'registration' ? 'FR26-SIM-' : record.type === 'recruitment' ? 'FR26-REC-' : record.type === 'sponsor' ? 'FR26-SPN-' : 'FR-';
   const reference = prefix + random().slice(0, 8).toUpperCase();
-  const dbType = record.type === 'recruitment' ? 'contact' : record.type;
+  const dbType = record.type;
 
   let answersJson = null;
   if (record.screenshotBase64 || record.tier) {

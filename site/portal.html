@@ -1,0 +1,3237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pit Wall Portal — Force Racing // Team Operations Hub</title>
+  <link rel="icon" href="assets/original/favicon.png">
+  <link rel="preload" href="assets/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: Barlow;
+      src: url(assets/fonts/barlow-condensed-800.woff2) format("woff2");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ========================================================
+       1. DESIGN TOKENS & SYSTEM THEME SYNC
+       Default: Sleek Racing Dark Theme
+       ======================================================== */
+    :root {
+      --gp-bg: #090b10;
+      --gp-bg-sunk: #050609;
+      --gp-surface: #111524;
+      --gp-surface-elevated: #181e30;
+      --gp-surface-hover: #1e263d;
+      --gp-ink: #ffffff;
+      --gp-ink-2: #94a3b8;
+      --gp-ink-3: #64748b;
+      --gp-line: rgba(255, 255, 255, 0.09);
+      --gp-line-2: rgba(255, 255, 255, 0.2);
+      --gp-accent: #ff1801;
+      --gp-accent-sunk: #d90429;
+      --gp-cyan: #00f0ff;
+      --gp-gold: #ffb703;
+      --gp-ok: #10b981;
+      --gp-offline: #ef4444;
+      --gp-radius: 6px;
+      --gp-radius-lg: 12px;
+      --gp-font-head: Barlow, Impact, "Arial Narrow", sans-serif;
+      --gp-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      --gp-header-height: 72px;
+      --gp-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      --gp-transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* Automatic OS Light Mode Synchronization */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --gp-bg: #f8fafc;
+        --gp-bg-sunk: #edf2f7;
+        --gp-surface: #ffffff;
+        --gp-surface-elevated: #f1f5f9;
+        --gp-surface-hover: #e2e8f0;
+        --gp-ink: #0f172a;
+        --gp-ink-2: #475569;
+        --gp-ink-3: #94a3b8;
+        --gp-line: rgba(15, 23, 42, 0.1);
+        --gp-line-2: rgba(15, 23, 42, 0.2);
+        --gp-accent: #d90429;
+        --gp-accent-sunk: #b3001e;
+        --gp-cyan: #0284c7;
+        --gp-gold: #d97706;
+        --gp-ok: #059669;
+        --gp-offline: #dc2626;
+        --gp-card-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--gp-bg);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(255, 24, 1, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 90% 20%, rgba(0, 240, 255, 0.04) 0%, transparent 35%);
+      color: var(--gp-ink);
+      font-family: var(--gp-font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--gp-bg-sunk); }
+    ::-webkit-scrollbar-thumb { background: var(--gp-line-2); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gp-cyan); }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--gp-line);
+      background: var(--gp-surface);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: var(--gp-header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--gp-ink);
+    }
+    .brand img { width: 40px; height: 40px; object-fit: contain; }
+    .brand-title {
+      font-family: var(--gp-font-head);
+      font-size: 1.4rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .brand-title small {
+      display: block;
+      font-family: var(--gp-font-body);
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      color: var(--gp-ink-2);
+      margin-top: 4px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Round User Avatar in Header */
+    .user-account-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-line);
+      padding: 4px 14px 4px 6px;
+      border-radius: 99px;
+      font-size: 0.86rem;
+      cursor: pointer;
+      transition: var(--gp-transition);
+    }
+    .user-account-btn:hover {
+      border-color: var(--gp-cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+    }
+    .avatar-wrapper {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gp-accent), var(--gp-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      overflow: visible;
+      flex-shrink: 0;
+    }
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* Real-Time Live Presence Dots */
+    .status-dot-indicator {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--gp-surface);
+    }
+    .dot-online {
+      background: var(--gp-ok);
+      box-shadow: 0 0 8px var(--gp-ok);
+    }
+    .dot-offline {
+      background: var(--gp-offline);
+      box-shadow: 0 0 6px var(--gp-offline);
+    }
+
+    .notif-btn {
+      position: relative;
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-line);
+      color: var(--gp-ink);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: var(--gp-transition);
+    }
+    .notif-btn:hover {
+      border-color: var(--gp-accent);
+      transform: scale(1.05);
+    }
+    .notif-badge-count {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: var(--gp-accent);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--gp-line-2);
+      color: var(--gp-ink-2);
+      padding: 6px 14px;
+      border-radius: var(--gp-radius);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--gp-transition);
+    }
+    .btn-logout:hover {
+      background: var(--gp-accent);
+      border-color: var(--gp-accent);
+      color: #fff;
+    }
+
+    .main-wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 24px 60px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Notification Drawer */
+    .notif-drawer {
+      position: fixed;
+      top: 78px;
+      right: 24px;
+      width: 380px;
+      max-width: calc(100vw - 48px);
+      max-height: 520px;
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line-2);
+      border-radius: var(--gp-radius-lg);
+      padding: 16px;
+      box-shadow: var(--gp-card-shadow);
+      z-index: 200;
+      display: none;
+      animation: slideDown 0.25s ease-out;
+      overflow-y: auto;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .notif-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--gp-line);
+      margin-bottom: 12px;
+    }
+    .notif-head h4 { font-family: var(--gp-font-head); font-size: 1.2rem; }
+    .notif-item {
+      padding: 10px 12px;
+      border-radius: var(--gp-radius);
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      margin-bottom: 8px;
+      font-size: 0.84rem;
+      line-height: 1.4;
+      border-left: 3px solid var(--gp-cyan);
+    }
+    .notif-item.notif-chat { border-left-color: var(--gp-accent); }
+
+    /* In-App Toast Alert */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast-box {
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-cyan);
+      box-shadow: var(--gp-card-shadow);
+      color: var(--gp-ink);
+      padding: 12px 18px;
+      border-radius: var(--gp-radius);
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+      animation: toastIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      max-width: 360px;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ========================================================
+       2. AUTH VIEW (ONLY BEFORE LOGIN)
+       ======================================================== */
+    #auth-view {
+      max-width: 520px;
+      margin: 20px auto;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .auth-card {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line-2);
+      border-radius: var(--gp-radius-lg);
+      padding: 34px 30px;
+      box-shadow: var(--gp-card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--gp-accent), var(--gp-cyan));
+    }
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--gp-line);
+      margin-bottom: 22px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-family: var(--gp-font-head);
+      font-size: 1.3rem;
+      letter-spacing: 0.05em;
+      color: var(--gp-ink-2);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: var(--gp-transition);
+    }
+    .auth-tab.active {
+      color: var(--gp-ink);
+      border-bottom-color: var(--gp-accent);
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gp-ink-2);
+      margin-bottom: 6px;
+    }
+    .form-group label .req { color: var(--gp-accent); }
+    .form-control {
+      width: 100%;
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 11px 13px;
+      font-size: 0.94rem;
+      color: var(--gp-ink);
+      transition: var(--gp-transition);
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--gp-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Password Strength Meter */
+    .pw-meter { margin-top: 6px; }
+    .pw-bar-track {
+      height: 5px;
+      background: var(--gp-line);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .pw-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    .pw-hint {
+      font-size: 0.74rem;
+      color: var(--gp-ink-2);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--gp-accent), var(--gp-accent-sunk));
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--gp-radius);
+      font-family: var(--gp-font-head);
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 8px 22px rgba(255, 24, 1, 0.3);
+      transition: var(--gp-transition);
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(255, 24, 1, 0.45);
+    }
+    .btn-submit:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Demo Quick Testing Bar */
+    .demo-role-bar {
+      margin-top: 22px;
+      background: var(--gp-surface-elevated);
+      border: 1px dashed var(--gp-line-2);
+      border-radius: var(--gp-radius);
+      padding: 14px;
+      text-align: center;
+    }
+    .demo-role-bar h4 {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gp-ink-2);
+      margin-bottom: 10px;
+    }
+    .demo-btn-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-demo-pill {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+      color: var(--gp-ink);
+      padding: 5px 10px;
+      border-radius: 99px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--gp-transition);
+    }
+    .btn-demo-pill:hover {
+      border-color: var(--gp-cyan);
+      color: var(--gp-cyan);
+      transform: translateY(-1px);
+    }
+
+    /* ========================================================
+       3. AUTHENTICATED DASHBOARD (ONLY AFTER LOGIN)
+       ======================================================== */
+    #dashboard-view {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Login Notification Banner */
+    .login-banner {
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.15), rgba(255, 24, 1, 0.1));
+      border: 1px solid var(--gp-cyan);
+      border-radius: var(--gp-radius);
+      padding: 12px 18px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: slideDown 0.3s ease-out;
+      gap: 12px;
+    }
+    .login-banner-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.92rem;
+    }
+
+    /* Topbar Profile Strip */
+    .dashboard-topbar {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius-lg);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      box-shadow: var(--gp-card-shadow);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .user-greeting {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .greeting-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gp-accent), var(--gp-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+      transition: var(--gp-transition);
+    }
+    .greeting-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 18px rgba(0, 240, 255, 0.5);
+    }
+    .greeting-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-greeting h1 {
+      font-family: var(--gp-font-head);
+      font-size: 1.85rem;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .user-greeting p {
+      font-size: 0.88rem;
+      color: var(--gp-ink-2);
+      margin-top: 3px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .badge-authority {
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .auth-admin { background: rgba(255, 24, 1, 0.15); border: 1px solid var(--gp-accent); color: var(--gp-accent); }
+    .auth-superior { background: rgba(0, 240, 255, 0.12); border: 1px solid var(--gp-cyan); color: var(--gp-cyan); }
+    .auth-lead { background: rgba(255, 183, 3, 0.15); border: 1px solid var(--gp-gold); color: var(--gp-gold); }
+    .auth-member { background: rgba(16, 185, 129, 0.12); border: 1px solid var(--gp-ok); color: var(--gp-ok); }
+
+    /* ========================================================
+       4. STRICTLY TASK TELEMETRY ONLY (Cards & Subsystems)
+       ======================================================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .metric-card {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 16px 18px;
+      box-shadow: var(--gp-card-shadow);
+      transition: var(--gp-transition);
+    }
+    .metric-card:hover {
+      border-color: var(--gp-line-2);
+      transform: translateY(-2px);
+    }
+    .metric-header {
+      font-size: 0.78rem;
+      color: var(--gp-ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .metric-num {
+      font-family: var(--gp-font-head);
+      font-size: 2.2rem;
+      line-height: 1;
+      font-weight: 800;
+    }
+    .metric-sub {
+      font-size: 0.78rem;
+      color: var(--gp-ink-3);
+      margin-top: 6px;
+    }
+
+    /* Subsystem Task Telemetry Progress Strip (All 6 Subsystems) */
+    .subsystem-progress-strip {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--gp-card-shadow);
+    }
+    .strip-title {
+      font-family: var(--gp-font-head);
+      font-size: 1.3rem;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .subsystem-bars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .sub-bar-item {
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 12px 14px;
+      transition: var(--gp-transition);
+    }
+    .sub-bar-item:hover {
+      border-color: var(--gp-line-2);
+    }
+    .sub-bar-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .sub-bar-stats {
+      font-size: 0.72rem;
+      color: var(--gp-ink-2);
+      font-weight: 500;
+    }
+    .progress-track {
+      height: 6px;
+      background: var(--gp-line);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ========================================================
+       5. TWO COLUMN WORKSPACE: ALL MEMBERS SIDEBAR + MAIN
+       ======================================================== */
+    .workspace-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 980px) {
+      .workspace-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Sidebar: ALL TEAM MEMBERS + LIVE PRESENCE */
+    .sidebar-panel {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius-lg);
+      padding: 20px;
+      box-shadow: var(--gp-card-shadow);
+      align-self: start;
+    }
+    .sidebar-head {
+      font-family: var(--gp-font-head);
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar-sub {
+      font-size: 0.76rem;
+      color: var(--gp-ink-2);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .legend-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .member-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 580px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .member-item {
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--gp-transition);
+      cursor: pointer;
+    }
+    .member-item:hover {
+      border-color: var(--gp-cyan);
+      background: var(--gp-surface-hover);
+      transform: translateX(2px);
+    }
+    .member-avatar-slot {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-line-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .member-details {
+      flex: 1;
+      min-width: 0;
+    }
+    .member-details h5 {
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .member-details span {
+      font-size: 0.72rem;
+      color: var(--gp-ink-2);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .badge-member-role {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--gp-ink-2);
+    }
+    .btn-quick-chat {
+      background: transparent;
+      border: 1px solid var(--gp-line-2);
+      color: var(--gp-cyan);
+      padding: 4px 8px;
+      border-radius: var(--gp-radius);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: var(--gp-transition);
+      flex-shrink: 0;
+    }
+    .btn-quick-chat:hover {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--gp-cyan);
+    }
+
+    /* Main Section */
+    .content-panel {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius-lg);
+      padding: 24px;
+      box-shadow: var(--gp-card-shadow);
+    }
+
+    /* Task Creator Box */
+    .create-task-panel {
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-line-2);
+      border-radius: var(--gp-radius);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+    .create-task-panel h3 {
+      font-family: var(--gp-font-head);
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Task Cards */
+    .task-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .task-card {
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 18px 20px;
+      transition: var(--gp-transition);
+    }
+    .task-card:hover { border-color: var(--gp-line-2); }
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .task-badge-subsystem {
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--gp-ink);
+    }
+    /* Strictly Priority and Normal tags only */
+    .priority-tag-priority {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--gp-accent);
+      background: rgba(255, 24, 1, 0.15);
+      border: 1px solid rgba(255, 24, 1, 0.35);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .priority-tag-normal {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--gp-cyan);
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .task-status-pill {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .status-pending { background: rgba(255, 183, 3, 0.12); color: var(--gp-gold); border: 1px solid var(--gp-gold); }
+    .status-review { background: rgba(0, 240, 255, 0.12); color: var(--gp-cyan); border: 1px solid var(--gp-cyan); }
+    .status-approval { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid #c084fc; }
+    .status-done { background: rgba(16, 185, 129, 0.15); color: var(--gp-ok); border: 1px solid var(--gp-ok); }
+
+    .task-heading {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .task-text {
+      font-size: 0.9rem;
+      color: var(--gp-ink-2);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    /* Mandatory File Proof Upload Area on Task */
+    .task-file-box {
+      background: var(--gp-surface);
+      border: 1px dashed var(--gp-line-2);
+      border-radius: var(--gp-radius);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .task-file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .file-upload-input { font-size: 0.8rem; color: var(--gp-ink-2); }
+    .task-deliverable-notes {
+      width: 100%;
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      color: var(--gp-ink);
+    }
+    .task-deliverable-notes:focus {
+      outline: none;
+      border-color: var(--gp-cyan);
+    }
+
+    .task-action-bar {
+      border-top: 1px solid var(--gp-line);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .assigned-by-badge {
+      font-size: 0.84rem;
+      color: var(--gp-cyan);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-action-step {
+      padding: 8px 16px;
+      border-radius: var(--gp-radius);
+      border: 1px solid var(--gp-line-2);
+      background: transparent;
+      color: var(--gp-ink);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--gp-transition);
+    }
+    .btn-action-step:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-action-step.btn-submit-proof { background: var(--gp-cyan); border-color: var(--gp-cyan); color: #000; }
+    .btn-action-step.btn-verify-lead { background: var(--gp-gold); border-color: var(--gp-gold); color: #000; }
+    .btn-action-step.btn-approve-superior { background: var(--gp-ok); border-color: var(--gp-ok); color: #fff; }
+    .btn-action-step.btn-task-done { background: rgba(16, 185, 129, 0.2); border-color: var(--gp-ok); color: var(--gp-ok); cursor: default; }
+
+    /* Central File Sharing Hub */
+    .files-hub {
+      margin-top: 36px;
+      border-top: 1px solid var(--gp-line);
+      padding-top: 28px;
+    }
+    .files-hub h3 {
+      font-family: var(--gp-font-head);
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .file-card {
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--gp-transition);
+    }
+    .file-card:hover { border-color: var(--gp-line-2); }
+    .file-card-info h5 { font-size: 0.92rem; font-weight: 700; }
+    .file-card-info span { font-size: 0.74rem; color: var(--gp-ink-2); display: block; margin-top: 2px; }
+    .btn-download-file {
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-line-2);
+      color: var(--gp-cyan);
+      padding: 6px 12px;
+      border-radius: var(--gp-radius);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: var(--gp-transition);
+      flex-shrink: 0;
+    }
+    .btn-download-file:hover { background: var(--gp-cyan); color: #000; }
+
+    /* ========================================================
+       6. MODAL OVERLAYS & DRAWERS
+       ======================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .modal-box {
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line-2);
+      border-radius: var(--gp-radius-lg);
+      padding: 28px;
+      max-width: 660px;
+      width: 100%;
+      box-shadow: var(--gp-card-shadow);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--gp-line);
+      padding-bottom: 12px;
+    }
+    .modal-head h3 { font-family: var(--gp-font-head); font-size: 1.5rem; }
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: var(--gp-ink-2);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--gp-transition);
+    }
+    .btn-close-modal:hover { color: var(--gp-accent); }
+
+    /* Account Section Styles */
+    .acc-profile-header {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .acc-photo-frame {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gp-accent), var(--gp-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      position: relative;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+      overflow: visible;
+    }
+    .acc-photo-frame img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .acc-photo-frame .status-dot-indicator {
+      width: 14px;
+      height: 14px;
+      bottom: 2px;
+      right: 2px;
+    }
+    .acc-meta h4 { font-size: 1.25rem; font-weight: 800; }
+    .acc-meta p { font-size: 0.85rem; color: var(--gp-ink-2); margin-top: 2px; }
+    .acc-meta .acc-badge {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 99px;
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid var(--gp-cyan);
+      color: var(--gp-cyan);
+    }
+
+    .acc-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--gp-line);
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .acc-tab {
+      padding: 8px 14px;
+      font-family: var(--gp-font-head);
+      font-size: 1.15rem;
+      color: var(--gp-ink-2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: var(--gp-transition);
+    }
+    .acc-tab.active {
+      color: var(--gp-ink);
+      border-bottom-color: var(--gp-cyan);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .history-item {
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: var(--gp-radius);
+      padding: 12px 14px;
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .history-item-left h6 { font-size: 0.9rem; font-weight: 700; }
+    .history-item-left span { font-size: 0.74rem; color: var(--gp-ink-2); margin-top: 2px; display: block; }
+    .history-badge-done {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gp-ok);
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--gp-ok);
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .history-badge-file {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gp-cyan);
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--gp-cyan);
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .history-badge-activity {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gp-gold);
+      background: rgba(255, 183, 3, 0.15);
+      border: 1px solid var(--gp-gold);
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* ========================================================
+       7. MEMBER PROFILE & DIRECT CHAT DRAWER
+       ======================================================== */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 600;
+      display: none;
+      justify-content: flex-end;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .drawer-panel {
+      width: 500px;
+      max-width: 100vw;
+      background: var(--gp-surface);
+      border-left: 1px solid var(--gp-line-2);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
+      animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .drawer-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--gp-line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--gp-surface-elevated);
+    }
+    .drawer-header h3 { font-family: var(--gp-font-head); font-size: 1.4rem; }
+
+    /* Profile Details Card inside Drawer */
+    .drawer-profile-card {
+      padding: 16px 20px;
+      background: var(--gp-bg-sunk);
+      border-bottom: 1px solid var(--gp-line);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .drawer-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gp-accent), var(--gp-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .drawer-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .drawer-profile-info h4 { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .drawer-profile-info p { font-size: 0.82rem; color: var(--gp-ink-2); margin-top: 2px; }
+    .drawer-stats-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .drawer-stat-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--gp-surface);
+      border: 1px solid var(--gp-line);
+    }
+
+    /* Direct Chat Area */
+    .drawer-chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--gp-bg);
+    }
+    .chat-messages-container {
+      flex: 1;
+      padding: 16px 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chat-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.4;
+      position: relative;
+      word-break: break-word;
+    }
+    .chat-bubble.sent {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--gp-accent), var(--gp-accent-sunk));
+      color: #fff;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-bubble.received {
+      align-self: flex-start;
+      background: var(--gp-surface-elevated);
+      color: var(--gp-ink);
+      border: 1px solid var(--gp-line);
+      border-bottom-left-radius: 2px;
+    }
+    .chat-time {
+      font-size: 0.68rem;
+      opacity: 0.75;
+      margin-top: 4px;
+      text-align: right;
+    }
+    .chat-file-attachment {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    /* Chat Input Bar */
+    .chat-input-bar {
+      padding: 12px 18px;
+      background: var(--gp-surface);
+      border-top: 1px solid var(--gp-line);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-attach-chat {
+      background: var(--gp-surface-elevated);
+      border: 1px solid var(--gp-line-2);
+      color: var(--gp-cyan);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: var(--gp-transition);
+      flex-shrink: 0;
+    }
+    .btn-attach-chat:hover {
+      background: var(--gp-cyan);
+      color: #000;
+    }
+    .chat-text-input {
+      flex: 1;
+      background: var(--gp-bg-sunk);
+      border: 1px solid var(--gp-line);
+      border-radius: 99px;
+      padding: 9px 16px;
+      font-size: 0.9rem;
+      color: var(--gp-ink);
+    }
+    .chat-text-input:focus {
+      outline: none;
+      border-color: var(--gp-cyan);
+    }
+    .btn-send-chat {
+      background: var(--gp-accent);
+      color: #fff;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: var(--gp-transition);
+      flex-shrink: 0;
+    }
+    .btn-send-chat:hover {
+      transform: scale(1.08);
+      background: var(--gp-accent-sunk);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- In-App Instant Notification Toast Stack -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <img src="assets/original/favicon.png" alt="Force Racing">
+        <div class="brand-title">
+          FORCE RACING
+          <small>PIT WALL OPERATIONS PORTAL</small>
+        </div>
+      </a>
+
+      <div class="header-right" id="header-user-slot">
+        <!-- Rendered dynamically -->
+        <span style="font-size:0.85rem; color:var(--gp-ink-2);">🔒 Secure Pit Gateway</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Drawer (Operational Alerts & Dispatches) -->
+  <div class="notif-drawer" id="notif-drawer">
+    <div class="notif-head">
+      <h4>🔔 In-App Dispatch & Alerts</h4>
+      <button class="btn-close-modal" onclick="toggleNotifDrawer()">×</button>
+    </div>
+    <div class="notif-tabs" style="display:flex; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--gp-line); padding-bottom:8px;">
+      <button type="button" class="notif-tab active" id="tab-notif-live" onclick="switchNotifTab('live')" style="background:transparent; border:none; color:var(--gp-ink); font-weight:700; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-bottom:2px solid var(--gp-accent);">LIVE ALERTS (<span id="notif-tab-count">0</span>)</button>
+      <button type="button" class="notif-tab" id="tab-notif-queue" onclick="switchNotifTab('queue')" style="background:transparent; border:none; color:var(--gp-ink-2); font-weight:700; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-bottom:2px solid transparent;">OFFLINE QUEUE (<span id="queue-tab-count">0</span>)</button>
+    </div>
+    <div id="notif-live-view">
+    <div id="notif-list-container">
+      <!-- Populated dynamically -->
+    </div>
+    </div>
+    <div id="notif-queue-view" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-size:0.75rem; color:var(--gp-ink-2);">Messages queued for offline recipients</span>
+        <button type="button" class="btn-quick-chat" style="padding:2px 8px; font-size:0.75rem;" onclick="dispatchAllOfflineQueue()">🚀 Dispatch All</button>
+      </div>
+      <div id="queue-list-container"></div>
+    </div>
+  </div>
+
+  <div class="main-wrap">
+
+    <!-- ========================================================== -->
+    <!-- 1. AUTHENTICATION VIEW: ONLY BEFORE LOGIN                  -->
+    <!-- ========================================================== -->
+    <div id="auth-view">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">SIGN IN</div>
+          <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">SIGN UP</div>
+        </div>
+
+        <!-- Sign In Form -->
+        <form id="form-login" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label>Official Email or Username <span class="req">*</span></label>
+            <input type="text" id="login-identifier" class="form-control" placeholder="e.g. captain@forceracing.in" required>
+          </div>
+          <div class="form-group">
+            <label>Password <span class="req">*</span></label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-submit">ENTER PIT WALL</button>
+        </form>
+
+        <!-- Sign Up Form (Mandatory Fields + Password Strength Meter) -->
+        <form id="form-signup" style="display:none;" onsubmit="handleSignupSubmit(event)">
+          <div class="form-group">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Vikram Sharma" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Branch <span class="req">*</span></label>
+              <select id="reg-branch" class="form-control" required>
+                <option value="">Select Branch</option>
+                <option value="Mechanical">Mechanical</option>
+                <option value="CSE">CSE</option>
+                <option value="ECE">ECE</option>
+                <option value="EEE">EEE</option>
+                <option value="Civil">Civil</option>
+                <option value="IT">IT</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Year <span class="req">*</span></label>
+              <select id="reg-year" class="form-control" required>
+                <option value="">Select Year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required>
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number <span class="req">*</span></label>
+            <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98765 43210" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subsystem</label>
+              <select id="reg-subsystem" class="form-control">
+                <option value="Chassis">Chassis</option>
+                <option value="Powertrain">Powertrain</option>
+                <option value="Aerodynamics">Aerodynamics</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Suspension & Braking">Suspension & Braking</option>
+                <option value="Management">Management</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="reg-role" class="form-control">
+                <option value="Team Member">Team Member</option>
+                <option value="Chassis Head 1">Chassis Head 1</option>
+                <option value="Chassis Head 2">Chassis Head 2</option>
+                <option value="Powertrain Lead">Powertrain Lead</option>
+                <option value="Aerodynamics Lead">Aerodynamics Lead</option>
+                <option value="Suspension & Braking Lead">Suspension & Braking Lead</option>
+                <option value="Electronics Lead">Electronics Lead</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Password <span class="req">*</span></label>
+            <input type="password" id="reg-password" class="form-control" placeholder="Needs 1 uppercase & 1 symbol" required oninput="checkPasswordStrength(this.value)">
+            <div class="pw-meter">
+              <div class="pw-bar-track">
+                <div class="pw-bar-fill" id="pw-bar-fill"></div>
+              </div>
+              <div class="pw-hint">
+                <span id="pw-text-status">Needs uppercase letter & special symbol</span>
+                <span id="pw-score-label"></span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btn-reg-submit" disabled>COMPLETE SIGN UP & ENTER</button>
+        </form>
+
+        <!-- 1-Click Demo Testing Account Switcher -->
+        <div class="demo-role-bar">
+          <h4>🧪 1-Click Demo Testing Switcher</h4>
+          <div class="demo-btn-group">
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('admin')">👑 Admin</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('captain')">⚡ Captain (Superior)</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('vicecaptain')">⚡ Vice Captain (Superior)</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('manager')">⚡ Manager (Superior)</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_1')">🔧 Chassis Head 1 (Lead)</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_2')">🔧 Chassis Head 2 (Lead)</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('member_karthik')">👤 Member (Karthik)</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 2. AUTHENTICATED DASHBOARD (ONLY AFTER LOGIN)              -->
+    <!-- ========================================================== -->
+    <div id="dashboard-view">
+
+      <!-- Dynamic Login Notification Banner (Offline message delivery & alerts) -->
+      <div class="login-banner" id="login-banner" style="display:none;">
+        <div class="login-banner-text">
+          <span style="font-size:1.3rem;">🔔</span>
+          <span id="login-banner-msg">New pit assignments waiting.</span>
+        </div>
+        <button class="btn-logout" onclick="dismissBanner()">Acknowledge</button>
+      </div>
+
+      <!-- User Topbar -->
+      <div class="dashboard-topbar">
+        <div class="user-greeting">
+          <div class="greeting-avatar" id="topbar-avatar-btn" onclick="openAccountSection()" title="Click to view Account & History">
+            <span id="avatar-initials">D</span>
+            <span class="status-dot-indicator dot-online" title="Online Live"></span>
+          </div>
+          <div>
+            <h1 id="dash-user-name">Welcome</h1>
+            <p id="dash-user-subtext">Role & Subsystem</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="btn-logout" style="border-color:var(--gp-cyan); color:var(--gp-cyan);" onclick="openAccountSection()">
+            👤 Account & Activities
+          </button>
+          <span id="dash-authority-badge" class="badge-authority auth-superior">⚡ Superior Authority</span>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- 4. TASK TELEMETRY METRICS BOXES (STRICTLY TASK ONLY)    -->
+      <!-- ====================================================== -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Total Tasks</span>
+            <span>📋</span>
+          </div>
+          <div class="metric-num" id="stat-total-tasks">0</div>
+          <div class="metric-sub">Across all 6 subsystems</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Pending Deliverables</span>
+            <span style="color:var(--gp-accent);">⏳</span>
+          </div>
+          <div class="metric-num" style="color:var(--gp-accent);" id="stat-pending-tasks">0</div>
+          <div class="metric-sub">Awaiting verification / approval</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Completed (Done)</span>
+            <span style="color:var(--gp-ok);">✓</span>
+          </div>
+          <div class="metric-num" style="color:var(--gp-ok);" id="stat-done-tasks">0</div>
+          <div class="metric-sub">Verified with file proof</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Priority Tasks</span>
+            <span style="color:var(--gp-gold);">⚡</span>
+          </div>
+          <div class="metric-num" style="color:var(--gp-gold);" id="stat-priority-tasks">0</div>
+          <div class="metric-sub">Fast-track milestone items</div>
+        </div>
+      </div>
+
+      <!-- Subsystem Task Telemetry Progress Strip (All 6 Subsystems) -->
+      <div class="subsystem-progress-strip">
+        <div class="strip-title">
+          <span>SUBSYSTEM TASK TELEMETRY & HEALTH</span>
+          <span style="font-size:0.85rem; color:var(--gp-ink-2);">SUPRA SAEINDIA 2027 Operations Breakdown</span>
+        </div>
+        <div class="subsystem-bars-grid" id="subsystem-telemetry-grid">
+          <!-- Dynamically populated for Chassis, Powertrain, Aerodynamics, Electronics, Suspension & Braking, Management -->
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- 5. WORKSPACE: ALL MEMBERS SIDEBAR + MAIN TASK DISPATCH -->
+      <!-- ====================================================== -->
+      <div class="workspace-layout">
+
+        <!-- Left Sidebar: ALL TEAM MEMBERS WITH LIVE PRESENCE DOTS -->
+        <div class="sidebar-panel">
+          <div class="sidebar-head">
+            <span>TEAM MEMBERS</span>
+            <span style="font-size:0.75rem; color:var(--gp-cyan);" id="sidebar-online-count">0 Online</span>
+          </div>
+          <div class="sidebar-sub">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--gp-ok);"></span> 🟢 Online</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--gp-offline);"></span> 🔴 Offline</span>
+          </div>
+
+          <div class="member-list" id="sidebar-all-members">
+            <!-- Dynamically populated with all members across subsystems -->
+          </div>
+        </div>
+
+        <!-- Right Main Panel: Tasks & File Upload Requirements -->
+        <div class="content-panel">
+
+          <!-- Task Creation Box (Superior Authority & Leads) -->
+          <div id="assign-task-panel" class="create-task-panel" style="display:none;">
+            <h3 id="assign-panel-title">➕ Dispatch & Assign New Task</h3>
+            <form id="form-create-task" onsubmit="handleCreateTask(event)">
+              <div class="form-row" style="margin-bottom:12px;">
+                <input type="text" id="task-input-title" class="form-control" placeholder="Task Title / Objective" required>
+                <select id="task-input-assignee" class="form-control" required>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div class="form-row" style="margin-bottom:12px;">
+                <input type="text" id="task-input-desc" class="form-control" placeholder="Actionable deliverable details & requirements" required>
+                <select id="task-input-priority" class="form-control">
+                  <option value="Normal">Normal</option>
+                  <option value="Priority">Priority</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-submit" style="margin-top:0; padding:11px; font-size:1.15rem;">DISPATCH TASK</button>
+            </form>
+          </div>
+
+          <!-- Tasks List Header -->
+          <div class="task-head" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <h3 style="font-family:var(--gp-font-head); font-size:1.5rem;">PIT ASSIGNMENTS & WORKFLOW HIERARCHY</h3>
+            <span style="font-size:0.85rem; color:var(--gp-ink-2);" id="active-tasks-label">0 Tasks Displayed</span>
+          </div>
+
+          <div class="task-cards-list" id="task-cards-container">
+            <!-- Dynamically populated with file upload requirement before Done -->
+          </div>
+
+          <!-- Central File Sharing Hub (Upload/Download CAD & Analysis Files) -->
+          <div class="files-hub">
+            <h3>
+              <span>DESIGN & ANALYSIS FILE EXCHANGE</span>
+              <button class="btn-logout" style="border-color:var(--gp-cyan); color:var(--gp-cyan);" onclick="triggerFileUpload()">📤 Upload Engineering File</button>
+            </h3>
+            <input type="file" id="general-file-input" style="display:none;" onchange="handleGeneralFileUpload(event)">
+            <p style="font-size:0.85rem; color:var(--gp-ink-2); margin-bottom:16px;">Central repository for CAD drawings, CFD mesh reports, telemetry datasets, and fabrication packages.</p>
+            
+            <div class="file-grid" id="file-grid-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 6. ACCOUNT SECTION MODAL (AVATAR, SENT FILES, ACTIVITIES)  -->
+  <!-- ========================================================== -->
+  <div class="modal-overlay" id="account-modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>ACCOUNT & ACTIVITIES</h3>
+        <button class="btn-close-modal" onclick="closeAccountSection()">×</button>
+      </div>
+
+      <!-- Round Photo / Profile Card Header -->
+      <div class="acc-profile-header">
+        <div class="acc-photo-frame" id="acc-photo-frame" onclick="openPhotoViewer()" style="cursor:pointer;" title="Click to view full photo">
+          <span id="acc-modal-avatar-char">D</span>
+          <span class="status-dot-indicator dot-online"></span>
+        </div>
+        <div class="acc-meta" style="flex:1;">
+          <h4 id="acc-modal-name">Dhanush V.</h4>
+          <p id="acc-modal-contact">captain@forceracing.in · +91 98765 00001</p>
+          <span class="acc-badge" id="acc-modal-badge">Captain · Leadership</span>
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-quick-chat" style="display:inline-block; padding:3px 10px; cursor:pointer; margin-right:6px;" onclick="openPhotoViewer()">🔍 View Photo</button>
+            <label for="avatar-file-input" class="btn-quick-chat" style="display:inline-block; padding:3px 10px; cursor:pointer;">
+              📷 Change Photo
+            </label>
+            <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Tabs -->
+      <div class="acc-tabs">
+        <div class="acc-tab active" id="acc-tab-files" onclick="switchAccTab('files')">FILES YOU SENT</div>
+        <div class="acc-tab" id="acc-tab-recent" onclick="switchAccTab('recent')">RECENT ACTIVITIES</div>
+        <div class="acc-tab" id="acc-tab-done" onclick="switchAccTab('done')">COMPLETED (DONE)</div>
+        <div class="acc-tab" id="acc-tab-edit" onclick="switchAccTab('edit')">EDIT PROFILE</div>
+      </div>
+
+      <!-- Tab 1: Files Sent / Uploaded by this User -->
+      <div id="acc-view-files" class="history-list">
+        <!-- Dynamically populated with sent files -->
+      </div>
+
+      <!-- Tab 2: Recently Sent Activities -->
+      <div id="acc-view-recent" class="history-list" style="display:none;">
+        <!-- Dynamically populated with recently sent activities -->
+      </div>
+
+      <!-- Tab 3: Completed (Done) Activities -->
+      <div id="acc-view-done" class="history-list" style="display:none;">
+        <!-- Dynamically populated with completed tasks -->
+      </div>
+
+      <!-- Tab 4: Edit Profile (Name, Email, Phone editable; Subsystem & Role locked) -->
+      <div id="acc-view-edit" style="display:none;">
+        <form onsubmit="handleProfileSave(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="prof-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="prof-email" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="prof-phone" class="form-control" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subsystem</label>
+              <input type="text" id="prof-subsystem" class="form-control" disabled style="opacity:0.6; cursor:not-allowed;">
+              <p id="prof-subsystem-hint" style="font-size:0.72rem; color:var(--gp-accent); margin-top:3px;">🔒 Subsystem locked. Managed by Captain & Admin.</p>
+            </div>
+            <div class="form-group">
+              <label>Assigned Role</label>
+              <input type="text" id="prof-role" class="form-control" disabled style="opacity:0.6; cursor:not-allowed;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">SAVE PROFILE</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 7. MEMBER PROFILE & DIRECT CHAT DRAWER                     -->
+  <!-- ========================================================== -->
+  <div class="drawer-overlay" id="member-chat-drawer">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h3 id="drawer-title">Member Profile & Direct Dispatch</h3>
+        <button class="btn-close-modal" onclick="closeMemberDrawer()">×</button>
+      </div>
+
+      <!-- Profile Header inside Drawer -->
+      <div class="drawer-profile-card">
+        <div class="drawer-avatar" id="drawer-member-avatar">
+          <span id="drawer-avatar-char">V</span>
+          <span class="status-dot-indicator dot-online" id="drawer-avatar-dot"></span>
+        </div>
+        <div class="drawer-profile-info" style="flex:1;">
+          <h4 id="drawer-member-name">Vikram Sharma</h4>
+          <p id="drawer-member-role-sub">Chassis Head 1 · Chassis</p>
+          <p id="drawer-member-academic">Mechanical · 3rd Year</p>
+          <p id="drawer-member-contact">vikram@forceracing.in · +91 98765 11111</p>
+          <div class="drawer-stats-row">
+            <span class="drawer-stat-pill" id="drawer-assigned-count">📋 Assigned: 3</span>
+            <span class="drawer-stat-pill" id="drawer-completed-count" style="color:var(--gp-ok);">✓ Done: 2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct Chat Area -->
+      <div class="drawer-chat-area">
+        <div class="chat-messages-container" id="chat-messages-stream">
+          <!-- Populated dynamically -->
+        </div>
+
+        <form class="chat-input-bar" onsubmit="handleSendDirectMessage(event)">
+          <input type="file" id="chat-file-input" style="display:none;" onchange="handleChatFileUpload(event)">
+          <button type="button" class="btn-attach-chat" onclick="document.getElementById('chat-file-input').click()" title="Send File Proof / Drawing">📎</button>
+          <input type="text" id="chat-text-input" class="chat-text-input" placeholder="Type a message or instruction..." required>
+          <button type="submit" class="btn-send-chat" title="Send">➤</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // STATE ENGINE & DATABASE SEED (ALL 6 SUBSYSTEMS)
+    // ============================================================
+    const SUBSYSTEM_LIST = [
+      "Chassis",
+      "Powertrain",
+      "Aerodynamics",
+      "Electronics",
+      "Suspension & Braking",
+      "Management"
+    ];
+
+    let ALL_TEAM_MEMBERS = [
+      { id: "captain", name: "Dhanush V.", role: "Captain", subsystem: "Leadership", branch: "Mechanical", year: "4th Year", online: true, email: "captain@forceracing.in", phone: "+91 98765 00001", authority: "superior", avatarUrl: null },
+      { id: "vicecaptain", name: "Arun K.", role: "Vice Captain", subsystem: "Leadership", branch: "Mechanical", year: "4th Year", online: true, email: "vicecaptain@forceracing.in", phone: "+91 98765 00002", authority: "superior", avatarUrl: null },
+      { id: "manager", name: "Md. Sohail", role: "Team Manager", subsystem: "Management", branch: "Mechanical", year: "4th Year", online: false, email: "manager@forceracing.in", phone: "+91 80083 91525", authority: "superior", avatarUrl: null },
+      { id: "chassis_head_1", name: "Vikram Sharma", role: "Chassis Head 1", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: true, email: "vikram.chassis@forceracing.in", phone: "+91 98765 11111", authority: "lead", avatarUrl: null },
+      { id: "chassis_head_2", name: "Rohan Varma", role: "Chassis Head 2", subsystem: "Chassis", branch: "Mechanical", year: "3rd Year", online: false, email: "rohan.chassis@forceracing.in", phone: "+91 98765 22222", authority: "lead", avatarUrl: null },
+      { id: "powertrain_lead", name: "Aditya Nair", role: "Powertrain Lead", subsystem: "Powertrain", branch: "Mechanical", year: "3rd Year", online: true, email: "aditya.power@forceracing.in", phone: "+91 98765 33331", authority: "lead", avatarUrl: null },
+      { id: "aero_lead", name: "Pooja Reddy", role: "Aerodynamics Lead", subsystem: "Aerodynamics", branch: "Mechanical", year: "3rd Year", online: false, email: "pooja.aero@forceracing.in", phone: "+91 98765 44441", authority: "lead", avatarUrl: null },
+      { id: "suspension_lead", name: "Srikanth M.", role: "Suspension & Braking Lead", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: true, email: "srikanth.susp@forceracing.in", phone: "+91 98765 77771", authority: "lead", avatarUrl: null },
+      { id: "electronics_lead", name: "Ananya Rao", role: "Electronics Lead", subsystem: "Electronics", branch: "ECE", year: "3rd Year", online: false, email: "ananya.elec@forceracing.in", phone: "+91 98765 88881", authority: "lead", avatarUrl: null },
+      { id: "member_karthik", name: "Karthik P.", role: "Junior Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: true, email: "karthik.p@forceracing.in", phone: "+91 98765 55551", authority: "member", avatarUrl: null },
+      { id: "member_sai", name: "Sai Teja", role: "Fabrication Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: false, email: "sai.teja@forceracing.in", phone: "+91 98765 66661", authority: "member", avatarUrl: null },
+      { id: "admin", name: "Administrator", role: "Administrator", subsystem: "Systems", branch: "CSE", year: "4th Year", online: true, email: "admin@forceracing.in", phone: "+91 99999 00000", authority: "admin", avatarUrl: null }
+    ];
+
+    let currentUser = null;
+    let activeDrawerMember = null;
+
+    let notifications = [
+      { id: 1, text: "Captain Dhanush assigned: 'TIG Welding Inspection' to Chassis Head 1." },
+      { id: 2, text: "Chassis Head 1 attached: 'Chassis_Jig_Fitment_Proof.jpg' and submitted task." },
+      { id: 3, text: "Vice Captain Arun uploaded: 'FR26_Chassis_Tub_v3.STEP' to Central File Hub." }
+    ];
+
+    let tasks = [
+      {
+        id: 101,
+        subsystem: "Chassis",
+        priority: "Priority",
+        title: "TIG Welding Seam Inspection & Ultrasonic Check",
+        desc: "Complete non-destructive weld testing on front bulkhead nodes and upload NDT inspection certificate.",
+        assignedBy: "Capt. Dhanush (Captain)",
+        assigneeId: "chassis_head_1",
+        assigneeName: "Vikram Sharma (Chassis Head 1)",
+        uploadedFile: null,
+        deliverableNotes: "",
+        status: "pending" // pending -> under_review -> awaiting_superior -> done
+      },
+      {
+        id: 102,
+        subsystem: "Chassis",
+        priority: "Normal",
+        title: "Tube Notching & Jig Fitment for Main Roll Hoop",
+        desc: "Finish laser notching 4130 Chromoly tubes according to drawing FR26-CHS-DWG-04. Upload jig photos.",
+        assignedBy: "Vikram Sharma (Chassis Head 1)",
+        assigneeId: "member_karthik",
+        assigneeName: "Karthik P. (Junior Member)",
+        uploadedFile: "Chassis_Jig_Fitment_Proof.jpg",
+        deliverableNotes: "Tube fitment verified with tolerance under 0.5mm.",
+        status: "done"
+      },
+      {
+        id: 103,
+        subsystem: "Powertrain",
+        priority: "Priority",
+        title: "KTM 390 Restrictor Flow Bench Analysis",
+        desc: "Perform CFD air restrictor flow testing and measure pressure drop across 20mm Formula intake. Attach simulation report.",
+        assignedBy: "Capt. Dhanush (Captain)",
+        assigneeId: "powertrain_lead",
+        assigneeName: "Aditya Nair (Powertrain Lead)",
+        uploadedFile: "KTM_390_Restrictor_CFD_Analysis.pdf",
+        deliverableNotes: "Flow simulation complete, mass flow 0.074 kg/s verified.",
+        status: "under_review"
+      },
+      {
+        id: 104,
+        subsystem: "Aerodynamics",
+        priority: "Priority",
+        title: "Front Wing Endplate Multi-Element Angle Sweep",
+        desc: "Analyze ground effect downforce coefficients across 4 wing flap angles (6 to 14 deg). Attach report.",
+        assignedBy: "Capt. Dhanush (Captain)",
+        assigneeId: "aero_lead",
+        assigneeName: "Pooja Reddy (Aerodynamics Lead)",
+        uploadedFile: null,
+        deliverableNotes: "",
+        status: "pending"
+      },
+      {
+        id: 105,
+        subsystem: "Suspension & Braking",
+        priority: "Normal",
+        title: "Double Wishbone Kinematics & Roll Center Calculation",
+        desc: "Calculate dynamic camber change and roll center migration in Lotus Shark. Upload geometry file.",
+        assignedBy: "Arun K. (Vice Captain)",
+        assigneeId: "suspension_lead",
+        assigneeName: "Srikanth M. (Suspension & Braking Lead)",
+        uploadedFile: "FR26_Suspension_Kinematics.xlsx",
+        deliverableNotes: "Roll center migration maintained within 12mm.",
+        status: "awaiting_superior"
+      },
+      {
+        id: 106,
+        subsystem: "Electronics",
+        priority: "Priority",
+        title: "Wiring Harness Pinout & MoTeC M130 Integration",
+        desc: "Map sensor loom for CAN bus speed sensors, throttle position, and lambda sensor. Upload schematic.",
+        assignedBy: "Capt. Dhanush (Captain)",
+        assigneeId: "electronics_lead",
+        assigneeName: "Ananya Rao (Electronics Lead)",
+        uploadedFile: null,
+        deliverableNotes: "",
+        status: "pending"
+      },
+      {
+        id: 107,
+        subsystem: "Management",
+        priority: "Normal",
+        title: "SUPRA SAEINDIA 2027 Cost Report & BOM Reconciliation",
+        desc: "Compile audited Bills of Materials with fastener receipts and fabrication labor hours.",
+        assignedBy: "Capt. Dhanush (Captain)",
+        assigneeId: "manager",
+        assigneeName: "Md. Sohail (Team Manager)",
+        uploadedFile: "SUPRA_2027_BOM_Audited_Draft.pdf",
+        deliverableNotes: "Section 1-4 reconciled with suppliers.",
+        status: "done"
+      }
+    ];
+
+    let sharedFiles = [
+      { name: "FR26_Spaceframe_CAD_Assembly_v4.STEP", type: "3D CAD Model", size: "48.2 MB", uploaderId: "captain", uploader: "Dhanush V. (Captain)", date: "20 Nov, 08:30" },
+      { name: "Front_Wing_Downforce_Analysis.pdf", type: "CFD Report", size: "12.8 MB", uploaderId: "aero_lead", uploader: "Pooja Reddy (Aero Lead)", date: "19 Nov, 16:15" },
+      { name: "Chassis_Jig_Fitment_Proof.jpg", type: "Task Deliverable", size: "3.2 MB", uploaderId: "member_karthik", uploader: "Karthik P. (Junior Member)", date: "20 Nov, 09:10" },
+      { name: "KTM_390_ECU_Pinout_Telemetry.csv", type: "Wiring Dataset", size: "2.1 MB", uploaderId: "powertrain_lead", uploader: "Aditya Nair", date: "18 Nov, 14:00" },
+      { name: "FR26_Suspension_Kinematics.xlsx", type: "Kinematics Sheet", size: "4.5 MB", uploaderId: "suspension_lead", uploader: "Srikanth M.", date: "19 Nov, 11:20" }
+    ];
+
+    // Direct Chat & Offline Message Store
+    // Key format: "chat_user1_user2"
+    let directChats = {};
+    let offlineQueuedMessages = []; // { toId, fromId, fromName, text, file, timestamp }
+
+    // Load persisted state if exists
+    try {
+      const savedMembers = localStorage.getItem('fr_members_v2');
+      if (savedMembers) ALL_TEAM_MEMBERS = JSON.parse(savedMembers);
+
+      const savedTasks = localStorage.getItem('fr_tasks_v2');
+      if (savedTasks) tasks = JSON.parse(savedTasks);
+
+      const savedFiles = localStorage.getItem('fr_files_v2');
+      if (savedFiles) sharedFiles = JSON.parse(savedFiles);
+
+      const savedChats = localStorage.getItem('fr_chats_v2');
+      if (savedChats) directChats = JSON.parse(savedChats);
+
+      const savedQueue = localStorage.getItem('fr_queue_v2');
+      if (savedQueue) offlineQueuedMessages = JSON.parse(savedQueue);
+    } catch(e) {
+      console.warn("Could not load localStorage:", e);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('fr_members_v2', JSON.stringify(ALL_TEAM_MEMBERS));
+        localStorage.setItem('fr_tasks_v2', JSON.stringify(tasks));
+        localStorage.setItem('fr_files_v2', JSON.stringify(sharedFiles));
+        localStorage.setItem('fr_chats_v2', JSON.stringify(directChats));
+        localStorage.setItem('fr_queue_v2', JSON.stringify(offlineQueuedMessages));
+      } catch(e) {
+        console.warn("Storage quota or error:", e);
+      }
+    }
+
+    // ============================================================
+    // AUTHENTICATION & PASSWORD STRENGTH
+    // ============================================================
+    function switchAuthTab(tab) {
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    }
+
+    function checkPasswordStrength(pw) {
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
+
+      let score = 0;
+      if (pw.length >= 6) score += 20;
+      if (hasUpper) score += 40;
+      if (hasSpecial) score += 40;
+
+      const bar = document.getElementById('pw-bar-fill');
+      const statusText = document.getElementById('pw-text-status');
+      const submitBtn = document.getElementById('btn-reg-submit');
+
+      bar.style.width = score + '%';
+
+      if (!hasUpper || !hasSpecial) {
+        bar.style.background = 'var(--gp-accent)';
+        statusText.innerHTML = '<span style="color:var(--gp-accent);">⚠️ Needs at least 1 uppercase & 1 symbol</span>';
+        submitBtn.disabled = true;
+      } else {
+        bar.style.background = 'var(--gp-ok)';
+        statusText.innerHTML = '<span style="color:var(--gp-ok);">✓ Password strength valid</span>';
+        submitBtn.disabled = false;
+      }
+    }
+
+    function quickLogin(roleKey) {
+      const u = ALL_TEAM_MEMBERS.find(x => x.id === roleKey) || ALL_TEAM_MEMBERS[0];
+      loginSuccess(u);
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('login-identifier').value.trim().toLowerCase();
+      let u = ALL_TEAM_MEMBERS.find(x => x.id === id || x.email.toLowerCase() === id);
+      if (!u) {
+        if (id.includes('admin')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'admin');
+        else if (id.includes('capt') && !id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'captain');
+        else if (id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'vicecaptain');
+        else if (id.includes('sohail') || id.includes('manager')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'manager');
+        else if (id.includes('vikram') || id.includes('head_1')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'chassis_head_1');
+        else if (id.includes('rohan') || id.includes('head_2')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'chassis_head_2');
+        else if (id.includes('karthik')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'member_karthik');
+        else u = ALL_TEAM_MEMBERS.find(x => x.id === 'member_karthik') || ALL_TEAM_MEMBERS[0];
+      }
+      loginSuccess(u);
+    }
+
+    function handleSignupSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const branch = document.getElementById('reg-branch').value;
+      const year = document.getElementById('reg-year').value;
+      const email = document.getElementById('reg-email').value;
+      const phone = document.getElementById('reg-phone').value;
+      const subsystem = document.getElementById('reg-subsystem').value;
+      const role = document.getElementById('reg-role').value;
+
+      const newUser = {
+        id: "usr_" + Date.now(),
+        name: name,
+        role: role,
+        subsystem: subsystem,
+        email: email,
+        phone: phone,
+        branch: branch,
+        year: year,
+        online: true,
+        avatarUrl: null,
+        authority: role.includes('Head') || role.includes('Lead') ? 'lead' : (role === 'Captain' || role === 'Vice Captain' || role === 'Team Manager' ? 'superior' : 'member')
+      };
+
+      ALL_TEAM_MEMBERS.push(newUser);
+      saveState();
+
+      // Immediately log into account. NO telegram bot popups!
+      loginSuccess(newUser);
+    }
+
+    function loginSuccess(user) {
+      currentUser = user;
+      currentUser.online = true;
+      saveState();
+
+      // Switch view to dashboard
+      document.getElementById('auth-view').style.display = 'none';
+      document.getElementById('dashboard-view').style.display = 'block';
+
+      // Topbar user details & round avatar
+      document.getElementById('dash-user-name').innerText = `Welcome, ${user.name}`;
+      document.getElementById('dash-user-subtext').innerText = `${user.role} · ${user.subsystem}`;
+      
+      updateAvatarDisplay('topbar-avatar-btn', user);
+
+      const badgeEl = document.getElementById('dash-authority-badge');
+      badgeEl.innerText = user.role;
+      badgeEl.className = 'badge-authority ' + 
+        (user.authority === 'admin' ? 'auth-admin' : 
+        (user.authority === 'superior' ? 'auth-superior' : 
+        (user.authority === 'lead' ? 'auth-lead' : 'auth-member')));
+
+      // Header round avatar and status dot
+      document.getElementById('header-user-slot').innerHTML = `
+        <button class="notif-btn" onclick="toggleNotifDrawer()" title="Alerts">
+          🔔
+          <span class="notif-badge-count" id="notif-count">${notifications.length}</span>
+        </button>
+        <div class="user-account-btn" onclick="openAccountSection()" title="Account & Activities">
+          <div class="avatar-wrapper" id="header-avatar-slot">
+            ${user.avatarUrl ? `<img src="${user.avatarUrl}" class="avatar-img" alt="${user.name}">` : `<span>${user.name.charAt(0).toUpperCase()}</span>`}
+            <span class="status-dot-indicator dot-online" title="Online Live"></span>
+          </div>
+          <span style="font-weight:700;">${user.name}</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      `;
+
+      // Check Offline Queued Messages for currentUser
+      const userQueued = offlineQueuedMessages.filter(m => m.toId === user.id);
+      const banner = document.getElementById('login-banner');
+      const bannerMsg = document.getElementById('login-banner-msg');
+
+      if (userQueued.length > 0) {
+        const latest = userQueued[userQueued.length - 1];
+        bannerMsg.innerHTML = `<strong>🔔 New message from ${latest.fromName}:</strong> "${latest.text}" ${latest.file ? `(Attached file: ${latest.file})` : ''}`;
+        banner.style.display = 'flex';
+        // Clear delivered queued messages
+        offlineQueuedMessages = offlineQueuedMessages.filter(m => m.toId !== user.id);
+        saveState();
+      } else {
+        if (user.authority === 'superior') {
+          const underRevCount = tasks.filter(t => t.status === 'awaiting_superior' || t.status === 'under_review').length;
+          bannerMsg.innerText = `👋 Superior Authority active. ${underRevCount} task deliverables waiting in approval pipeline.`;
+          banner.style.display = 'flex';
+        } else if (user.authority === 'lead') {
+          bannerMsg.innerText = `🔔 Attention Lead: Review member deliverable proofs before escalating to Captain.`;
+          banner.style.display = 'flex';
+        } else {
+          bannerMsg.innerText = `📋 Pit Operations: You have active assignments. Attach file proof before marking Done.`;
+          banner.style.display = 'flex';
+        }
+      }
+
+      setupTaskCreationPanel();
+      renderAllMembersSidebar();
+      renderTasks();
+      renderSubsystemTelemetry();
+      renderFilesHub();
+      renderNotifications();
+    }
+
+    function updateAvatarDisplay(containerId, user) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (user.avatarUrl) {
+        container.innerHTML = `
+          <img src="${user.avatarUrl}" class="avatar-img" alt="${user.name}">
+          <span class="status-dot-indicator dot-online" title="Online Live"></span>
+        `;
+      } else {
+        container.innerHTML = `
+          <span>${user.name.charAt(0).toUpperCase()}</span>
+          <span class="status-dot-indicator dot-online" title="Online Live"></span>
+        `;
+      }
+    }
+
+    function dismissBanner() {
+      document.getElementById('login-banner').style.display = 'none';
+    }
+
+    function logout() {
+      if (currentUser) currentUser.online = false;
+      saveState();
+      currentUser = null;
+      document.getElementById('dashboard-view').style.display = 'none';
+      document.getElementById('auth-view').style.display = 'block';
+      document.getElementById('header-user-slot').innerHTML = '<span style="font-size:0.85rem; color:var(--gp-ink-2);">🔒 Secure Pit Gateway</span>';
+    }
+
+    // ============================================================
+    // ALL MEMBERS SIDEBAR WITH ONLINE/OFFLINE STATUS
+    // ============================================================
+    function renderAllMembersSidebar() {
+      const cont = document.getElementById('sidebar-all-members');
+      cont.innerHTML = '';
+
+      let onlineCount = 0;
+
+      ALL_TEAM_MEMBERS.forEach(m => {
+        if (m.online) onlineCount++;
+        const item = document.createElement('div');
+        item.className = 'member-item';
+        item.onclick = () => openMemberDrawer(m);
+
+        item.innerHTML = `
+          <div class="member-avatar-slot">
+            ${m.avatarUrl ? `<img src="${m.avatarUrl}" class="avatar-img" alt="${m.name}">` : `<span>${m.name.charAt(0).toUpperCase()}</span>`}
+            <span class="status-dot-indicator ${m.online ? 'dot-online' : 'dot-offline'}" 
+                  title="${m.online ? '🟢 Live Online' : '🔴 Offline'}"></span>
+          </div>
+          <div class="member-details">
+            <h5>
+              ${m.name}
+              ${m.authority === 'superior' ? '<span class="badge-member-role" style="color:var(--gp-cyan);">Superior</span>' : ''}
+              ${m.authority === 'lead' ? '<span class="badge-member-role" style="color:var(--gp-gold);">Lead</span>' : ''}
+            </h5>
+            <span>${m.role} · ${m.subsystem}</span>
+          </div>
+          <button class="btn-quick-chat" onclick="event.stopPropagation(); openMemberDrawer('${m.id}')" title="Chat & Profile">💬</button>
+        `;
+        cont.appendChild(item);
+      });
+
+      document.getElementById('sidebar-online-count').innerText = `${onlineCount} Online`;
+    }
+
+    // ============================================================
+    // MEMBER PROFILE & DIRECT CHAT DRAWER (FOR CAPTAIN, VC, MGR, LEADS)
+    // ============================================================
+    function openMemberDrawer(memberOrId) {
+      const member = typeof memberOrId === 'string' ? ALL_TEAM_MEMBERS.find(x => x.id === memberOrId) : memberOrId;
+      if (!member) return;
+
+      activeDrawerMember = member;
+
+      // Profile details
+      document.getElementById('drawer-member-name').innerHTML = `
+        ${member.name}
+        <span class="badge-member-role" style="font-size:0.75rem;">${member.authority.toUpperCase()}</span>
+      `;
+      document.getElementById('drawer-member-role-sub').innerText = `${member.role} · ${member.subsystem}`;
+      document.getElementById('drawer-member-academic').innerText = `Branch: ${member.branch || 'Engineering'} · Year: ${member.year || '3rd Year'}`;
+      document.getElementById('drawer-member-contact').innerText = `${member.email} · ${member.phone || '+91 98765 00000'}`;
+
+      const avatarContainer = document.getElementById('drawer-member-avatar');
+      if (member.avatarUrl) {
+        avatarContainer.innerHTML = `
+          <img src="${member.avatarUrl}" class="avatar-img" alt="${member.name}">
+          <span class="status-dot-indicator ${member.online ? 'dot-online' : 'dot-offline'}"></span>
+        `;
+      } else {
+        avatarContainer.innerHTML = `
+          <span>${member.name.charAt(0).toUpperCase()}</span>
+          <span class="status-dot-indicator ${member.online ? 'dot-online' : 'dot-offline'}"></span>
+        `;
+      }
+
+      // Compute assigned & completed task counts for this member
+      const memberTasks = tasks.filter(t => t.assigneeId === member.id);
+      const doneCount = memberTasks.filter(t => t.status === 'done').length;
+      document.getElementById('drawer-assigned-count').innerText = `📋 Assigned: ${memberTasks.length}`;
+      document.getElementById('drawer-completed-count').innerText = `✓ Done: ${doneCount}`;
+
+      renderDirectChatStream();
+
+      document.getElementById('member-chat-drawer').style.display = 'flex';
+    }
+
+    function closeMemberDrawer() {
+      document.getElementById('member-chat-drawer').style.display = 'none';
+      activeDrawerMember = null;
+    }
+
+    function getChatRoomKey(id1, id2) {
+      return [id1, id2].sort().join('_');
+    }
+
+    function renderDirectChatStream() {
+      if (!currentUser || !activeDrawerMember) return;
+      const key = getChatRoomKey(currentUser.id, activeDrawerMember.id);
+      const messages = directChats[key] || [];
+
+      const stream = document.getElementById('chat-messages-stream');
+      stream.innerHTML = '';
+
+      if (messages.length === 0) {
+        stream.innerHTML = `
+          <div style="text-align:center; padding:30px 10px; color:var(--gp-ink-3); font-size:0.85rem;">
+            ⚡ Direct Dispatch Line with <strong>${activeDrawerMember.name}</strong>.<br>
+            Send operational instructions, feedback, or attach files.
+          </div>
+        `;
+        return;
+      }
+
+      messages.forEach(m => {
+        const isSent = m.senderId === currentUser.id;
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
+
+        let fileHtml = '';
+        if (m.fileName) {
+          fileHtml = `
+            <div class="chat-file-attachment">
+              <span>📎</span>
+              <span style="font-weight:700;">${m.fileName}</span>
+              <button type="button" class="btn-download-file" style="margin-left:auto; padding:2px 8px; font-size:0.7rem;" onclick="fakeDownload('${m.fileName}')">Download</button>
+            </div>
+          `;
+        }
+
+        bubble.innerHTML = `
+          <div>${m.text}</div>
+          ${fileHtml}
+          <div class="chat-time">${m.time} ${isSent ? '✓' : ''}</div>
+        `;
+        stream.appendChild(bubble);
+      });
+
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function handleSendDirectMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-text-input');
+      const text = input.value.trim();
+      if (!text || !currentUser || !activeDrawerMember) return;
+
+      dispatchDirectMessage(text, null);
+      input.value = '';
+    }
+
+    function handleChatFileUpload(e) {
+      if (!e.target.files || !e.target.files[0] || !currentUser || !activeDrawerMember) return;
+      const file = e.target.files[0];
+      const fileSize = (file.size / 1024 / 1024).toFixed(1) + " MB";
+
+      // Register file in shared hub
+      sharedFiles.unshift({
+        name: file.name,
+        type: "Direct Chat File",
+        size: fileSize,
+        uploaderId: currentUser.id,
+        uploader: `${currentUser.name} (${currentUser.role})`,
+        date: "Just now"
+      });
+      renderFilesHub();
+
+      dispatchDirectMessage(`Attached document: ${file.name}`, file.name);
+      e.target.value = '';
+    }
+
+    function dispatchDirectMessage(text, fileName) {
+      const key = getChatRoomKey(currentUser.id, activeDrawerMember.id);
+      if (!directChats[key]) directChats[key] = [];
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const newMsg = {
+        id: Date.now(),
+        senderId: currentUser.id,
+        senderName: currentUser.name,
+        recipientId: activeDrawerMember.id,
+        text: text,
+        fileName: fileName,
+        time: timeStr
+      };
+
+      directChats[key].push(newMsg);
+      saveState();
+
+      // Trigger instant in-app notification / toast / bell counter
+      if (activeDrawerMember.online) {
+        showToast(`💬 Message sent to ${activeDrawerMember.name}`);
+        notifications.unshift({
+          id: Date.now(),
+          text: `Direct dispatch from ${currentUser.name} to ${activeDrawerMember.name}: "${text}"`
+        });
+        renderNotifications();
+      } else {
+        // Queue for offline user login notification
+        offlineQueuedMessages.push({
+          toId: activeDrawerMember.id,
+          fromId: currentUser.id,
+          fromName: currentUser.name,
+          text: text,
+          file: fileName,
+          timestamp: Date.now()
+        });
+        saveState();
+        showToast(`⏳ ${activeDrawerMember.name} is offline. Message queued for their login.`);
+      }
+
+      renderDirectChatStream();
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const box = document.createElement('div');
+      box.className = 'toast-box';
+      box.innerHTML = `<span>⚡</span><span>${message}</span>`;
+      container.appendChild(box);
+
+      setTimeout(() => {
+        box.style.opacity = '0';
+        box.style.transform = 'translateY(10px)';
+        setTimeout(() => box.remove(), 300);
+      }, 3500);
+    }
+
+    // ============================================================
+    // WORKFLOW HIERARCHY & TASK APPROVAL CASCADE
+    // ============================================================
+    function setupTaskCreationPanel() {
+      const panel = document.getElementById('assign-task-panel');
+      const select = document.getElementById('task-input-assignee');
+
+      // Captain, Vice Captain, Manager (Superior Authority) & Leads can assign tasks
+      const canAssign = currentUser.authority === 'admin' || currentUser.authority === 'superior' || currentUser.authority === 'lead';
+      panel.style.display = canAssign ? 'block' : 'none';
+
+      select.innerHTML = '';
+      ALL_TEAM_MEMBERS.forEach(m => {
+        if (m.id !== currentUser.id) {
+          // If Lead, only assign to their subsystem or members
+          if (currentUser.authority === 'lead' && m.subsystem !== currentUser.subsystem && m.authority !== 'member') {
+            return;
+          }
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          opt.text = `To: ${m.name} (${m.role} · ${m.subsystem})`;
+          select.appendChild(opt);
+        }
+      });
+    }
+
+    function handleCreateTask(e) {
+      e.preventDefault();
+      const title = document.getElementById('task-input-title').value;
+      const desc = document.getElementById('task-input-desc').value;
+      const priority = document.getElementById('task-input-priority').value;
+      const select = document.getElementById('task-input-assignee');
+      const assigneeId = select.value;
+      const assigneeMember = ALL_TEAM_MEMBERS.find(x => x.id === assigneeId);
+      const assigneeName = assigneeMember ? `${assigneeMember.name} (${assigneeMember.role})` : select.options[select.selectedIndex].text.replace('To: ', '');
+
+      const newTask = {
+        id: Date.now(),
+        subsystem: assigneeMember ? assigneeMember.subsystem : (currentUser.subsystem || "Chassis"),
+        priority: priority, // Strictly "Normal" or "Priority"
+        title: title,
+        desc: desc,
+        assignedBy: `${currentUser.name} (${currentUser.role})`,
+        assigneeId: assigneeId,
+        assigneeName: assigneeName,
+        uploadedFile: null,
+        deliverableNotes: "",
+        status: "pending"
+      };
+
+      tasks.unshift(newTask);
+      saveState();
+
+      notifications.unshift({
+        id: Date.now(),
+        text: `New Task dispatched: "${title}" assigned to ${assigneeName}.`
+      });
+
+      document.getElementById('task-input-title').value = '';
+      document.getElementById('task-input-desc').value = '';
+      
+      showToast(`📋 Task dispatched to ${assigneeName}`);
+      renderTasks();
+      renderSubsystemTelemetry();
+      renderNotifications();
+      updateMetrics();
+    }
+
+    function renderTasks() {
+      const cont = document.getElementById('task-cards-container');
+      cont.innerHTML = '';
+      document.getElementById('active-tasks-label').innerText = `${tasks.length} Active Pit Tasks`;
+
+      tasks.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+
+        const hasFile = t.uploadedFile !== null && t.uploadedFile !== "";
+        const isAssignee = currentUser && (t.assigneeId === currentUser.id || t.assigneeName.includes(currentUser.name));
+        const isSuperior = currentUser && (currentUser.authority === 'superior' || currentUser.authority === 'admin');
+        const isLead = currentUser && (currentUser.authority === 'lead' && (currentUser.subsystem === t.subsystem || currentUser.subsystem === 'Leadership'));
+
+        // Status pill
+        let statusBadge = '';
+        if (t.status === 'done') {
+          statusBadge = '<span class="task-status-pill status-done">✓ Done (Approved)</span>';
+        } else if (t.status === 'awaiting_superior') {
+          statusBadge = '<span class="task-status-pill status-approval">⚡ Awaiting Superior Approval</span>';
+        } else if (t.status === 'under_review') {
+          statusBadge = '<span class="task-status-pill status-review">🔍 Under Lead Verification</span>';
+        } else {
+          statusBadge = '<span class="task-status-pill status-pending">⏳ Pending Deliverable</span>';
+        }
+
+        // Action button based on approval cascade
+        let actionButtonHtml = '';
+        if (t.status === 'done') {
+          actionButtonHtml = `<button class="btn-action-step btn-task-done">✓ Completed & Closed</button>`;
+        } else if (t.status === 'awaiting_superior') {
+          if (isSuperior) {
+            actionButtonHtml = `<button class="btn-action-step btn-approve-superior" onclick="handleSuperiorApprove(${t.id})">👑 Approve & Close Task</button>`;
+          } else {
+            actionButtonHtml = `<button class="btn-action-step" disabled>⏳ Pending Captain/Manager Approval</button>`;
+          }
+        } else if (t.status === 'under_review') {
+          if (isLead || isSuperior) {
+            actionButtonHtml = `<button class="btn-action-step btn-verify-lead" onclick="handleLeadVerify(${t.id})">🔍 Verify Deliverable Proof</button>`;
+          } else {
+            actionButtonHtml = `<button class="btn-action-step" disabled>⏳ Under Lead Verification</button>`;
+          }
+        } else {
+          // Status is pending deliverable
+          if (isAssignee || isSuperior || isLead) {
+            actionButtonHtml = `
+              <button class="btn-action-step ${hasFile ? 'btn-submit-proof' : ''}" 
+                      ${!hasFile ? 'disabled' : ''} 
+                      onclick="handleSubmitForVerification(${t.id})">
+                ${hasFile ? 'Submit for Lead Verification' : 'Upload File Proof to Submit'}
+              </button>
+            `;
+          } else {
+            actionButtonHtml = `<button class="btn-action-step" disabled>Assignee Deliverable Required</button>`;
+          }
+        }
+
+        card.innerHTML = `
+          <div class="task-top">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="task-badge-subsystem">${t.subsystem}</span>
+              <span class="${t.priority === 'Priority' ? 'priority-tag-priority' : 'priority-tag-normal'}">
+                ${t.priority === 'Priority' ? '⚡ PRIORITY' : 'NORMAL'}
+              </span>
+            </div>
+            ${statusBadge}
+          </div>
+          <h4 class="task-heading">${t.title}</h4>
+          <p class="task-text">${t.desc}</p>
+
+          <!-- Mandatory File Deliverable Attachment Area -->
+          <div class="task-file-box">
+            <div class="task-file-row">
+              <div>
+                <strong style="font-size:0.8rem;">📎 Required Deliverable / Proof:</strong>
+                <div style="font-size:0.8rem; color:var(--gp-ink-2); margin-top:2px;">
+                  ${hasFile ? `Attached: <span style="color:var(--gp-cyan); font-weight:700;">${t.uploadedFile}</span>` : '⚠️ Mandatory CAD, drawing, photo, or report proof.'}
+                </div>
+              </div>
+              ${t.status === 'pending' ? `
+                <div>
+                  <input type="file" id="file-task-${t.id}" class="file-upload-input" onchange="attachFileToTask(${t.id}, this)">
+                </div>
+              ` : ''}
+            </div>
+
+            ${t.status === 'pending' && (isAssignee || isSuperior || isLead) ? `
+              <input type="text" class="task-deliverable-notes" id="notes-task-${t.id}" 
+                     placeholder="Add deliverable notes / verification remarks..." 
+                     value="${t.deliverableNotes || ''}"
+                     onchange="updateTaskNotes(${t.id}, this.value)">
+            ` : (t.deliverableNotes ? `<div style="font-size:0.8rem; color:var(--gp-ink-2); margin-top:4px;"><strong>Remarks:</strong> ${t.deliverableNotes}</div>` : '')}
+          </div>
+
+          <div class="task-action-bar">
+            <div class="assigned-by-badge">
+              <span>👤 Assigned by: <strong>${t.assignedBy}</strong></span>
+              <span style="color:var(--gp-ink-3);">➔ For: <strong>${t.assigneeName}</strong></span>
+            </div>
+
+            ${actionButtonHtml}
+          </div>
+        `;
+        cont.appendChild(card);
+      });
+
+      updateMetrics();
+    }
+
+    function attachFileToTask(taskId, inputEl) {
+      if (!inputEl.files || !inputEl.files[0]) return;
+      const file = inputEl.files[0];
+      const t = tasks.find(x => x.id === taskId);
+      if (t) {
+        t.uploadedFile = file.name;
+        // Save to central files hub
+        sharedFiles.unshift({
+          name: file.name,
+          type: "Task Deliverable Proof",
+          size: (file.size / 1024 / 1024).toFixed(1) + " MB",
+          uploaderId: currentUser.id,
+          uploader: `${currentUser.name} (${currentUser.role})`,
+          date: "Just now"
+        });
+        saveState();
+        showToast(`📎 Proof attached: ${file.name}`);
+        renderTasks();
+        renderFilesHub();
+      }
+    }
+
+    function updateTaskNotes(taskId, notes) {
+      const t = tasks.find(x => x.id === taskId);
+      if (t) {
+        t.deliverableNotes = notes;
+        saveState();
+      }
+    }
+
+    // Step 1: Member submits with file proof -> Escalate to Lead
+    function handleSubmitForVerification(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t || !t.uploadedFile) {
+        alert("Mandatory file proof must be attached before submission.");
+        return;
+      }
+
+      t.status = "under_review";
+      saveState();
+
+      notifications.unshift({
+        id: Date.now(),
+        text: `🔍 Deliverable submitted: ${currentUser.name} uploaded proof for "${t.title}". Notified ${t.subsystem} Lead for verification.`
+      });
+
+      showToast(`✓ Submitted for Lead Verification!`);
+      renderTasks();
+      renderSubsystemTelemetry();
+      renderNotifications();
+      updateMetrics();
+    }
+
+    // Step 2: Subsystem Lead verifies -> Escalate to Superior (Captain/Manager)
+    function handleLeadVerify(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+
+      t.status = "awaiting_superior";
+      saveState();
+
+      notifications.unshift({
+        id: Date.now(),
+        text: `⚡ Lead verified: ${currentUser.name} verified deliverable for "${t.title}". Escalated to Captain / Manager for final closure.`
+      });
+
+      showToast(`✓ Lead Verified! Escalated to Captain.`);
+      renderTasks();
+      renderSubsystemTelemetry();
+      renderNotifications();
+      updateMetrics();
+    }
+
+    // Step 3: Captain/Vice Captain/Manager approves and closes task
+    function handleSuperiorApprove(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+
+      t.status = "done";
+      saveState();
+
+      notifications.unshift({
+        id: Date.now(),
+        text: `👑 Task Approved & Closed: Superior Authority approved "${t.title}" with verified deliverable "${t.uploadedFile}".`
+      });
+
+      showToast(`👑 Task Officially Approved & Closed!`);
+      renderTasks();
+      renderSubsystemTelemetry();
+      renderNotifications();
+      updateMetrics();
+    }
+
+    // ============================================================
+    // STRICTLY TASK TELEMETRY & SUBSYSTEM BREAKDOWN
+    // ============================================================
+    function renderSubsystemTelemetry() {
+      const grid = document.getElementById('subsystem-telemetry-grid');
+      grid.innerHTML = '';
+
+      const colors = {
+        "Chassis": "var(--gp-ok)",
+        "Powertrain": "var(--gp-cyan)",
+        "Aerodynamics": "var(--gp-gold)",
+        "Electronics": "var(--gp-accent)",
+        "Suspension & Braking": "#c084fc",
+        "Management": "#38bdf8"
+      };
+
+      SUBSYSTEM_LIST.forEach(sub => {
+        const subTasks = tasks.filter(x => x.subsystem === sub);
+        const doneCount = subTasks.filter(x => x.status === 'done').length;
+        const pendingCount = subTasks.length - doneCount;
+        const pct = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : 0;
+        const color = colors[sub] || "var(--gp-cyan)";
+
+        const item = document.createElement('div');
+        item.className = 'sub-bar-item';
+        item.innerHTML = `
+          <div class="sub-bar-label">
+            <span>${sub}</span>
+            <span class="sub-bar-stats">${pendingCount} Pending · ${doneCount} Done</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%; background:${color};"></div>
+          </div>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    function updateMetrics() {
+      const total = tasks.length;
+      const done = tasks.filter(x => x.status === 'done').length;
+      const pending = total - done;
+      const priority = tasks.filter(x => x.priority === 'Priority').length;
+
+      document.getElementById('stat-total-tasks').innerText = total;
+      document.getElementById('stat-done-tasks').innerText = done;
+      document.getElementById('stat-pending-tasks').innerText = pending;
+      document.getElementById('stat-priority-tasks').innerText = priority;
+    }
+
+    // ============================================================
+    // CENTRAL FILE EXCHANGE HUB
+    // ============================================================
+    function renderFilesHub() {
+      const cont = document.getElementById('file-grid-container');
+      cont.innerHTML = '';
+
+      sharedFiles.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'file-card';
+        item.innerHTML = `
+          <div class="file-card-info">
+            <h5>${f.name}</h5>
+            <span>${f.type} · ${f.size} · Uploaded by ${f.uploader} (${f.date})</span>
+          </div>
+          <button class="btn-download-file" onclick="fakeDownload('${f.name}')">Download</button>
+        `;
+        cont.appendChild(item);
+      });
+    }
+
+    function triggerFileUpload() {
+      document.getElementById('general-file-input').click();
+    }
+
+    function handleGeneralFileUpload(e) {
+      if (!e.target.files || !e.target.files[0]) return;
+      const f = e.target.files[0];
+      sharedFiles.unshift({
+        name: f.name,
+        type: "Engineering CAD/Data",
+        size: (f.size / 1024 / 1024).toFixed(1) + " MB",
+        uploaderId: currentUser.id,
+        uploader: `${currentUser.name} (${currentUser.role})`,
+        date: "Just now"
+      });
+      saveState();
+
+      notifications.unshift({
+        id: Date.now(),
+        text: `New File uploaded: "${f.name}" by ${currentUser.name}.`
+      });
+
+      showToast(`📤 File uploaded: ${f.name}`);
+      renderFilesHub();
+      renderNotifications();
+      e.target.value = '';
+    }
+
+    function fakeDownload(name) {
+      // Simulate real download trigger
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent("Force Racing KITS Warangal: " + name));
+      element.setAttribute('download', name);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      showToast(`⬇️ Downloaded: ${name}`);
+    }
+
+    // ============================================================
+    // ACCOUNT SECTION (AVATAR, SENT FILES, ACTIVITIES & EDITOR)
+    // ============================================================
+    function openAccountSection() {
+      if (!currentUser) return;
+
+      const photoFrame = document.getElementById('acc-photo-frame');
+      if (currentUser.avatarUrl) {
+        photoFrame.innerHTML = `
+          <img src="${currentUser.avatarUrl}" class="avatar-img" alt="${currentUser.name}">
+          <span class="status-dot-indicator dot-online"></span>
+        `;
+      } else {
+        photoFrame.innerHTML = `
+          <span id="acc-modal-avatar-char">${currentUser.name.charAt(0).toUpperCase()}</span>
+          <span class="status-dot-indicator dot-online"></span>
+        `;
+      }
+
+      document.getElementById('acc-modal-name').innerText = currentUser.name;
+      document.getElementById('acc-modal-contact').innerText = `${currentUser.email} · ${currentUser.phone || '+91 98765 00000'}`;
+      document.getElementById('acc-modal-badge').innerText = `${currentUser.role} · ${currentUser.subsystem}`;
+
+      // Profile Editor fields
+      document.getElementById('prof-name').value = currentUser.name;
+      document.getElementById('prof-email').value = currentUser.email;
+      document.getElementById('prof-phone').value = currentUser.phone || "+91 98765 00000";
+      document.getElementById('prof-subsystem').value = currentUser.subsystem;
+      document.getElementById('prof-role').value = currentUser.role;
+
+      // Lock/Unlock subsystem & role
+      const isSuperUser = currentUser.authority === 'admin' || currentUser.authority === 'superior';
+      const subInput = document.getElementById('prof-subsystem');
+      const roleInput = document.getElementById('prof-role');
+      const subHint = document.getElementById('prof-subsystem-hint');
+
+      if (isSuperUser) {
+        subInput.disabled = false;
+        subInput.style.opacity = '1';
+        subInput.style.cursor = 'text';
+        roleInput.disabled = false;
+        roleInput.style.opacity = '1';
+        roleInput.style.cursor = 'text';
+        subHint.innerText = '🔓 Superior Authority: You have permission to modify Subsystem & Role.';
+        subHint.style.color = 'var(--gp-cyan)';
+      } else {
+        subInput.disabled = true;
+        subInput.style.opacity = '0.6';
+        subInput.style.cursor = 'not-allowed';
+        roleInput.disabled = true;
+        roleInput.style.opacity = '0.6';
+        roleInput.style.cursor = 'not-allowed';
+        subHint.innerText = '🔒 Subsystem locked. Managed by Captain & Admin.';
+        subHint.style.color = 'var(--gp-accent)';
+      }
+
+      renderAccountSentFiles();
+      renderAccountRecentActivities();
+      renderAccountDoneActivities();
+      switchAccTab('files');
+
+      document.getElementById('account-modal').style.display = 'flex';
+    }
+
+    function closeAccountSection() {
+      document.getElementById('account-modal').style.display = 'none';
+    }
+
+    function switchAccTab(tab) {
+      document.getElementById('acc-tab-files').classList.toggle('active', tab === 'files');
+      document.getElementById('acc-tab-recent').classList.toggle('active', tab === 'recent');
+      document.getElementById('acc-tab-done').classList.toggle('active', tab === 'done');
+      document.getElementById('acc-tab-edit').classList.toggle('active', tab === 'edit');
+
+      document.getElementById('acc-view-files').style.display = tab === 'files' ? 'flex' : 'none';
+      document.getElementById('acc-view-recent').style.display = tab === 'recent' ? 'flex' : 'none';
+      document.getElementById('acc-view-done').style.display = tab === 'done' ? 'flex' : 'none';
+      document.getElementById('acc-view-edit').style.display = tab === 'edit' ? 'block' : 'none';
+    }
+
+    function handleAvatarUpload(e) {
+      if (!e.target.files || !e.target.files[0]) return;
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const dataUrl = event.target.result;
+        currentUser.avatarUrl = dataUrl;
+        const m = ALL_TEAM_MEMBERS.find(x => x.id === currentUser.id);
+        if (m) m.avatarUrl = dataUrl;
+        saveState();
+
+        showToast("📷 Avatar photo updated!");
+        openAccountSection();
+        loginSuccess(currentUser);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderAccountSentFiles() {
+      const cont = document.getElementById('acc-view-files');
+      cont.innerHTML = '';
+
+      const userFiles = sharedFiles.filter(f => f.uploaderId === currentUser.id || f.uploader.includes(currentUser.name));
+      if (userFiles.length === 0) {
+        cont.innerHTML = '<p style="font-size:0.85rem; color:var(--gp-ink-2); padding:10px;">No files sent yet. Upload deliverables or CAD files to see them here.</p>';
+        return;
+      }
+
+      userFiles.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+          <div class="history-item-left">
+            <h6>${f.name}</h6>
+            <span>${f.type} · ${f.size} · Uploaded ${f.date}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="history-badge-file">Sent File</span>
+            <button class="btn-download-file" onclick="fakeDownload('${f.name}')">Download</button>
+          </div>
+        `;
+        cont.appendChild(item);
+      });
+    }
+
+    function renderAccountRecentActivities() {
+      const cont = document.getElementById('acc-view-recent');
+      cont.innerHTML = '';
+
+      // Tasks assigned by user
+      const assignedByUser = tasks.filter(t => t.assignedBy.includes(currentUser.name));
+      // Files uploaded by user
+      const filesByUser = sharedFiles.filter(f => f.uploaderId === currentUser.id || f.uploader.includes(currentUser.name));
+
+      let activities = [];
+
+      assignedByUser.forEach(t => {
+        activities.push({
+          title: `Task Dispatched: ${t.title}`,
+          sub: `Assigned to ${t.assigneeName} (${t.priority} Priority)`,
+          badge: "Task Assignment"
+        });
+      });
+
+      filesByUser.forEach(f => {
+        activities.push({
+          title: `File Shared: ${f.name}`,
+          sub: `${f.type} · ${f.size}`,
+          badge: "File Shared"
+        });
+      });
+
+      if (activities.length === 0) {
+        cont.innerHTML = '<p style="font-size:0.85rem; color:var(--gp-ink-2); padding:10px;">No recent dispatch activities recorded yet.</p>';
+        return;
+      }
+
+      activities.forEach(a => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+          <div class="history-item-left">
+            <h6>${a.title}</h6>
+            <span>${a.sub}</span>
+          </div>
+          <span class="history-badge-activity">${a.badge}</span>
+        `;
+        cont.appendChild(item);
+      });
+    }
+
+    function renderAccountDoneActivities() {
+      const cont = document.getElementById('acc-view-done');
+      cont.innerHTML = '';
+
+      const doneTasks = tasks.filter(t => t.status === 'done' && (t.assigneeId === currentUser.id || t.assigneeName.includes(currentUser.name) || t.assignedBy.includes(currentUser.name)));
+      if (doneTasks.length === 0) {
+        cont.innerHTML = '<p style="font-size:0.85rem; color:var(--gp-ink-2); padding:10px;">No completed activities yet. Tasks verified and marked Done will appear in this timeline.</p>';
+        return;
+      }
+
+      doneTasks.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+          <div class="history-item-left">
+            <h6>✓ ${t.title}</h6>
+            <span>Proof Attached: ${t.uploadedFile || 'Verified'} · Subsystem: ${t.subsystem}</span>
+          </div>
+          <span class="history-badge-done">Done Verified</span>
+        `;
+        cont.appendChild(item);
+      });
+    }
+
+    function handleProfileSave(e) {
+      e.preventDefault();
+      currentUser.name = document.getElementById('prof-name').value;
+      currentUser.email = document.getElementById('prof-email').value;
+      currentUser.phone = document.getElementById('prof-phone').value;
+
+      const isSuperUser = currentUser.authority === 'admin' || currentUser.authority === 'superior';
+      if (isSuperUser) {
+        currentUser.subsystem = document.getElementById('prof-subsystem').value;
+        currentUser.role = document.getElementById('prof-role').value;
+      }
+
+      // Update in ALL_TEAM_MEMBERS list
+      const idx = ALL_TEAM_MEMBERS.findIndex(x => x.id === currentUser.id);
+      if (idx !== -1) ALL_TEAM_MEMBERS[idx] = currentUser;
+
+      saveState();
+      showToast("✓ Profile saved successfully!");
+      loginSuccess(currentUser);
+      closeAccountSection();
+    }
+
+    // ============================================================
+    // NOTIFICATIONS SYSTEM
+    // ============================================================
+    function toggleNotifDrawer() {
+      const el = document.getElementById('notif-drawer');
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function renderNotifications() {
+      const cont = document.getElementById('notif-list-container');
+      const badge = document.getElementById('notif-count');
+      if (badge) badge.innerText = notifications.length;
+      const tabLiveCount = document.getElementById('notif-tab-count');
+      if (tabLiveCount) tabLiveCount.innerText = notifications.length;
+      const tabQueueCount = document.getElementById('queue-tab-count');
+      if (tabQueueCount) tabQueueCount.innerText = offlineQueuedMessages.length;
+
+      cont.innerHTML = '';
+      notifications.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'notif-item';
+        if (n.text.includes('Direct dispatch') || n.text.includes('message')) {
+          item.classList.add('notif-chat');
+        }
+        item.innerText = n.text;
+        cont.appendChild(item);
+      });
+    }
+  
+    // ============================================================
+    // PHOTO VIEWER & LIGHTBOX
+    // ============================================================
+    function openPhotoViewer(user) {
+      const u = user || currentUser;
+      if (!u) return;
+
+      const frame = document.getElementById('viewer-avatar-frame');
+      if (u.avatarUrl) {
+        frame.innerHTML = `<img src="${u.avatarUrl}" alt="${u.name}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+      } else {
+        frame.innerHTML = `<span style="font-size:4rem; font-weight:800; color:#fff; font-family:var(--gp-font-head);">${u.name.charAt(0).toUpperCase()}</span>`;
+      }
+
+      document.getElementById('viewer-name').innerText = u.name;
+      document.getElementById('viewer-role').innerText = `${u.role} · ${u.subsystem}`;
+      document.getElementById('viewer-sub').innerText = `${u.email} · Force Racing Formula Student`;
+      document.getElementById('photo-viewer-modal').style.display = 'flex';
+    }
+
+    function closePhotoViewer() {
+      document.getElementById('photo-viewer-modal').style.display = 'none';
+    }
+
+    // ============================================================
+    // OFFLINE MESSAGE QUEUE DRAWER TAB
+    // ============================================================
+    function switchNotifTab(tab) {
+      const liveBtn = document.getElementById('tab-notif-live');
+      const queueBtn = document.getElementById('tab-notif-queue');
+      if (liveBtn && queueBtn) {
+        liveBtn.style.borderBottomColor = tab === 'live' ? 'var(--gp-accent)' : 'transparent';
+        liveBtn.style.color = tab === 'live' ? 'var(--gp-ink)' : 'var(--gp-ink-2)';
+        queueBtn.style.borderBottomColor = tab === 'queue' ? 'var(--gp-accent)' : 'transparent';
+        queueBtn.style.color = tab === 'queue' ? 'var(--gp-ink)' : 'var(--gp-ink-2)';
+      }
+
+      const liveView = document.getElementById('notif-live-view');
+      const queueView = document.getElementById('notif-queue-view');
+      if (liveView && queueView) {
+        liveView.style.display = tab === 'live' ? 'block' : 'none';
+        queueView.style.display = tab === 'queue' ? 'block' : 'none';
+      }
+      if (tab === 'queue') renderOfflineQueue();
+    }
+
+    function renderOfflineQueue() {
+      const queueCont = document.getElementById('queue-list-container');
+      const queueTabCount = document.getElementById('queue-tab-count');
+      if (queueTabCount) queueTabCount.innerText = offlineQueuedMessages.length;
+      if (!queueCont) return;
+
+      if (offlineQueuedMessages.length === 0) {
+        queueCont.innerHTML = '<p style="font-size:0.8rem; color:var(--gp-ink-3); text-align:center; padding:16px;">Offline queue empty. When you message an offline member, messages are safely queued here until delivery.</p>';
+        return;
+      }
+
+      queueCont.innerHTML = '';
+      offlineQueuedMessages.forEach(m => {
+        const toUser = ALL_TEAM_MEMBERS.find(x => x.id === m.toId);
+        const toName = toUser ? toUser.name : m.toId;
+        const item = document.createElement('div');
+        item.className = 'notif-item';
+        item.style.borderLeftColor = 'var(--gp-gold)';
+        const dateStr = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <strong style="color:var(--gp-ink); font-size:0.82rem;">To: ${toName}</strong>
+            <span style="font-size:0.7rem; color:var(--gp-gold); font-weight:700;">🕒 QUEUED</span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--gp-ink-2);">${m.text}</div>
+          ${m.file ? `<div style="font-size:0.75rem; color:var(--gp-cyan); margin-top:2px;">📎 Attached: ${m.file}</div>` : ''}
+          <div style="font-size:0.7rem; color:var(--gp-ink-3); margin-top:4px;">${dateStr} · Pending member reconnection</div>
+        `;
+        queueCont.appendChild(item);
+      });
+    }
+
+    function dispatchAllOfflineQueue() {
+      if (offlineQueuedMessages.length === 0) {
+        showToast("Offline queue is currently empty.");
+        return;
+      }
+      const count = offlineQueuedMessages.length;
+      offlineQueuedMessages.forEach(m => {
+        const key = getChatRoomKey(m.fromId, m.toId);
+        if (!directChats[key]) directChats[key] = [];
+        const timeStr = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        directChats[key].push({
+          id: Date.now() + Math.random(),
+          senderId: m.fromId,
+          senderName: m.fromName,
+          recipientId: m.toId,
+          text: m.text,
+          fileName: m.file,
+          time: timeStr
+        });
+      });
+      offlineQueuedMessages = [];
+      saveState();
+      notifications.unshift({
+        id: Date.now(),
+        text: `✓ Dispatched ${count} queued offline message(s) to team members upon network sync.`
+      });
+      renderNotifications();
+      renderOfflineQueue();
+      if (activeDrawerMember) renderDirectChatStream();
+      showToast(`🚀 Dispatched ${count} queued message(s)!`);
+    }
+
+  </script>
+
+  <!-- ========================================================== -->
+  <!-- PHOTO VIEWER MODAL (FULLSCREEN HIGH-RES LIGHTBOX)          -->
+  <!-- ========================================================== -->
+  <div class="modal-overlay" id="photo-viewer-modal" onclick="if(event.target===this)closePhotoViewer()">
+    <div class="modal-box" style="max-width:440px; text-align:center;">
+      <div class="modal-head">
+        <h3>TEAM DOSSIER PHOTO VIEWER</h3>
+        <button class="btn-close-modal" onclick="closePhotoViewer()">×</button>
+      </div>
+      <div style="padding:24px 12px; display:flex; flex-direction:column; align-items:center;">
+        <div class="viewer-avatar-frame" id="viewer-avatar-frame" style="width:160px; height:160px; border-radius:50%; border:3px solid var(--gp-cyan); box-shadow:0 0 25px rgba(0, 240, 255, 0.35); overflow:hidden; display:flex; align-items:center; justify-content:center; background:var(--gp-surface-elevated); margin-bottom:16px;">
+          <!-- Rendered dynamically -->
+        </div>
+        <h4 id="viewer-name" style="font-size:1.4rem; font-family:var(--gp-font-head); letter-spacing:0.02em;">Dhanush V.</h4>
+        <p id="viewer-role" style="color:var(--gp-cyan); font-weight:700; font-size:0.9rem; margin-top:4px;">Captain · Leadership</p>
+        <p id="viewer-sub" style="color:var(--gp-ink-2); font-size:0.8rem; margin-top:2px;">Force Racing // KITS Warangal Formula Student</p>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+          <button type="button" class="btn-submit" style="width:auto; padding:8px 24px;" onclick="closePhotoViewer()">Close Photo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

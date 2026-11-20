@@ -2435,3 +2435,62 @@ html[data-theme="light"] .btn.secondary:hover,
 .home-hero-bg img {
   image-rendering: auto;
 }
+
+
+/* ========================================================
+   PIT WALL PORTAL NAVIGATION & TELEMETRY BADGE
+   ======================================================== */
+.main-nav .nav-portal {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+}
+.main-nav .portal-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--gp-font-head, Barlow, sans-serif);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(255, 24, 1, 0.16);
+  border: 1px solid rgba(255, 24, 1, 0.45);
+  color: var(--gp-accent, #ff1801);
+  text-transform: uppercase;
+  line-height: 1.2;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (hover: hover) {
+  .main-nav .nav-portal:hover .portal-badge {
+    background: rgba(0, 240, 255, 0.18);
+    border-color: var(--gp-cyan, #00f0ff);
+    color: var(--gp-cyan, #00f0ff);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+  }
+}
+[data-theme="light"] .main-nav .portal-badge {
+  background: rgba(217, 4, 41, 0.1);
+  border-color: rgba(217, 4, 41, 0.35);
+  color: #d90429;
+}
+@media (max-width: 980px) {
+  .main-nav[data-open="true"] .nav-portal {
+    grid-column: span 2 !important;
+    justify-content: center !important;
+    background: rgba(255, 24, 1, 0.08) !important;
+    border-color: rgba(255, 24, 1, 0.3) !important;
+    color: #ffffff !important;
+  }
+  [data-theme="light"] .main-nav[data-open="true"] .nav-portal {
+    background: rgba(217, 4, 41, 0.06) !important;
+    border-color: rgba(217, 4, 41, 0.25) !important;
+    color: #0b0f19 !important;
+  }
+}
+@media (max-width: 380px) {
+  .main-nav[data-open="true"] .nav-portal {
+    grid-column: span 1 !important;
+  }
+}

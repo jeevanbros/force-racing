@@ -52,7 +52,7 @@ export async function adminApi(request, env, ctx) {
   }
   if (path === '/api/admin/submissions' && method === 'GET') {
     const clauses = [], args = [];
-    for (const [key, values] of [['status', ['new', 'in_progress', 'resolved', 'spam']], ['type', ['contact', 'sponsor', 'donate', 'registration']], ['source', ['website', 'google_form']]]) {
+    for (const [key, values] of [['status', ['new', 'in_progress', 'resolved', 'spam']], ['type', ['contact', 'sponsor', 'donate', 'registration', 'recruitment']], ['source', ['website', 'google_form']]]) {
       const value = url.searchParams.get(key);
       if (value) { if (!values.includes(value)) throw new HttpError(400, `Invalid ${key} filter.`); clauses.push(`${key}=?`); args.push(value); }
     }
