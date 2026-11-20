@@ -1622,11 +1622,11 @@
         <form id="form-login" onsubmit="handleLoginSubmit(event)">
           <div class="form-group">
             <label>Official Email or Username <span class="req">*</span></label>
-            <input type="text" id="login-identifier" class="form-control" placeholder="e.g. captain@forceracing.in" required>
+            <input type="text" id="login-identifier" class="form-control" placeholder="Official Email or Username" required>
           </div>
           <div class="form-group">
             <label>Password <span class="req">*</span></label>
-            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+            <input type="password" id="login-password" class="form-control" placeholder="Password" required>
           </div>
           <button type="submit" class="btn-submit">ENTER OPERATIONS HUB</button>
         </form>
@@ -1715,7 +1715,7 @@
             </div>
           </div>
 
-          <button type="submit" class="btn-submit" id="btn-reg-submit" disabled>COMPLETE SIGN UP & ENTER</button>
+          <button type="submit" class="btn-submit" id="btn-reg-submit">COMPLETE SIGN UP & ENTER</button>
         </form>
 
         
@@ -2227,13 +2227,11 @@
       bar.style.width = score + '%';
 
       if (!hasUpper || !hasSpecial) {
-        bar.style.background = 'var(--gp-accent)';
-        statusText.innerHTML = '<span style="color:var(--gp-accent);">⚠️ Needs at least 1 uppercase & 1 symbol</span>';
-        submitBtn.disabled = true;
+        if (bar) bar.style.background = 'var(--gp-accent)';
+        if (statusText) statusText.innerHTML = '<span style="color:var(--gp-accent);">⚠️ Needs at least 1 uppercase & 1 symbol</span>';
       } else {
-        bar.style.background = 'var(--gp-ok)';
-        statusText.innerHTML = '<span style="color:var(--gp-ok);">✓ Password strength valid</span>';
-        submitBtn.disabled = false;
+        if (bar) bar.style.background = 'var(--gp-ok)';
+        if (statusText) statusText.innerHTML = '<span style="color:var(--gp-ok);">✓ Password strength valid</span>';
       }
     }
 
@@ -2245,9 +2243,9 @@
     function handleLoginSubmit(e) {
       e.preventDefault();
       const id = document.getElementById('login-identifier').value.trim().toLowerCase();
-      let u = ALL_TEAM_MEMBERS.find(x => x.id === id || x.email.toLowerCase() === id);
+      let u = ALL_TEAM_MEMBERS.find(x => x.id === id || (x.email && x.email.toLowerCase() === id));
       if (!u) {
-                else if (id.includes('capt') && !id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'captain');
+        if (id.includes('capt') && !id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'captain');
         else if (id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'vicecaptain');
         else if (id.includes('sohail') || id.includes('manager')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'manager');
         else if (id.includes('vikram') || id.includes('head_1')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'chassis_head_1');
@@ -2260,6 +2258,19 @@
 
         function handleSignupSubmit(e) {
       e.preventDefault();
+      const pw = document.getElementById('reg-password').value;
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw);
+      if (!hasUpper || !hasSpecial) {
+        showToast('⚠️ Password must contain at least 1 uppercase letter and 1 special symbol.');
+        const pwInput = document.getElementById('reg-password');
+        if (pwInput) {
+          pwInput.focus();
+          pwInput.style.borderColor = 'var(--gp-accent)';
+        }
+        return;
+      }
+
       const name = document.getElementById('reg-name').value;
       const branch = document.getElementById('reg-branch').value;
       const year = document.getElementById('reg-year').value;
@@ -2960,7 +2971,6 @@
           } else {
             actionButtonHtml = `<button class="btn-action-step" disabled>Assignee Deliverable Required</button>`;
           }
-        }
         }
 
         card.innerHTML = `
