@@ -1582,44 +1582,23 @@
     </div>
   </header>
 
-  <!-- Notification Drawer (Operational Alerts & Dispatches) -->
+  <!-- Notification Drawer (Task & Assignment Alerts Only) -->
   <div class="notif-drawer" id="notif-drawer">
-    <div class="notif-head">
-      <h4>🔔 In-App Dispatch & Alerts</h4>
-      <button class="btn-close-modal" onclick="toggleNotifDrawer()">×</button>
+    <div class="notif-head" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--gp-line); padding-bottom:10px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gp-accent);">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <h4 style="margin:0; font-size:0.95rem; font-weight:700; color:var(--gp-ink);">Task & Assignment Alerts</h4>
+      </div>
+      <button class="btn-close-modal" onclick="toggleNotifDrawer()" style="background:none; border:none; font-size:1.4rem; color:var(--gp-ink-2); cursor:pointer;">×</button>
     </div>
 
-    <!-- Live Operational Alert Composer -->
-    <div class="dispatch-composer" style="margin:10px 0 14px 0; padding:12px; background:var(--gp-surface); border:1px solid var(--gp-line); border-radius:8px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-size:0.75rem; font-weight:700; color:var(--gp-ink); text-transform:uppercase; letter-spacing:0.5px;">📢 Dispatch Team Alert</span>
-        <select id="dispatch-alert-priority" style="font-size:0.72rem; padding:2px 6px; background:var(--gp-bg); color:var(--gp-ink); border:1px solid var(--gp-line); border-radius:4px;">
-          <option value="normal">Normal Alert</option>
-          <option value="urgent">🚨 Urgent Broadcast</option>
-        </select>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <input type="text" id="dispatch-alert-input" class="form-control" placeholder="Broadcast operational alert to entire team..." style="font-size:0.8rem; padding:6px 10px; flex:1;">
-        <button type="button" class="btn-submit" onclick="dispatchCustomAlert()" style="padding:6px 12px; font-size:0.78rem; width:auto; white-space:nowrap; margin-top:0;">Broadcast</button>
-      </div>
-    </div>
-
-    <div class="notif-tabs" style="display:flex; gap:8px; margin-bottom:12px; border-bottom:1px solid var(--gp-line); padding-bottom:8px;">
-      <button type="button" class="notif-tab active" id="tab-notif-live" onclick="switchNotifTab('live')" style="background:transparent; border:none; color:var(--gp-ink); font-weight:700; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-bottom:2px solid var(--gp-accent);">LIVE ALERTS (<span id="notif-tab-count">0</span>)</button>
-      <button type="button" class="notif-tab" id="tab-notif-queue" onclick="switchNotifTab('queue')" style="background:transparent; border:none; color:var(--gp-ink-2); font-weight:700; font-size:0.82rem; cursor:pointer; padding:4px 8px; border-bottom:2px solid transparent;">OFFLINE QUEUE (<span id="queue-tab-count">0</span>)</button>
-    </div>
-    <div id="notif-live-view">
     <div id="notif-list-container">
-      <!-- Populated dynamically -->
+      <!-- Dynamically populated: STRICTLY task assignments, proofs, verifications, and approvals -->
     </div>
-    </div>
-    <div id="notif-queue-view" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span style="font-size:0.75rem; color:var(--gp-ink-2);">Messages queued for offline recipients</span>
-        <button type="button" class="btn-quick-chat" style="padding:2px 8px; font-size:0.75rem;" onclick="dispatchAllOfflineQueue()">🚀 Dispatch All</button>
-      </div>
-      <div id="queue-list-container"></div>
-    </div>
+  </div>
   </div>
 
   <div class="main-wrap">
@@ -2225,7 +2204,7 @@
       loginSuccess(u);
     }
 
-        function handleSignupSubmit(e) {
+        async function handleSignupSubmit(e) {
       e.preventDefault();
       const name = (document.getElementById('reg-name').value || '').trim();
       const branch = (document.getElementById('reg-branch').value || '').trim();
@@ -2255,12 +2234,45 @@
         return;
       }
 
+      const cleanEmail = email.toLowerCase();
+      const cleanPhone = phone.replace(/\s+/g, '');
+      const cleanName = name.toLowerCase();
+
+      // ============================================================
+      // DOUBLE ACCOUNT VERIFICATION (PREVENT DUPLICATE SIGNUPS)
+      // ============================================================
+      // 1. Check if email already exists
+      const emailExists = ALL_TEAM_MEMBERS.find(m => m.email && m.email.toLowerCase() === cleanEmail && m.hasRegistered);
+      if (emailExists) {
+        showToast(`⚠️ Account already exists: Email "${email}" is already registered to ${emailExists.name} (${emailExists.uniqueCode || emailExists.role}). Please sign in.`);
+        const el = document.getElementById('reg-email');
+        if (el) { el.focus(); el.style.borderColor = 'var(--gp-accent)'; }
+        return;
+      }
+
+      // 2. Check if phone number already exists
+      const phoneExists = ALL_TEAM_MEMBERS.find(m => m.phone && m.phone.replace(/\s+/g, '') === cleanPhone && m.hasRegistered);
+      if (phoneExists) {
+        showToast(`⚠️ Duplicate Account: Phone number "${phone}" is already registered. Double registration is prohibited.`);
+        const el = document.getElementById('reg-phone');
+        if (el) { el.focus(); el.style.borderColor = 'var(--gp-accent)'; }
+        return;
+      }
+
+      // 3. Check if member name already registered with password
+      const nameExists = ALL_TEAM_MEMBERS.find(m => m.name.toLowerCase() === cleanName && m.hasRegistered);
+      if (nameExists) {
+        showToast(`⚠️ Account already exists: "${nameExists.name}" is already registered. Please sign in with your password.`);
+        const el = document.getElementById('reg-name');
+        if (el) { el.focus(); el.style.borderColor = 'var(--gp-accent)'; }
+        return;
+      }
+
       // ANTI-MISMANAGEMENT ROSTER LOCK: Cross-check against official website crew
-      const nameLower = name.toLowerCase();
       const officialMatch = OFFICIAL_WEBSITE_ROSTER.find(m => 
-        m.name.toLowerCase() === nameLower || 
-        nameLower.includes(m.name.toLowerCase()) || 
-        (m.email && m.email.toLowerCase() === email.toLowerCase())
+        m.name.toLowerCase() === cleanName || 
+        cleanName.includes(m.name.toLowerCase()) || 
+        (m.email && m.email.toLowerCase() === cleanEmail)
       );
 
       if (officialMatch) {
@@ -2280,10 +2292,42 @@
 
       const uniqueCode = officialMatch ? officialMatch.uniqueCode : generateUniqueCode(subsystem);
 
+      // 4. Cross-check Backend D1 Database for duplicate accounts
+      try {
+        const resp = await fetch('/api/portal/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email: cleanEmail,
+            phone,
+            branch,
+            year,
+            subsystem,
+            role,
+            uniqueCode
+          })
+        });
+        const result = await resp.json();
+        if (!result.ok && result.duplicate) {
+          showToast('⚠️ ' + result.error);
+          if (result.field === 'email') {
+            const el = document.getElementById('reg-email');
+            if (el) { el.focus(); el.style.borderColor = 'var(--gp-accent)'; }
+          } else if (result.field === 'phone') {
+            const el = document.getElementById('reg-phone');
+            if (el) { el.focus(); el.style.borderColor = 'var(--gp-accent)'; }
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn('Backend database cross-check notice:', err);
+      }
+
       let existingMember = ALL_TEAM_MEMBERS.find(m => 
         (officialMatch && m.id === officialMatch.id) || 
-        (m.email && m.email.toLowerCase() === email.toLowerCase()) ||
-        m.name.toLowerCase() === nameLower
+        (m.email && m.email.toLowerCase() === cleanEmail) ||
+        m.name.toLowerCase() === cleanName
       );
 
       if (existingMember) {
@@ -2293,6 +2337,7 @@
         existingMember.phone = phone;
         existingMember.email = email;
         existingMember.online = true;
+        existingMember.hasRegistered = true;
       } else {
         existingMember = {
           id: "usr_" + Date.now(),
@@ -2305,6 +2350,7 @@
           branch: branch,
           year: year,
           online: true,
+          hasRegistered: true,
           avatarUrl: null,
           authority: (role.includes('Head') || role.includes('Lead')) ? 'lead' : (role === 'Captain' ? 'captain' : (role === 'Vice Captain' ? 'vicecaptain' : (role === 'Team Manager' ? 'manager' : 'member')))
         };
@@ -2343,9 +2389,12 @@
 
       // Header round avatar and status dot
       document.getElementById('header-user-slot').innerHTML = `
-        <button class="notif-btn" onclick="toggleNotifDrawer()" title="Alerts">
-          🔔
-          <span class="notif-badge-count" id="notif-count">${notifications.length}</span>
+        <button class="notif-btn" onclick="toggleNotifDrawer()" title="Task & Assignment Alerts" aria-label="Notifications" id="btn-header-notif">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gp-ink);">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="notif-badge-count" id="notif-count" style="${notifications.length > 0 ? 'display:flex;' : 'display:none;'}">${notifications.length}</span>
         </button>
         <div class="user-account-btn" onclick="openAccountSection()" title="Account & Activities">
           <div class="avatar-wrapper" id="header-avatar-slot">
@@ -2438,8 +2487,7 @@
       const fieldsToClear = [
         'reg-name', 'reg-branch', 'reg-year', 'reg-email', 'reg-phone', 
         'reg-subsystem', 'reg-role', 'reg-password', 
-        'login-identifier', 'login-password',
-        'dispatch-alert-input'
+        'login-identifier', 'login-password'
       ];
       fieldsToClear.forEach(id => {
         const el = document.getElementById(id);
@@ -2729,14 +2777,7 @@
       // Trigger instant in-app notification / toast / bell counter
       if (activeDrawerMember.online) {
         showToast(`💬 Message sent to ${activeDrawerMember.name}`);
-        const notif = {
-          id: Date.now(),
-          toId: activeDrawerMember.id,
-          text: `Direct dispatch from ${currentUser.name} to ${activeDrawerMember.name}: "${text}"`
-        };
-        notifications.unshift(notif);
-        postPortalNotification(notif);
-        renderNotifications();
+        // Direct chat message sent cleanly without polluting task alerts
       } else {
         // Queue for offline user login notification
         offlineQueuedMessages.push({
@@ -3582,77 +3623,7 @@
       el.style.display = el.style.display === 'block' ? 'none' : 'block';
     }
 
-    function dispatchCustomAlert() {
-      const input = document.getElementById('dispatch-alert-input');
-      const prioSelect = document.getElementById('dispatch-alert-priority');
-      const text = (input ? input.value : '').trim();
-      if (!text) {
-        showToast('⚠️ Please enter an alert message before dispatching.');
-        return;
-      }
-      const isUrgent = prioSelect && prioSelect.value === 'urgent';
-      const sender = currentUser ? `${currentUser.name} (${currentUser.role})` : 'Pit Operations';
-      const fullText = (isUrgent ? '🚨 [URGENT DISPATCH] ' : '📢 [TEAM ALERT] ') + sender + ': ' + text;
-
-      const newNotif = {
-        id: Date.now(),
-        text: fullText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        urgent: isUrgent
-      };
-
-      notifications.unshift(newNotif);
-      saveState();
-      renderNotifications();
-      if (input) input.value = '';
-
-      if (typeof playAudioVisualPing === 'function') {
-        playAudioVisualPing();
-      }
-      showToast(fullText);
-
-      fetch('/api/portal/notifications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: fullText,
-          sender: sender,
-          urgent: isUrgent
-        })
-      }).catch(e => console.warn('Worker notif sync:', e));
-    }
-
-    function renderNotifications() {
-      const cont = document.getElementById('notif-list-container');
-      const badge = document.getElementById('notif-count');
-      if (badge) badge.innerText = notifications.length;
-      const tabLiveCount = document.getElementById('notif-tab-count');
-      if (tabLiveCount) tabLiveCount.innerText = notifications.length;
-      const tabQueueCount = document.getElementById('queue-tab-count');
-      if (tabQueueCount) tabQueueCount.innerText = offlineQueuedMessages.length;
-
-      cont.innerHTML = '';
-      if (notifications.length === 0) {
-        cont.innerHTML = `
-          <div style="padding: 30px 16px; text-align: center; color: var(--gp-ink-2); font-size: 0.82rem;">
-            <div style="font-size: 1.8rem; margin-bottom: 6px;">🔔</div>
-            <div style="font-weight: 600; color: var(--gp-ink);">0 Active Dispatches</div>
-            <div>All operational alerts and team directives will appear here live.</div>
-          </div>
-        `;
-        return;
-      }
-      notifications.forEach(n => {
-        const item = document.createElement('div');
-        item.className = 'notif-item';
-        if (n.text.includes('Direct dispatch') || n.text.includes('message')) {
-          item.classList.add('notif-chat');
-        }
-        item.innerText = n.text;
-        cont.appendChild(item);
-      });
-    }
-  
+      
     // ============================================================
     // PHOTO VIEWER & LIGHTBOX
     // ============================================================
@@ -3753,11 +3724,7 @@
       });
       offlineQueuedMessages = [];
       saveState();
-      notifications.unshift({
-        id: Date.now(),
-        text: `✓ Dispatched ${count} queued offline message(s) to team members upon network sync.`
-      });
-      renderNotifications();
+      // Offline chat messages dispatched directly to recipient threads
       renderOfflineQueue();
       if (activeDrawerMember) renderDirectChatStream();
       showToast(`🚀 Dispatched ${count} queued message(s)!`);

@@ -69,10 +69,10 @@ test('Task 3: Quality assurance on portal.html and portal-sample.html', async ()
     assert.match(content, /dispatchDirectMessage/, `${file}: Has dispatchDirectMessage for direct messaging`);
     assert.match(content, /Captain|Vice Captain|Manager/, `${file}: Contains leadership roles`);
 
-    // 5. Live in-app notifications and offline message queue
+    // 5. Live in-app notifications dedicated to task and assignment alerts
     assert.match(content, /id="notif-drawer"/, `${file}: Has in-app notification drawer`);
     assert.match(content, /offlineQueuedMessages/, `${file}: Has offline message queue data store`);
-    assert.match(content, /id="tab-notif-queue"/, `${file}: Has offline queue tab in notification center`);
+    assert.match(content, /Task & Assignment Alerts/, `${file}: Has dedicated Task & Assignment Alerts drawer`);
     assert.match(content, /dispatchAllOfflineQueue/, `${file}: Has offline queue dispatch function`);
 
     // 6. File upload requirement before marking tasks Done

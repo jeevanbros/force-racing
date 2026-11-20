@@ -128,6 +128,86 @@ async function persistMessageD1(env, msg) {
   }
 }
 
+
+// Members store & duplicate checking
+const inMemoryMembers = [];
+
+async function checkDuplicateMemberD1(env, email, phone, name) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanPhone = (phone || '').replace(/\s+/g, '');
+  const cleanName = (name || '').trim().toLowerCase();
+
+  // 1. Check in-memory store
+  for (const m of inMemoryMembers) {
+    if (cleanEmail && m.email && m.email.toLowerCase() === cleanEmail) {
+      return { duplicate: true, field: 'email', member: m };
+    }
+    if (cleanPhone && m.phone && m.phone.replace(/\s+/g, '') === cleanPhone) {
+      return { duplicate: true, field: 'phone', member: m };
+    }
+    if (cleanName && m.name && m.name.toLowerCase() === cleanName) {
+      return { duplicate: true, field: 'name', member: m };
+    }
+  }
+
+  // 2. Check D1 database if bound
+  if (env?.DB && typeof env.DB.prepare === 'function') {
+    try {
+      await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS portal_members (
+          id TEXT PRIMARY KEY,
+          unique_code TEXT UNIQUE,
+          name TEXT,
+          email TEXT UNIQUE,
+          phone TEXT,
+          subsystem TEXT,
+          role TEXT,
+          branch TEXT,
+          year TEXT,
+          created_at TEXT
+        )
+      `).run().catch(() => {});
+
+      if (cleanEmail) {
+        const row = await env.DB.prepare('SELECT * FROM portal_members WHERE LOWER(TRIM(email)) = ?').bind(cleanEmail).first().catch(() => null);
+        if (row) return { duplicate: true, field: 'email', member: row };
+      }
+      if (cleanPhone) {
+        const row = await env.DB.prepare("SELECT * FROM portal_members WHERE REPLACE(phone, ' ', '') = ?").bind(cleanPhone).first().catch(() => null);
+        if (row) return { duplicate: true, field: 'phone', member: row };
+      }
+      if (cleanName) {
+        const row = await env.DB.prepare('SELECT * FROM portal_members WHERE LOWER(TRIM(name)) = ?').bind(cleanName).first().catch(() => null);
+        if (row) return { duplicate: true, field: 'name', member: row };
+      }
+    } catch (e) {}
+  }
+
+  return { duplicate: false };
+}
+
+async function persistMemberD1(env, member) {
+  if (env?.DB && typeof env.DB.prepare === 'function') {
+    try {
+      await env.DB.prepare(`
+        INSERT OR REPLACE INTO portal_members (id, unique_code, name, email, phone, subsystem, role, branch, year, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        String(member.id),
+        member.uniqueCode || '',
+        member.name || '',
+        (member.email || '').toLowerCase(),
+        member.phone || '',
+        member.subsystem || '',
+        member.role || '',
+        member.branch || '',
+        member.year || '',
+        member.createdAt || new Date().toISOString()
+      ).run().catch(() => {});
+    } catch (e) {}
+  }
+}
+
 async function persistTaskD1(env, task) {
   if (env?.DB && typeof env.DB.prepare === 'function') {
     try {
@@ -279,23 +359,64 @@ export async function handlePortalApi(request, env, ctx) {
       inMemoryMessages.push(msg);
       await persistMessageD1(env, msg);
 
-      // Automatically create in-app notification for the recipient!
-      const notifText = `💬 Message from ${msg.fromName}: "${msg.text || (msg.file ? 'Attached file: ' + msg.file : '')}"`;
-      const notif = {
-        id: Date.now() + 1,
-        text: notifText,
-        type: 'chat',
-        userId: to,
-        toId: to,
-        fromId: from,
-        fromName: msg.fromName,
-        timestamp: Date.now(),
+      // Direct chat messages remain isolated to chat threads (never pollute task alerts)
+      return json({ ok: true, message: msg }, 201, CORS_HEADERS);
+    }
+
+    return json({ ok: false, error: 'Method not allowed.' }, 405, CORS_HEADERS);
+  }
+
+  
+  // 4. /api/portal/register (Double Account Verification & Registration)
+  if (path === '/api/portal/register' || path === '/api/portal/register/') {
+    if (request.method === 'POST') {
+      const body = await parseBody(request);
+      const { email, phone, name, subsystem, role, branch, year, uniqueCode } = body;
+
+      if (!email || !phone || !name) {
+        return json({ ok: false, error: 'Name, email, and phone number are mandatory.' }, 400, CORS_HEADERS);
+      }
+
+      // Cross-check database and memory store for double account prevention
+      const dupCheck = await checkDuplicateMemberD1(env, email, phone, name);
+      if (dupCheck.duplicate) {
+        let errorMsg = 'Account already exists. Duplicate registration is not permitted.';
+        if (dupCheck.field === 'email') {
+          errorMsg = `An account with email "${email}" already exists. Please sign in instead of creating a duplicate account.`;
+        } else if (dupCheck.field === 'phone') {
+          errorMsg = `An account with phone number "${phone}" is already registered. Double registration is prohibited.`;
+        } else if (dupCheck.field === 'name') {
+          errorMsg = `Member "${name}" already has an active account. Please sign in with your credentials.`;
+        }
+        return json({
+          ok: false,
+          duplicate: true,
+          field: dupCheck.field,
+          error: errorMsg
+        }, 409, CORS_HEADERS);
+      }
+
+      const newMember = {
+        id: body.id || ('usr_' + Date.now()),
+        uniqueCode: uniqueCode || ('FR26-MEM-' + (inMemoryMembers.length + 1)),
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        subsystem: subsystem || 'General',
+        role: role || 'Team Member',
+        branch: branch || 'Engineering',
+        year: year || 'Member',
         createdAt: new Date().toISOString()
       };
-      inMemoryNotifications.unshift(notif);
-      await persistNotificationD1(env, notif);
 
-      return json({ ok: true, message: msg, notification: notif }, 201, CORS_HEADERS);
+      inMemoryMembers.push(newMember);
+      await persistMemberD1(env, newMember);
+
+      return json({ ok: true, member: newMember }, 201, CORS_HEADERS);
+    }
+
+    if (request.method === 'GET') {
+      return json({ ok: true, members: inMemoryMembers }, 200, CORS_HEADERS);
     }
 
     return json({ ok: false, error: 'Method not allowed.' }, 405, CORS_HEADERS);

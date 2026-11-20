@@ -51,7 +51,7 @@ test('Portal API - POST /api/portal/notifications', async () => {
   assert.equal(list.notifications[0].text, 'Suspension Lead Srikanth verified camber angles.');
 });
 
-test('Portal API - POST & GET /api/portal/chat with auto-notification', async () => {
+test('Portal API - POST & GET /api/portal/chat (chat isolated from task alerts)', async () => {
   // Post chat message from Captain to Vice Captain
   const { res, data } = await callApi('http://localhost:8787/api/portal/chat', {
     method: 'POST',
@@ -59,7 +59,7 @@ test('Portal API - POST & GET /api/portal/chat with auto-notification', async ()
     body: JSON.stringify({
       from: 'captain',
       to: 'vicecaptain',
-      fromName: 'Dhanush V.',
+      fromName: 'Dhanush',
       text: 'Have you verified the roll hoop jig clearances?'
     })
   });
@@ -67,19 +67,71 @@ test('Portal API - POST & GET /api/portal/chat with auto-notification', async ()
   assert.equal(res.status, 201);
   assert.equal(data.ok, true);
   assert.equal(data.message.text, 'Have you verified the roll hoop jig clearances?');
-  assert.ok(data.notification);
-  assert.equal(data.notification.userId, 'vicecaptain');
-  assert.match(data.notification.text, /Have you verified the roll hoop jig clearances/);
 
-  // Verify recipient in-app notifications
-  const { data: notifList } = await callApi('http://localhost:8787/api/portal/notifications?userId=vicecaptain');
-  assert.ok(notifList.notifications.some(n => n.text.includes('Have you verified the roll hoop jig clearances')));
+  // Verify chat does NOT pollute task alerts/notifications
+  const { data: notifList } = await callApi('http://localhost:8787/api/portal/notifications');
+  assert.ok(!notifList.notifications.some(n => n.text && n.text.includes('Have you verified the roll hoop jig clearances')));
 
   // Get chat messages between captain and vicecaptain
   const { data: chatData } = await callApi('http://localhost:8787/api/portal/chat?from=captain&to=vicecaptain');
   assert.equal(chatData.ok, true);
   assert.ok(chatData.messages.length >= 1);
   assert.equal(chatData.messages[chatData.messages.length - 1].text, 'Have you verified the roll hoop jig clearances?');
+});
+
+test('Portal API - POST /api/portal/register verifies duplicate accounts and rejects double registration', async () => {
+  // First registration: unique account
+  const reg1 = await callApi('http://localhost:8787/api/portal/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Raju TestMember',
+      email: 'raju.chassis@forceracing.in',
+      phone: '+91 98765 99999',
+      subsystem: 'Chassis',
+      role: 'Team Member',
+      branch: 'Mechanical',
+      year: '3rd Year',
+      uniqueCode: 'FR26-CHS-99'
+    })
+  });
+  assert.equal(reg1.res.status, 201);
+  assert.equal(reg1.data.ok, true);
+  assert.equal(reg1.data.member.email, 'raju.chassis@forceracing.in');
+
+  // Second registration with SAME EMAIL (Double account attempt): MUST REJECT with 409 Conflict
+  const dupEmail = await callApi('http://localhost:8787/api/portal/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Raju Duplicate',
+      email: 'raju.chassis@forceracing.in',
+      phone: '+91 98765 88888',
+      subsystem: 'Chassis',
+      role: 'Team Member'
+    })
+  });
+  assert.equal(dupEmail.res.status, 409);
+  assert.equal(dupEmail.data.ok, false);
+  assert.equal(dupEmail.data.duplicate, true);
+  assert.equal(dupEmail.data.field, 'email');
+
+  // Second registration with SAME PHONE (Double account attempt): MUST REJECT with 409 Conflict
+  const dupPhone = await callApi('http://localhost:8787/api/portal/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Another Name',
+      email: 'another.unique@forceracing.in',
+      phone: '+91 98765 99999',
+      subsystem: 'Chassis',
+      role: 'Team Member'
+    })
+  });
+  assert.equal(dupPhone.res.status, 409);
+  assert.equal(dupPhone.data.ok, false);
+  assert.equal(dupPhone.data.duplicate, true);
+  assert.equal(dupPhone.data.field, 'phone');
 });
 
 test('Portal API - GET /api/portal/tasks (clean 0 slate)', async () => {
