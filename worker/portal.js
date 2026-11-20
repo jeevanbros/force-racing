@@ -398,7 +398,7 @@ export async function handlePortalApi(request, env, ctx) {
 
       const newMember = {
         id: body.id || ('usr_' + Date.now()),
-        uniqueCode: uniqueCode || ('FR26-MEM-' + (inMemoryMembers.length + 1)),
+        uniqueCode: uniqueCode || (`FR26-${subsystem || 'CHS'}-${role || 'MEM'}-${year || 'Y3'}-${(name || 'CREW').toUpperCase().replace(/[^A-Z0-9]/g, '')}`),
         name: name.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
