@@ -37,9 +37,13 @@ export function formatDriveUrl(url) {
 
 export async function route(request, env, ctx) {
   const url = new URL(request.url), path = url.pathname;
-  if (path === '/portal' || path === '/pitwall' || path === '/pit-wall') {
-    url.pathname = '/portal.html';
-    return env.ASSETS.fetch(new Request(url.toString(), request));
+  // Route /portal and /portal.html to static pit wall portal assets
+  if (path === '/portal' || path === '/portal.html') {
+    return env.ASSETS.fetch(request);
+  }
+  if (path === '/pitwall' || path === '/pit-wall') {
+    url.pathname = '/portal';
+    return Response.redirect(url.toString(), 302);
   }
   if (path === '/admin' || path.startsWith('/admin/')) return adminPage(request, env);
   if (path.startsWith('/api/admin/')) return adminApi(request, env, ctx);
