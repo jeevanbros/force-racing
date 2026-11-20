@@ -3,6 +3,7 @@ import { publicConfig } from './settings.js';
 import { submit, googleForm } from './submissions.js';
 import { webhook, housekeeping } from './telegram.js';
 import { adminApi, adminPage } from './admin.js';
+import { handlePortalApi } from './portal.js';
 import { 
   requestCheckerAccess, 
   handleCheckerStatus,
@@ -161,6 +162,7 @@ export async function route(request, env, ctx) {
   if (path === '/api/submissions' && request.method === 'POST') return submit(request, env, ctx);
   if (path === '/api/integrations/google-forms' && request.method === 'POST') return googleForm(request, env, ctx);
   if (path === '/api/telegram/webhook' && request.method === 'POST') return webhook(request, env, ctx);
+  if (path.startsWith('/api/portal/')) return handlePortalApi(request, env, ctx);
   if (path.startsWith('/api/')) throw new HttpError(404, 'API route not found.');
   if (!['GET', 'HEAD'].includes(request.method)) throw new HttpError(405, 'Method not allowed.', { Allow: 'GET, HEAD' });
   return env.ASSETS.fetch(request);

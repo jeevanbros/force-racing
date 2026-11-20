@@ -592,10 +592,12 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
-    .auth-admin { background: rgba(255, 24, 1, 0.15); border: 1px solid var(--gp-accent); color: var(--gp-accent); }
+    .auth-captain { background: rgba(255, 24, 1, 0.15); border: 1px solid var(--gp-accent); color: var(--gp-accent); }
+    .auth-vicecaptain { background: rgba(0, 240, 255, 0.12); border: 1px solid var(--gp-cyan); color: var(--gp-cyan); }
+    .auth-manager { background: rgba(255, 183, 3, 0.15); border: 1px solid var(--gp-gold); color: var(--gp-gold); }
+    .auth-lead { background: rgba(16, 185, 129, 0.12); border: 1px solid var(--gp-ok); color: var(--gp-ok); }
+    .auth-member { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--gp-line-2); color: var(--gp-ink-2); }
     .auth-superior { background: rgba(0, 240, 255, 0.12); border: 1px solid var(--gp-cyan); color: var(--gp-cyan); }
-    .auth-lead { background: rgba(255, 183, 3, 0.15); border: 1px solid var(--gp-gold); color: var(--gp-gold); }
-    .auth-member { background: rgba(16, 185, 129, 0.12); border: 1px solid var(--gp-ok); color: var(--gp-ok); }
 
     /* ========================================================
        4. STRICTLY TASK TELEMETRY ONLY (Cards & Subsystems)
@@ -1011,10 +1013,10 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-    .file-grid {
+        .file-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
     }
     .file-card {
       background: var(--gp-bg-sunk);
@@ -1024,23 +1026,110 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+      overflow: hidden;
+      box-sizing: border-box;
       transition: var(--gp-transition);
     }
     .file-card:hover { border-color: var(--gp-line-2); }
-    .file-card-info h5 { font-size: 0.92rem; font-weight: 700; }
-    .file-card-info span { font-size: 0.74rem; color: var(--gp-ink-2); display: block; margin-top: 2px; }
+    .file-card-info {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .file-card-info h5 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+      max-width: 100%;
+    }
+    .file-card-info span {
+      font-size: 0.74rem;
+      color: var(--gp-ink-2);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.35;
+      max-width: 100%;
+    }
     .btn-download-file {
       background: var(--gp-surface-elevated);
       border: 1px solid var(--gp-line-2);
       color: var(--gp-cyan);
-      padding: 6px 12px;
+      padding: 7px 14px;
       border-radius: var(--gp-radius);
       font-size: 0.78rem;
+      font-weight: 600;
       cursor: pointer;
       transition: var(--gp-transition);
       flex-shrink: 0;
+      white-space: nowrap;
     }
-    .btn-download-file:hover { background: var(--gp-cyan); color: #000; }
+    
+    /* WhatsApp-Style Quote Reply & Notification Pulse */
+    @keyframes notifPingPulse {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.25) rotate(-10deg); filter: drop-shadow(0 0 8px var(--gp-accent)); }
+      60% { transform: scale(1.15) rotate(10deg); }
+      100% { transform: scale(1); filter: none; }
+    }
+    .chat-reply-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 240, 255, 0.08);
+      border-left: 3px solid var(--gp-cyan);
+      padding: 6px 12px;
+      border-radius: var(--gp-radius) var(--gp-radius) 0 0;
+      margin-bottom: -1px;
+      font-size: 0.78rem;
+    }
+    .chat-quote-box {
+      background: rgba(0, 0, 0, 0.25);
+      border-left: 3px solid var(--gp-cyan);
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin-bottom: 6px;
+      font-size: 0.75rem;
+    }
+    .chat-quote-author {
+      display: block;
+      font-weight: 700;
+      color: var(--gp-cyan);
+      margin-bottom: 2px;
+    }
+    .chat-quote-text {
+      color: var(--gp-ink-2);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-msg-reply {
+      background: transparent;
+      border: none;
+      color: var(--gp-ink-3);
+      cursor: pointer;
+      font-size: 0.72rem;
+      padding: 0 4px;
+      opacity: 0.75;
+      transition: var(--gp-transition);
+    }
+    .btn-msg-reply:hover {
+      opacity: 1;
+      color: var(--gp-cyan);
+    }
+  
+    .btn-download-file:hover {
+      background: var(--gp-cyan);
+      color: #000;
+      border-color: var(--gp-cyan);
+    }
 
     /* ========================================================
        6. MODAL OVERLAYS & DRAWERS
@@ -1420,7 +1509,7 @@
   <!-- Header -->
   <header>
     <div class="header-inner">
-      <a href="/" class="brand">
+      <a href="javascript:void(0)" onclick="handlePortalBrandClick(event)" class="brand" title="Click to refresh Pit Wall operations">
         <img src="assets/original/favicon.png" alt="Force Racing">
         <div class="brand-title">
           FORCE RACING
@@ -1542,12 +1631,14 @@
               <label>Role</label>
               <select id="reg-role" class="form-control">
                 <option value="Team Member">Team Member</option>
-                <option value="Chassis Head 1">Chassis Head 1</option>
-                <option value="Chassis Head 2">Chassis Head 2</option>
+                <option value="Chassis Lead">Chassis Lead</option>
                 <option value="Powertrain Lead">Powertrain Lead</option>
                 <option value="Aerodynamics Lead">Aerodynamics Lead</option>
                 <option value="Suspension & Braking Lead">Suspension & Braking Lead</option>
                 <option value="Electronics Lead">Electronics Lead</option>
+                <option value="Team Manager">Team Manager</option>
+                <option value="Vice Captain">Vice Captain</option>
+                <option value="Captain">Captain</option>
               </select>
             </div>
           </div>
@@ -1573,12 +1664,11 @@
         <div class="demo-role-bar">
           <h4>🧪 1-Click Demo Testing Switcher</h4>
           <div class="demo-btn-group">
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('admin')">👑 Admin</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('captain')">⚡ Captain (Superior)</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('vicecaptain')">⚡ Vice Captain (Superior)</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('manager')">⚡ Manager (Superior)</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_1')">🔧 Chassis Head 1 (Lead)</button>
-            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_2')">🔧 Chassis Head 2 (Lead)</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('captain')">⚡ Captain</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('vicecaptain')">⚡ Vice Captain</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('manager')">⚡ Team Manager</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_1')">🔧 Chassis Head 1</button>
+            <button type="button" class="btn-demo-pill" onclick="quickLogin('chassis_head_2')">🔧 Chassis Head 2</button>
             <button type="button" class="btn-demo-pill" onclick="quickLogin('member_karthik')">👤 Member (Karthik)</button>
           </div>
         </div>
@@ -1617,7 +1707,7 @@
           <button class="btn-logout" style="border-color:var(--gp-cyan); color:var(--gp-cyan);" onclick="openAccountSection()">
             👤 Account & Activities
           </button>
-          <span id="dash-authority-badge" class="badge-authority auth-superior">⚡ Superior Authority</span>
+          <span id="dash-authority-badge" class="badge-authority auth-captain">⚡ Captain</span>
         </div>
       </div>
 
@@ -1697,7 +1787,7 @@
         <!-- Right Main Panel: Tasks & File Upload Requirements -->
         <div class="content-panel">
 
-          <!-- Task Creation Box (Superior Authority & Leads) -->
+          <!-- Task Creation Box (Leadership & Leads) -->
           <div id="assign-task-panel" class="create-task-panel" style="display:none;">
             <h3 id="assign-panel-title">➕ Dispatch & Assign New Task</h3>
             <form id="form-create-task" onsubmit="handleCreateTask(event)">
@@ -1872,6 +1962,7 @@
           <!-- Populated dynamically -->
         </div>
 
+                <div id="chat-reply-banner" class="chat-reply-banner" style="display:none;"></div>
         <form class="chat-input-bar" onsubmit="handleSendDirectMessage(event)">
           <input type="file" id="chat-file-input" style="display:none;" onchange="handleChatFileUpload(event)">
           <button type="button" class="btn-attach-chat" onclick="document.getElementById('chat-file-input').click()" title="Send File Proof / Drawing">📎</button>
@@ -1907,12 +1998,14 @@
       { id: "suspension_lead", name: "Srikanth M.", role: "Suspension & Braking Lead", subsystem: "Suspension & Braking", branch: "Mechanical", year: "3rd Year", online: true, email: "srikanth.susp@forceracing.in", phone: "+91 98765 77771", authority: "lead", avatarUrl: null },
       { id: "electronics_lead", name: "Ananya Rao", role: "Electronics Lead", subsystem: "Electronics", branch: "ECE", year: "3rd Year", online: false, email: "ananya.elec@forceracing.in", phone: "+91 98765 88881", authority: "lead", avatarUrl: null },
       { id: "member_karthik", name: "Karthik P.", role: "Junior Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: true, email: "karthik.p@forceracing.in", phone: "+91 98765 55551", authority: "member", avatarUrl: null },
-      { id: "member_sai", name: "Sai Teja", role: "Fabrication Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: false, email: "sai.teja@forceracing.in", phone: "+91 98765 66661", authority: "member", avatarUrl: null },
-      { id: "admin", name: "Administrator", role: "Administrator", subsystem: "Systems", branch: "CSE", year: "4th Year", online: true, email: "admin@forceracing.in", phone: "+91 99999 00000", authority: "admin", avatarUrl: null }
+      { id: "member_sai", name: "Sai Teja", role: "Fabrication Member", subsystem: "Chassis", branch: "Mechanical", year: "2nd Year", online: false, email: "sai.teja@forceracing.in", phone: "+91 98765 66661", authority: "member", avatarUrl: null }
     ];
 
     let currentUser = null;
     let activeDrawerMember = null;
+    let notifPollTimer = null;
+    let activeReply = null;
+  
 
     let notifications = [
       { id: 1, text: "Captain Dhanush assigned: 'TIG Welding Inspection' to Chassis Head 1." },
@@ -1928,6 +2021,7 @@
         title: "TIG Welding Seam Inspection & Ultrasonic Check",
         desc: "Complete non-destructive weld testing on front bulkhead nodes and upload NDT inspection certificate.",
         assignedBy: "Capt. Dhanush (Captain)",
+        assignedById: "captain",
         assigneeId: "chassis_head_1",
         assigneeName: "Vikram Sharma (Chassis Head 1)",
         uploadedFile: null,
@@ -1984,7 +2078,8 @@
         assigneeName: "Srikanth M. (Suspension & Braking Lead)",
         uploadedFile: "FR26_Suspension_Kinematics.xlsx",
         deliverableNotes: "Roll center migration maintained within 12mm.",
-        status: "awaiting_superior"
+        assignedById: "chassis_head_1",
+        status: "awaiting_approval"
       },
       {
         id: 106,
@@ -2105,8 +2200,7 @@
       const id = document.getElementById('login-identifier').value.trim().toLowerCase();
       let u = ALL_TEAM_MEMBERS.find(x => x.id === id || x.email.toLowerCase() === id);
       if (!u) {
-        if (id.includes('admin')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'admin');
-        else if (id.includes('capt') && !id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'captain');
+                else if (id.includes('capt') && !id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'captain');
         else if (id.includes('vice')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'vicecaptain');
         else if (id.includes('sohail') || id.includes('manager')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'manager');
         else if (id.includes('vikram') || id.includes('head_1')) u = ALL_TEAM_MEMBERS.find(x => x.id === 'chassis_head_1');
@@ -2117,7 +2211,7 @@
       loginSuccess(u);
     }
 
-    function handleSignupSubmit(e) {
+        function handleSignupSubmit(e) {
       e.preventDefault();
       const name = document.getElementById('reg-name').value;
       const branch = document.getElementById('reg-branch').value;
@@ -2125,12 +2219,27 @@
       const email = document.getElementById('reg-email').value;
       const phone = document.getElementById('reg-phone').value;
       const subsystem = document.getElementById('reg-subsystem').value;
-      const role = document.getElementById('reg-role').value;
+      const baseRole = document.getElementById('reg-role').value;
+
+      let finalRole = baseRole;
+      if (baseRole.includes('Lead') || baseRole.includes('Head')) {
+        const leadPrefix = baseRole.replace(/\s+(Lead|Head)$/i, '');
+        const existingLeads = ALL_TEAM_MEMBERS.filter(m => {
+          if (!m.role) return false;
+          return m.role === baseRole || 
+                 m.role.startsWith(baseRole + ' ') || 
+                 (m.role.includes(leadPrefix) && (m.role.includes('Lead') || m.role.includes('Head')));
+        });
+        const count = existingLeads.length;
+        if (count >= 1) {
+          finalRole = `${baseRole} ${count + 1}`;
+        }
+      }
 
       const newUser = {
         id: "usr_" + Date.now(),
         name: name,
-        role: role,
+        role: finalRole,
         subsystem: subsystem,
         email: email,
         phone: phone,
@@ -2138,7 +2247,7 @@
         year: year,
         online: true,
         avatarUrl: null,
-        authority: role.includes('Head') || role.includes('Lead') ? 'lead' : (role === 'Captain' || role === 'Vice Captain' || role === 'Team Manager' ? 'superior' : 'member')
+        authority: finalRole.includes('Head') || finalRole.includes('Lead') ? 'lead' : (finalRole === 'Captain' || finalRole === 'Vice Captain' || finalRole === 'Team Manager' ? 'superior' : 'member')
       };
 
       ALL_TEAM_MEMBERS.push(newUser);
@@ -2166,9 +2275,10 @@
       const badgeEl = document.getElementById('dash-authority-badge');
       badgeEl.innerText = user.role;
       badgeEl.className = 'badge-authority ' + 
-        (user.authority === 'admin' ? 'auth-admin' : 
-        (user.authority === 'superior' ? 'auth-superior' : 
-        (user.authority === 'lead' ? 'auth-lead' : 'auth-member')));
+        (user.id === 'captain' ? 'auth-captain' : 
+        (user.id === 'vicecaptain' ? 'auth-vicecaptain' : 
+        (user.id === 'manager' ? 'auth-manager' : 
+        (user.authority === 'lead' ? 'auth-lead' : 'auth-member'))));
 
       // Header round avatar and status dot
       document.getElementById('header-user-slot').innerHTML = `
@@ -2201,7 +2311,7 @@
       } else {
         if (user.authority === 'superior') {
           const underRevCount = tasks.filter(t => t.status === 'awaiting_superior' || t.status === 'under_review').length;
-          bannerMsg.innerText = `👋 Superior Authority active. ${underRevCount} task deliverables waiting in approval pipeline.`;
+          bannerMsg.innerText = `👋 ${user.role} active. ${underRevCount} task deliverables waiting in approval pipeline.`;
           banner.style.display = 'flex';
         } else if (user.authority === 'lead') {
           bannerMsg.innerText = `🔔 Attention Lead: Review member deliverable proofs before escalating to Captain.`;
@@ -2218,6 +2328,7 @@
       renderSubsystemTelemetry();
       renderFilesHub();
       renderNotifications();
+      startNotificationPolling();
     }
 
     function updateAvatarDisplay(containerId, user) {
@@ -2243,6 +2354,7 @@
     function logout() {
       if (currentUser) currentUser.online = false;
       saveState();
+      stopNotificationPolling();
       currentUser = null;
       document.getElementById('dashboard-view').style.display = 'none';
       document.getElementById('auth-view').style.display = 'block';
@@ -2337,7 +2449,51 @@
       return [id1, id2].sort().join('_');
     }
 
-    function renderDirectChatStream() {
+    
+    // ============================================================
+    // WHATSAPP-STYLE DIRECT CHAT REPLY & QUOTE SYSTEM
+    // ============================================================
+    function setChatReply(msgId) {
+      if (!currentUser || !activeDrawerMember) return;
+      const key = getChatRoomKey(currentUser.id, activeDrawerMember.id);
+      const messages = directChats[key] || [];
+      const target = messages.find(m => m.id === msgId);
+      if (!target) return;
+      const senderName = target.senderId === currentUser.id ? 'You' : (target.senderName || activeDrawerMember.name);
+      activeReply = {
+        id: target.id,
+        senderName: senderName,
+        text: target.text.length > 65 ? target.text.slice(0, 62) + '...' : target.text
+      };
+      renderChatReplyBanner();
+      const input = document.getElementById('chat-text-input');
+      if (input) input.focus();
+    }
+
+    function cancelChatReply() {
+      activeReply = null;
+      renderChatReplyBanner();
+    }
+
+    function renderChatReplyBanner() {
+      const banner = document.getElementById('chat-reply-banner');
+      if (!banner) return;
+      if (activeReply) {
+        banner.style.display = 'flex';
+        banner.innerHTML = `
+          <div class="chat-reply-banner-content" style="flex:1; min-width:0; overflow:hidden;">
+            <div class="reply-to-name" style="font-size:0.72rem; font-weight:700; color:var(--gp-cyan);">Replying to ${activeReply.senderName}</div>
+            <div class="reply-to-snippet" style="font-size:0.75rem; color:var(--gp-ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${activeReply.text}</div>
+          </div>
+          <button type="button" class="btn-cancel-reply" onclick="cancelChatReply()" title="Cancel reply" style="background:transparent; border:none; color:var(--gp-ink-2); cursor:pointer; font-size:1rem; padding:0 6px;">✕</button>
+        `;
+      } else {
+        banner.style.display = 'none';
+        banner.innerHTML = '';
+      }
+    }
+  
+        function renderDirectChatStream() {
       if (!currentUser || !activeDrawerMember) return;
       const key = getChatRoomKey(currentUser.id, activeDrawerMember.id);
       const messages = directChats[key] || [];
@@ -2360,6 +2516,16 @@
         const bubble = document.createElement('div');
         bubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
 
+        let quoteHtml = '';
+        if (m.replyTo) {
+          quoteHtml = `
+            <div class="chat-quote-box">
+              <span class="chat-quote-author">${m.replyTo.senderName}</span>
+              <span class="chat-quote-text">${m.replyTo.text}</span>
+            </div>
+          `;
+        }
+
         let fileHtml = '';
         if (m.fileName) {
           fileHtml = `
@@ -2372,9 +2538,13 @@
         }
 
         bubble.innerHTML = `
+          ${quoteHtml}
           <div>${m.text}</div>
           ${fileHtml}
-          <div class="chat-time">${m.time} ${isSent ? '✓' : ''}</div>
+          <div class="chat-time" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <button type="button" class="btn-msg-reply" onclick="setChatReply(${m.id})">↩ Reply</button>
+            <span>${m.time} ${isSent ? '✓' : ''}</span>
+          </div>
         `;
         stream.appendChild(bubble);
       });
@@ -2412,7 +2582,7 @@
       e.target.value = '';
     }
 
-    function dispatchDirectMessage(text, fileName) {
+        function dispatchDirectMessage(text, fileName) {
       const key = getChatRoomKey(currentUser.id, activeDrawerMember.id);
       if (!directChats[key]) directChats[key] = [];
 
@@ -2426,19 +2596,29 @@
         recipientId: activeDrawerMember.id,
         text: text,
         fileName: fileName,
+        replyTo: activeReply ? { ...activeReply } : null,
         time: timeStr
       };
 
       directChats[key].push(newMsg);
       saveState();
 
+      activeReply = null;
+      renderChatReplyBanner();
+
+      // Broadcast to backend chat API
+      postPortalChatMessage(newMsg);
+
       // Trigger instant in-app notification / toast / bell counter
       if (activeDrawerMember.online) {
         showToast(`💬 Message sent to ${activeDrawerMember.name}`);
-        notifications.unshift({
+        const notif = {
           id: Date.now(),
+          toId: activeDrawerMember.id,
           text: `Direct dispatch from ${currentUser.name} to ${activeDrawerMember.name}: "${text}"`
-        });
+        };
+        notifications.unshift(notif);
+        postPortalNotification(notif);
         renderNotifications();
       } else {
         // Queue for offline user login notification
@@ -2457,6 +2637,115 @@
       renderDirectChatStream();
     }
 
+    
+    // ============================================================
+    // REAL-TIME BACKEND NOTIFICATION SYNC & POLLING ENGINE
+    // ============================================================
+    function playAudioVisualPing() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        }
+      } catch (e) {}
+
+      const bell = document.querySelector('.notif-btn');
+      const badge = document.getElementById('notif-count');
+      if (bell) {
+        bell.style.animation = 'none';
+        bell.offsetHeight; // trigger reflow
+        bell.style.animation = 'notifPingPulse 0.6s ease-in-out';
+      }
+      if (badge) {
+        badge.style.transform = 'scale(1.4)';
+        setTimeout(() => { if (badge) badge.style.transform = 'scale(1)'; }, 300);
+      }
+    }
+
+    async function pollBackendNotifications() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch('/api/portal/notifications?user=' + encodeURIComponent(currentUser.id) + '&t=' + Date.now(), {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.notifications && Array.isArray(data.notifications)) {
+          let hasNew = false;
+          for (const remoteNotif of data.notifications) {
+            const exists = notifications.some(n => n.id === remoteNotif.id || n.text === remoteNotif.text);
+            if (!exists) {
+              notifications.unshift(remoteNotif);
+              hasNew = true;
+              showToast('🔔 ' + remoteNotif.text);
+              playAudioVisualPing();
+            }
+          }
+          if (hasNew) {
+            saveState();
+            renderNotifications();
+          }
+        }
+      } catch (err) {
+        // Fallback gracefully to offline/local storage if unreachable
+      }
+    }
+
+    function startNotificationPolling() {
+      if (notifPollTimer) clearInterval(notifPollTimer);
+      notifPollTimer = setInterval(pollBackendNotifications, 4500);
+      pollBackendNotifications();
+    }
+
+    function stopNotificationPolling() {
+      if (notifPollTimer) {
+        clearInterval(notifPollTimer);
+        notifPollTimer = null;
+      }
+    }
+
+    async function postPortalNotification(notif) {
+      try {
+        await fetch('/api/portal/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...notif,
+            senderId: currentUser ? currentUser.id : 'pitwall',
+            timestamp: Date.now()
+          })
+        });
+      } catch (e) {
+        // Graceful fallback to offline local storage
+      }
+    }
+
+    async function postPortalChatMessage(msg) {
+      try {
+        await fetch('/api/portal/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...msg,
+            timestamp: Date.now()
+          })
+        });
+      } catch (e) {
+        // Graceful fallback to offline local storage
+      }
+    }
+  
     function showToast(message) {
       const container = document.getElementById('toast-container');
       const box = document.createElement('div');
@@ -2497,7 +2786,7 @@
       });
     }
 
-    function handleCreateTask(e) {
+        function handleCreateTask(e) {
       e.preventDefault();
       const title = document.getElementById('task-input-title').value;
       const desc = document.getElementById('task-input-desc').value;
@@ -2514,6 +2803,7 @@
         title: title,
         desc: desc,
         assignedBy: `${currentUser.name} (${currentUser.role})`,
+        assignedById: currentUser.id,
         assigneeId: assigneeId,
         assigneeName: assigneeName,
         uploadedFile: null,
@@ -2524,10 +2814,24 @@
       tasks.unshift(newTask);
       saveState();
 
-      notifications.unshift({
+      const notif = {
         id: Date.now(),
-        text: `New Task dispatched: "${title}" assigned to ${assigneeName}.`
-      });
+        toId: assigneeId,
+        text: `📋 Task Assigned by ${currentUser.name} (${currentUser.role}): "${title}" assigned to ${assigneeName}.`
+      };
+      notifications.unshift(notif);
+      postPortalNotification(notif);
+
+      if (assigneeMember && !assigneeMember.online) {
+        offlineQueuedMessages.push({
+          toId: assigneeId,
+          fromId: currentUser.id,
+          fromName: currentUser.name,
+          text: `New Task Assigned: "${title}" in ${newTask.subsystem}`,
+          timestamp: Date.now()
+        });
+        saveState();
+      }
 
       document.getElementById('task-input-title').value = '';
       document.getElementById('task-input-desc').value = '';
@@ -2553,47 +2857,62 @@
         const isSuperior = currentUser && (currentUser.authority === 'superior' || currentUser.authority === 'admin');
         const isLead = currentUser && (currentUser.authority === 'lead' && (currentUser.subsystem === t.subsystem || currentUser.subsystem === 'Leadership'));
 
-        // Status pill
+                // Determine required approver
+        let approverLabel = 'Captain';
+        if (t.assignedById === 'vicecaptain' || (t.assignedBy && t.assignedBy.includes('Vice Captain'))) {
+          approverLabel = 'Vice Captain';
+        } else if (t.assignedById === 'manager' || (t.assignedBy && t.assignedBy.includes('Manager'))) {
+          approverLabel = 'Manager';
+        }
+
+        // Status pill: dynamic approver name & member submission
         let statusBadge = '';
         if (t.status === 'done') {
-          statusBadge = '<span class="task-status-pill status-done">✓ Done (Approved)</span>';
-        } else if (t.status === 'awaiting_superior') {
-          statusBadge = '<span class="task-status-pill status-approval">⚡ Awaiting Superior Approval</span>';
-        } else if (t.status === 'under_review') {
-          statusBadge = '<span class="task-status-pill status-review">🔍 Under Lead Verification</span>';
+          statusBadge = `<span class="task-status-pill status-done">✓ Done (${t.approvedBy ? 'Approved by ' + t.approvedBy : 'Approved'})</span>`;
+        } else if (t.status === 'awaiting_approval' || t.status === 'awaiting_superior') {
+          statusBadge = `<span class="task-status-pill status-approval">⏳ Awaiting ${approverLabel} Approval</span>`;
+        } else if (t.status === 'under_review' || t.status === 'done_by_member') {
+          statusBadge = `<span class="task-status-pill status-review">Done by ${t.doneByName || t.assigneeName || 'Member'} · 🔍 Awaiting Subsystem Lead Verification</span>`;
         } else {
           statusBadge = '<span class="task-status-pill status-pending">⏳ Pending Deliverable</span>';
         }
 
-        // Action button based on approval cascade
+        // Action button based on dynamic required approver and lead role
         let actionButtonHtml = '';
         if (t.status === 'done') {
           actionButtonHtml = `<button class="btn-action-step btn-task-done">✓ Completed & Closed</button>`;
-        } else if (t.status === 'awaiting_superior') {
-          if (isSuperior) {
-            actionButtonHtml = `<button class="btn-action-step btn-approve-superior" onclick="handleSuperiorApprove(${t.id})">👑 Approve & Close Task</button>`;
+        } else if (t.status === 'awaiting_approval' || t.status === 'awaiting_superior') {
+          const canApprove = (approverLabel === 'Captain' && currentUser.id === 'captain') ||
+                             (approverLabel === 'Vice Captain' && (currentUser.id === 'vicecaptain' || currentUser.id === 'captain')) ||
+                             (approverLabel === 'Manager' && (currentUser.id === 'manager' || currentUser.id === 'captain')) ||
+                             (currentUser.id === 'captain');
+          if (canApprove) {
+            actionButtonHtml = `<button class="btn-action-step btn-approve-superior" onclick="handleFinalApprove(${t.id})">✓ Approve & Close Task (${currentUser.role})</button>`;
           } else {
-            actionButtonHtml = `<button class="btn-action-step" disabled>⏳ Pending Captain/Manager Approval</button>`;
+            actionButtonHtml = `<button class="btn-action-step" disabled>⏳ Awaiting ${approverLabel} Approval</button>`;
           }
-        } else if (t.status === 'under_review') {
-          if (isLead || isSuperior) {
-            actionButtonHtml = `<button class="btn-action-step btn-verify-lead" onclick="handleLeadVerify(${t.id})">🔍 Verify Deliverable Proof</button>`;
+        } else if (t.status === 'under_review' || t.status === 'done_by_member') {
+          const isSubsystemLead = (currentUser.authority === 'lead' && (currentUser.subsystem === t.subsystem || currentUser.subsystem === 'Leadership')) || currentUser.id === 'captain';
+          if (isSubsystemLead) {
+            actionButtonHtml = `<button class="btn-action-step btn-verify-lead" onclick="handleLeadVerify(${t.id})">✓ Okay / Verify Done</button>`;
           } else {
-            actionButtonHtml = `<button class="btn-action-step" disabled>⏳ Under Lead Verification</button>`;
+            actionButtonHtml = `<button class="btn-action-step" disabled>🔍 Awaiting Subsystem Lead Verification</button>`;
           }
         } else {
           // Status is pending deliverable
-          if (isAssignee || isSuperior || isLead) {
+          const canSubmit = isAssignee || currentUser.id === 'captain' || currentUser.id === 'vicecaptain' || currentUser.id === 'manager' || currentUser.authority === 'lead';
+          if (canSubmit) {
             actionButtonHtml = `
               <button class="btn-action-step ${hasFile ? 'btn-submit-proof' : ''}" 
                       ${!hasFile ? 'disabled' : ''} 
                       onclick="handleSubmitForVerification(${t.id})">
-                ${hasFile ? 'Submit for Lead Verification' : 'Upload File Proof to Submit'}
+                ${hasFile ? 'Submit as Done' : 'Upload File Proof to Submit'}
               </button>
             `;
           } else {
             actionButtonHtml = `<button class="btn-action-step" disabled>Assignee Deliverable Required</button>`;
           }
+        }
         }
 
         card.innerHTML = `
@@ -2701,44 +3020,87 @@
       updateMetrics();
     }
 
-    // Step 2: Subsystem Lead verifies -> Escalate to Superior (Captain/Manager)
-    function handleLeadVerify(taskId) {
+        // Step 1: Member uploads file proof & submits as Done
+    function handleSubmitForVerification(taskId) {
       const t = tasks.find(x => x.id === taskId);
-      if (!t) return;
+      if (!t || !t.uploadedFile) {
+        showToast('⚠️ Please attach a deliverable proof file before submitting.');
+        return;
+      }
 
-      t.status = "awaiting_superior";
+      t.status = "done_by_member";
+      t.doneByName = currentUser.name;
       saveState();
 
-      notifications.unshift({
+      const notif = {
         id: Date.now(),
-        text: `⚡ Lead verified: ${currentUser.name} verified deliverable for "${t.title}". Escalated to Captain / Manager for final closure.`
-      });
+        text: `Done by ${currentUser.name}: "${t.title}", deliverable attached.`
+      };
+      notifications.unshift(notif);
+      postPortalNotification(notif);
 
-      showToast(`✓ Lead Verified! Escalated to Captain.`);
+      showToast(`✓ Submitted as Done by ${currentUser.name}! Notified ${t.subsystem} Lead.`);
       renderTasks();
       renderSubsystemTelemetry();
       renderNotifications();
       updateMetrics();
     }
 
-    // Step 3: Captain/Vice Captain/Manager approves and closes task
-    function handleSuperiorApprove(taskId) {
+    // Step 2: Subsystem Lead clicks Okay / Verify Done -> Escalate to designated approver
+    function handleLeadVerify(taskId) {
       const t = tasks.find(x => x.id === taskId);
       if (!t) return;
 
-      t.status = "done";
+      let approverLabel = 'Captain';
+      if (t.assignedById === 'vicecaptain' || (t.assignedBy && t.assignedBy.includes('Vice Captain'))) {
+        approverLabel = 'Vice Captain';
+      } else if (t.assignedById === 'manager' || (t.assignedBy && t.assignedBy.includes('Manager'))) {
+        approverLabel = 'Manager';
+      }
+
+      t.status = "awaiting_approval";
       saveState();
 
-      notifications.unshift({
+      const notif = {
         id: Date.now(),
-        text: `👑 Task Approved & Closed: Superior Authority approved "${t.title}" with verified deliverable "${t.uploadedFile}".`
-      });
+        text: `🔍 Lead Verified: ${currentUser.name} verified deliverable for "${t.title}". Escalated to ${approverLabel} for final approval.`
+      };
+      notifications.unshift(notif);
+      postPortalNotification(notif);
 
-      showToast(`👑 Task Officially Approved & Closed!`);
+      showToast(`✓ Lead Verified! Awaiting ${approverLabel} Approval.`);
       renderTasks();
       renderSubsystemTelemetry();
       renderNotifications();
       updateMetrics();
+    }
+
+    // Step 3: Final Approval by Captain / Vice Captain / Manager
+    function handleFinalApprove(taskId) {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+
+      t.status = "done";
+      t.approvedBy = currentUser.role;
+      saveState();
+
+      const notif = {
+        id: Date.now(),
+        text: `✓ Task Approved & Closed: ${currentUser.name} (${currentUser.role}) approved "${t.title}" with verified deliverable "${t.uploadedFile}".`
+      };
+      notifications.unshift(notif);
+      postPortalNotification(notif);
+
+      showToast(`✓ Task Officially Approved by ${currentUser.role}!`);
+      renderTasks();
+      renderSubsystemTelemetry();
+      renderNotifications();
+      updateMetrics();
+    }
+
+    // Backward compatibility alias
+    function handleSuperiorApprove(taskId) {
+      handleFinalApprove(taskId);
     }
 
     // ============================================================
@@ -2803,8 +3165,8 @@
         item.className = 'file-card';
         item.innerHTML = `
           <div class="file-card-info">
-            <h5>${f.name}</h5>
-            <span>${f.type} · ${f.size} · Uploaded by ${f.uploader} (${f.date})</span>
+            <h5 title="${f.name}">${f.name}</h5>
+            <span title="${f.type} · ${f.size} · Uploaded by ${f.uploader} (${f.date})">${f.type} · ${f.size} · Uploaded by ${f.uploader} (${f.date})</span>
           </div>
           <button class="btn-download-file" onclick="fakeDownload('${f.name}')">Download</button>
         `;
@@ -2883,12 +3245,12 @@
       document.getElementById('prof-role').value = currentUser.role;
 
       // Lock/Unlock subsystem & role
-      const isSuperUser = currentUser.authority === 'admin' || currentUser.authority === 'superior';
+      const isCaptain = currentUser.id === 'captain';
       const subInput = document.getElementById('prof-subsystem');
       const roleInput = document.getElementById('prof-role');
       const subHint = document.getElementById('prof-subsystem-hint');
 
-      if (isSuperUser) {
+      if (isCaptain) {
         subInput.disabled = false;
         subInput.style.opacity = '1';
         subInput.style.cursor = 'text';
